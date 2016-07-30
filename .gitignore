@@ -5,3 +5,6 @@ local
 
 # Pycharm
 .idea
+
+# metadata/local.meta
+metadata/local.meta
