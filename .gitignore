@@ -8,3 +8,6 @@ local
 
 # metadata/local.meta
 metadata/local.meta
+
+# Ignore the bin/linux which can be extracted
+bin/linux
