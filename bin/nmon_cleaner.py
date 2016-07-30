@@ -14,6 +14,8 @@
 # - 20/03/2015, V1.1.11: Guilhem Marchand, shebang correction
 # - 27/07/2015, V1.1.12: Guilhem Marchand, hotfix for using the PA-nmon to generate Performance data in standalone indexers
 # - 30/07/2016: V1.1.13: Guilhem Marchand: the core-app does not contains anymore data collection objects
+# - 30/07/2016: V1.1.14: Guilhem Marchand:
+#                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
 # Load libs
 
@@ -29,7 +31,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.13'
+version = '1.1.14'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -205,10 +207,10 @@ else:
 
 # APP_MAINVAR and APP_VAR directories
 if is_windows:
-    APP_MAINVAR = SPLUNK_HOME + '\\var\\run\\nmon'
+    APP_MAINVAR = SPLUNK_HOME + '\\var\\log\\nmon'
     APP_VAR = APP_MAINVAR + '\\var'
 else:
-    APP_MAINVAR = SPLUNK_HOME + '/var/run/nmon'
+    APP_MAINVAR = SPLUNK_HOME + '/var/log/nmon'
     APP_VAR = APP_MAINVAR + '/var'
 
 

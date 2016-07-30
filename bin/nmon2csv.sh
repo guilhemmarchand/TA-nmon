@@ -23,9 +23,11 @@
 #                                         - /dev/null redirection improvement for the which python check
 # - 07/30/2016: V1.0.07: Guilhem Marchand:
 #                                         - the core-app does not contains anymore data collection objects
+# - 07/30/2016: V1.0.08: Guilhem Marchand:
+#                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
 
-# Version 1.0.07
+# Version 1.0.08
 
 # For AIX / Linux / Solaris
 
@@ -39,7 +41,7 @@ if [ -z "${SPLUNK_HOME}" ]; then
 fi
 
 # Set tmp directory
-APP_VAR=${SPLUNK_HOME}/var/run/nmon
+APP_VAR=${SPLUNK_HOME}/var/log/nmon
 
 # Verify it exists
 if [ ! -d ${APP_VAR} ]; then

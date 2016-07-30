@@ -53,8 +53,9 @@
 # 2016/07/16, Guilhem Marchand:         - ARM support
 # 2016/07/25, Guilhem Marchand:         - Prevent tar error on Solaris OS
 # 2016/07/30, Guilhem Marchand:         - The core app does not contain anymore any objects related to data generation
+# 2016/07/30, Guilhem Marchand:         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
-# Version 1.3.23
+# Version 1.3.24
 
 # For AIX / Linux / Solaris
 
@@ -97,7 +98,7 @@ else
 fi
 
 # Var directory for data generation
-APP_VAR=$SPLUNK_HOME/var/run/nmon
+APP_VAR=$SPLUNK_HOME/var/log/nmon
 
 # Create directory if not existing already
 [ ! -d $APP_VAR ] && { mkdir -p $APP_VAR; }

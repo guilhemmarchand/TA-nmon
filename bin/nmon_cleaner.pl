@@ -14,8 +14,10 @@
 # - 27/07/2015, V1.1.2: Guilhem Marchand, hotfix for using the PA-nmon to generate Performance data in standalone indexers
 # - 30/07/2016: V1.1.3: Guilhem Marchand:
 #                                         - the core-app does not contains anymore data collection objects
+# - 30/07/2016: V1.1.4: Guilhem Marchand:
+#                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
-$version = "1.1.3";
+$version = "1.1.4";
 
 use Time::Local;
 use Time::HiRes;
@@ -156,7 +158,7 @@ if ( !-d "$APP" ) {
 
 
 # var directories
-my $APP_MAINVAR = "$SPLUNK_HOME/var/run/nmon";
+my $APP_MAINVAR = "$SPLUNK_HOME/var/log/nmon";
 my $APP_VAR = "$APP_MAINVAR/var";
 
 if ( !-d "$APP_MAINVAR" ) {

@@ -59,7 +59,7 @@ mode = sample
 sampletype = csv
 spoolFile = AIX_CPU_ALL_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -79,7 +79,7 @@ mode = sample
 sampletype = csv
 spoolFile = AIX_LPAR_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -99,7 +99,7 @@ mode = sample
 sampletype = csv
 spoolFile = AIX_MEM_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -119,7 +119,7 @@ mode = sample
 sampletype = csv
 spoolFile = Linux_CPU_ALL_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -139,7 +139,7 @@ mode = sample
 sampletype = csv
 spoolFile = Linux_MEM_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -159,7 +159,7 @@ mode = sample
 sampletype = csv
 spoolFile = Linux_TOP_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -179,7 +179,7 @@ mode = sample
 sampletype = csv
 spoolFile = Solaris_CPU_ALL_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -199,7 +199,7 @@ mode = sample
 sampletype = csv
 spoolFile = Solaris_MEM_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -219,7 +219,7 @@ mode = sample
 sampletype = csv
 spoolFile = Solaris_TOP_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -239,7 +239,7 @@ mode = sample
 sampletype = csv
 spoolFile = Solaris_WLM_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp
@@ -259,7 +259,7 @@ mode = sample
 sampletype = csv
 spoolFile = DISKXFER_sample.csv
 outputMode = spool
-spoolDir = $SPLUNK_HOME/etc/apps/nmon/samples/spool/csv_repository
+spoolDir = $SPLUNK_HOME/var/log/nmon/eventgen
 ## Replace timestamp
 token.0.token = \d*-\d*-\d{4}\s\d{2}:\d{2}:\d{2}
 token.0.replacementType = timestamp

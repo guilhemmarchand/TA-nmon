@@ -90,8 +90,10 @@
 #                                         - error for Solaris WLM* extraction (unexported variable)
 # - 07/30/2016: V1.2.21: Guilhem Marchand:
 #                                         - the core-app does not contains anymore data collection objects
+# - 07/30/2016: V1.2.22: Guilhem Marchand:
+#                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
-$version = "1.2.21";
+$version = "1.2.22";
 
 use Time::Local;
 use Time::HiRes;
@@ -265,7 +267,7 @@ if ( !-d "$APP" ) {
 }
 
 # var main directory
-my $APP_MAINVAR = "$SPLUNK_HOME/var/run/nmon";
+my $APP_MAINVAR = "$SPLUNK_HOME/var/log/nmon";
 my $APP_VAR     = "$APP_MAINVAR/var";
 
 # If may main directories do not exist

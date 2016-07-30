@@ -131,6 +131,8 @@
 #                                         - Manage AIX WLM data
 # - 07/30/2016: V1.1.20: Guilhem Marchand:
 #                                         - the core-app does not contains anymore data collection objects
+# - 07/30/2016: V1.1.21: Guilhem Marchand:
+#                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 
 
 # Load libs
@@ -151,7 +153,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.20'
+nmon2csv_version = '1.1.21'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -307,11 +309,11 @@ else:
 
 # APP_VAR directory
 if is_windows:
-    APP_MAINVAR = SPLUNK_HOME + '\\var\\run\\nmon'
-    APP_VAR = SPLUNK_HOME + '\\var\\run\\nmon\\var'
+    APP_MAINVAR = SPLUNK_HOME + '\\var\\log\\nmon'
+    APP_VAR = SPLUNK_HOME + '\\var\\log\\nmon\\var'
 else:
-    APP_MAINVAR = SPLUNK_HOME + '/var/run/nmon'
-    APP_VAR = SPLUNK_HOME + '/var/run/nmon/var'
+    APP_MAINVAR = SPLUNK_HOME + '/var/log/nmon'
+    APP_VAR = SPLUNK_HOME + '/var/log/nmon/var'
 if not os.path.exists(APP_MAINVAR):
     os.mkdir(APP_MAINVAR)
 if not os.path.exists(APP_VAR):
