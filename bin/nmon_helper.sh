@@ -54,8 +54,9 @@
 # 2016/07/25, Guilhem Marchand:         - Prevent tar error on Solaris OS
 # 2016/07/30, Guilhem Marchand:         - The core app does not contain anymore any objects related to data generation
 # 2016/07/30, Guilhem Marchand:         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
+# 2016/08/02, Guilhem Marchand:         - Manage the TA-nmon_selfmode
 
-# Version 1.3.24
+# Version 1.3.25
 
 # For AIX / Linux / Solaris
 
@@ -81,9 +82,12 @@ if [ -z "${SPL_HOME}" ]; then
 	exit 1
 fi
 
-# Defined which APP we are running from (nmon / TA-nmon / PA-nmon)
+# Defined which APP we are running from (nmon / TA-nmon / TA-nmon_selfmode / PA-nmon)
 if [ -d "$SPLUNK_HOME/etc/apps/TA-nmon" ]; then
         APP=$SPLUNK_HOME/etc/apps/TA-nmon
+
+elif [ -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ]; then
+        APP=$SPLUNK_HOME/etc/apps/TA-nmon_selfmode
 
 elif [ -d "$SPLUNK_HOME/etc/apps/PA-nmon" ];then
         APP=$SPLUNK_HOME/etc/apps/PA-nmon

@@ -16,8 +16,9 @@
 # Guilhem Marchand 2015/07/27, hotfix for using the PA-nmon to generate Performance data in standalone indexers
 # Guilhem Marchand 2016/02/08, /dev/null redirection improvement for the which python check
 # Guilhem Marchand 2016/07/30, the core-app does not contains anymore data collection objects
+# Guilhem Marchand 2016/08/02, Manage the TA-nmon_selfmode
 
-# Version 1.0.07
+# Version 1.0.08
 
 # For AIX / Linux / Solaris
 
@@ -30,9 +31,12 @@ if [ -z "${SPLUNK_HOME}" ]; then
 	exit 1
 fi
 
-# Defined which APP we are running from (nmon / TA-nmon / PA-nmon)
+# Defined which APP we are running from (nmon / TA-nmon / TA-nmon_selfmode / PA-nmon)
 if [ -d "$SPLUNK_HOME/etc/apps/TA-nmon" ]; then
         APP=$SPLUNK_HOME/etc/apps/TA-nmon
+
+elif [ -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ]; then
+        APP=$SPLUNK_HOME/etc/apps/TA-nmon_selfmode
 
 elif [ -d "$SPLUNK_HOME/etc/apps/PA-nmon" ];then
         APP=$SPLUNK_HOME/etc/apps/PA-nmon

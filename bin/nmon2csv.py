@@ -133,7 +133,8 @@
 #                                         - the core-app does not contains anymore data collection objects
 # - 07/30/2016: V1.1.21: Guilhem Marchand:
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
-
+# - 08/02/2016: V1.1.22: Guilhem Marchand:
+#                                         - Manage the alternative TA-nmon_selfmode
 
 # Load libs
 
@@ -153,7 +154,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.21'
+nmon2csv_version = '1.1.22'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -274,12 +275,17 @@ python_version = platform.python_version()
 # SPLUNK_HOME environment variable
 SPLUNK_HOME = os.environ['SPLUNK_HOME']
 
-# APP Directories for standard TA-nmon, PA-nmon
+# APP Directories for standard TA-nmon, TA-nmon_selfmode, PA-nmon
 
 if is_windows:
     TA_NMON_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon'
 else:
     TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
+
+if is_windows:
+    TA_NMON_SELFMODE_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon_selfmode'
+else:
+    TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
 
 if is_windows:
     PA_NMON_APP = SPLUNK_HOME + '\\etc\\slave-apps\\PA-nmon'
@@ -297,6 +303,8 @@ APP = ''
 # Verify APP exist
 if os.path.exists(TA_NMON_APP):
     APP = TA_NMON_APP
+elif os.path.exists(TA_NMON_SELFMODE_APP):
+    APP = TA_NMON_SELFMODE_APP
 elif os.path.exists(PA_NMON_APP):
     APP = PA_NMON_APP
 elif os.path.exists(PA_NMON_APP_STANDALONE):

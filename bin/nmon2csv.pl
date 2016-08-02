@@ -92,8 +92,10 @@
 #                                         - the core-app does not contains anymore data collection objects
 # - 07/30/2016: V1.2.22: Guilhem Marchand:
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
+# - 08/02/2016: V1.2.23: Guilhem Marchand:
+#                                         - Manage the alternative TA-nmon_selfmode
 
-$version = "1.2.22";
+$version = "1.2.23";
 
 use Time::Local;
 use Time::HiRes;
@@ -247,9 +249,12 @@ if ( not $SPLUNK_HOME ) {
 # Empty init APP
 my $APP = "";
 
-# Check if we are running nmon / TA-nmon / PA-nmon
+# Check if we are running nmon / TA-nmon / TA-nmon_selfmode / PA-nmon
 if ( -d "$SPLUNK_HOME/etc/apps/TA-nmon" ) {
     $APP = "$SPLUNK_HOME/etc/apps/TA-nmon";
+}
+elsif ( -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ) {
+    $APP = "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode";
 }
 elsif ( -d "$SPLUNK_HOME/etc/slave-apps/PA-nmon" ) {
     $APP = "$SPLUNK_HOME/etc/slave-apps/PA-nmon";

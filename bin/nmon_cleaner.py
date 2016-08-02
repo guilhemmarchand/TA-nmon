@@ -16,6 +16,8 @@
 # - 30/07/2016: V1.1.13: Guilhem Marchand: the core-app does not contains anymore data collection objects
 # - 30/07/2016: V1.1.14: Guilhem Marchand:
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
+# - 02/08/2016: V1.1.15: Guilhem Marchand:
+#                                         - Manage the TA-nmon_selfmode
 
 # Load libs
 
@@ -31,7 +33,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.14'
+version = '1.1.15'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -164,6 +166,11 @@ if not APP:
         TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
 
     if is_windows:
+        TA_NMON_SELFMODE_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon_selfmode'
+    else:
+        TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
+
+    if is_windows:
         PA_NMON_APP = SPLUNK_HOME + '\\etc\\slave-apps\\PA-nmon'
     else:
         PA_NMON_APP = SPLUNK_HOME + '/etc/slave-apps/PA-nmon'
@@ -176,7 +183,10 @@ if not APP:
     # Verify APP exist
     if os.path.exists(TA_NMON_APP):
         APP = TA_NMON_APP
-        
+
+    elif os.path.exists(TA_NMON_SELFMODE_APP):
+        APP = TA_NMON_SELFMODE_APP
+
     elif os.path.exists(PA_NMON_APP):
         APP = PA_NMON_APP
         
