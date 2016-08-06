@@ -23,7 +23,7 @@ crcSalt = <SOURCE>
 # Every file present within this directory will be indexed then deleted
 # This section should not be modified under normal use
 
-[batch://$SPLUNK_HOME\var\log\nmon\var\vcsv_repository\*nmon*.csv]
+[batch://$SPLUNK_HOME\var\log\nmon\var\csv_repository\*nmon*.csv]
 
 disabled = false
 move_policy = sinkhole
