@@ -135,6 +135,8 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 08/02/2016: V1.1.22: Guilhem Marchand:
 #                                         - Manage the alternative TA-nmon_selfmode
+# - 08/06/2016: V1.1.23: Guilhem Marchand:
+#                                         - Always extract configuration in colddata mode
 
 # Load libs
 
@@ -154,7 +156,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.22'
+nmon2csv_version = '1.1.23'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1112,34 +1114,38 @@ config_output = CONFIG_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '
 # default is extract
 config_run = 0
 
-# Search in ID_REF for a last matching execution
-if os.path.isfile(CONFIG_REF):
+# configuration data will always be extracted for cold data
+# Only enter this section when data is realtime
+if realtime:
 
-    with open(CONFIG_REF, "rb") as f:
+    # Search in ID_REF for a last matching execution
+    if os.path.isfile(CONFIG_REF):
 
-        for line in f:
+        with open(CONFIG_REF, "rb") as f:
 
-            # Only proceed if hostname has the same value
-            if HOSTNAME in line:
+            for line in f:
 
-                CONFIG_REFDETAILS = re.match(r'^.+:\s(\d+)', line)
-                config_lastepoch = CONFIG_REFDETAILS.group(1)
+                # Only proceed if hostname has the same value
+                if HOSTNAME in line:
 
-                if config_lastepoch:
+                    CONFIG_REFDETAILS = re.match(r'^.+:\s(\d+)', line)
+                    config_lastepoch = CONFIG_REFDETAILS.group(1)
 
-                    time_delta = (int(now_epoch) - int(config_lastepoch))
+                    if config_lastepoch:
 
-                    if time_delta < 3600:
+                        time_delta = (int(now_epoch) - int(config_lastepoch))
 
-                        # Only set the status to do not extract is the BBB_FLAG is not present
-                        if not os.path.isfile(BBB_FLAG):
-                            config_run = 1
-                        else:
+                        if time_delta < 3600:
+
+                            # Only set the status to do not extract is the BBB_FLAG is not present
+                            if not os.path.isfile(BBB_FLAG):
+                                config_run = 1
+                            else:
+                                config_run = 0
+
+                        elif time_delta > 3600:
+
                             config_run = 0
-
-                    elif time_delta > 3600:
-
-                        config_run = 0
 
 if config_run == 0:
 
