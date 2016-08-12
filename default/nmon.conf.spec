@@ -59,7 +59,7 @@
 # Default is longperiod_high
 mode=<string>
 
-# Refresh interval in seconds, Nmon will this value to refresh data each X seconds
+# Refresh interval in seconds, Nmon will use this value to refresh data each X seconds
 # UNUSED IF NOT SET TO custom MODE
 custom_interval=<value>
 
