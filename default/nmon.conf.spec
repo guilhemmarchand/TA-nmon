@@ -23,7 +23,7 @@
 
 # The "longperiod_high" mode is a good compromise between accuracy, CPU / licensing cost and operational intelligence, and should relevant for very large deployment in Production environments
 
-# Available modes for proposal bellow:
+# Available modes for proposal below:
 
 #	shortperiod_low)
 #			interval="60"
@@ -127,7 +127,7 @@ Linux_embedded_nmon_priority=<string>
 # You can set nmon to an unlimited number of processes to be captured, and the entire process table will be captured.
 # Note this will affect the number of disk devices captured by setting it to an unlimited number.
 # This will also increase the volume of data to be generated and may require more cpu overhead to process nmon data
-# The default configuration uses the default mode (limited capture), you can set bellow the limit number of capture to unlimited mode
+# The default configuration uses the default mode (limited capture), you can set below the limit number of capture to unlimited mode
 # Change to "1" to set capture of processes and disks to no limit mode
 Linux_unlimited_capture="0"
 
