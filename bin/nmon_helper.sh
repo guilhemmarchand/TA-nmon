@@ -55,8 +55,9 @@
 # 2016/07/30, Guilhem Marchand:         - The core app does not contain anymore any objects related to data generation
 # 2016/07/30, Guilhem Marchand:         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # 2016/08/02, Guilhem Marchand:         - Manage the TA-nmon_selfmode
+# 2016/08/13, Guilhem Marchand:         - typo in stale word #7
 
-# Version 1.3.25
+# Version 1.3.26
 
 # For AIX / Linux / Solaris
 
@@ -1166,7 +1167,7 @@ if [ ! -f ${PIDFILE} ]; then
 
 	# PID file not found
 
-	echo "`date`, ${HOST} INFO: Removing staled pid file"
+	echo "`date`, ${HOST} INFO: Removing stale pid file"
 	rm -f ${PIDFILE}
 	
 	# search for any App related instances
@@ -1242,7 +1243,7 @@ else
 	# PID file is empty
 	"")
 
-		echo "`date`, ${HOST} INFO: Removing staled pid file"
+		echo "`date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
 
 		# search for any App related instances
@@ -1349,7 +1350,7 @@ else
 	"false")
 	
 		# Process not found, Nmon has terminated or is not yet started		
-		echo "`date`, ${HOST} INFO: Removing staled pid file"
+		echo "`date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
 
 		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
