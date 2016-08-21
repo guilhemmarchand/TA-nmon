@@ -137,6 +137,8 @@
 #                                         - Manage the alternative TA-nmon_selfmode
 # - 08/06/2016: V1.1.23: Guilhem Marchand:
 #                                         - Always extract configuration in colddata mode
+# - 08/20/2016: V1.1.24: Guilhem Marchand:
+#                                         - Extracting the add-on version from app.conf to be used in asset analysis
 
 # Load libs
 
@@ -156,7 +158,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.23'
+nmon2csv_version = '1.1.24'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -316,6 +318,19 @@ else:
           str(TA_NMON_APP) + ' ' + str(PA_NMON_APP)
     logging.error(msg)
     sys.exit(1)
+
+# Identify the Technical Add-on version
+if is_windows:
+    APP_CONF_FILE = APP + "\\default\\app.conf"
+else:
+    APP_CONF_FILE = APP + "/default/app.conf"
+
+addon_version = "Unknown"
+with open(APP_CONF_FILE, "r") as f:
+    for line in f:
+        addon_version_match = re.match(r'version\s*=\s*([\d|\.]*)', line)
+        if addon_version_match:
+            addon_version = addon_version_match.group(1)
 
 # APP_VAR directory
 if is_windows:
@@ -563,6 +578,10 @@ print(msg)
 
 # Show Splunk Root Directory
 msg = 'Splunk Root Directory ($SPLUNK_HOME): ' + str(SPLUNK_HOME)
+print(msg)
+
+# Show application version
+msg = "addon version: " + str(addon_version)
 print(msg)
 
 # Show program version

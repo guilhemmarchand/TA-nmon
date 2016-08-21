@@ -94,8 +94,10 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 08/02/2016: V1.2.23: Guilhem Marchand:
 #                                         - Manage the alternative TA-nmon_selfmode
+# - 08/20/2016: V1.2.24: Guilhem Marchand:
+#                                         - Extracting the add-on version from app.conf to be used in asset analysis
 
-$version = "1.2.23";
+$version = "1.2.24";
 
 use Time::Local;
 use Time::HiRes;
@@ -269,6 +271,25 @@ if ( !-d "$APP" ) {
 "\n$time ERROR: The Application root directory could not be found, is TA-nmon / PA-nmon installed ?\n"
     );
     die;
+}
+
+# Identify the Technical Add-on version
+my $APP_CONF_FILE = "$APP/default/app.conf";
+my $addon_version = "Unknown";
+
+if ( -e $APP_CONF_FILE ) {
+
+    # Open
+    open FILE, '+<', "$APP_CONF_FILE" or die "$time ERROR:$!\n";
+
+    while ( defined( my $l = <FILE> ) ) {
+        chomp $l;
+
+        # If SN is undetermined, set it equal to HOSTNAME
+        if ( $l =~ m/version\s*=\s*([\d|\.]*).+/ ) {
+            $addon_version = $1;
+        }
+    }
 }
 
 # var main directory
@@ -543,6 +564,9 @@ foreach $FILENAME (@nmon_files) {
 
     # Print SPLUNK_HOME
     print "Splunk Root Directory (\$SPLUNK_HOME): $SPLUNK_HOME \n";
+
+    # Show application version
+    print "addon version: $addon_version \n";
 
     # Show program version
     print "nmon2csv version: $version \n";
