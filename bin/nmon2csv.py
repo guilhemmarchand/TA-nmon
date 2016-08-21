@@ -580,6 +580,10 @@ print(msg)
 msg = 'Splunk Root Directory ($SPLUNK_HOME): ' + str(SPLUNK_HOME)
 print(msg)
 
+# Show addon type
+msg = "addon type: " + str(APP)
+print(msg)
+
 # Show application version
 msg = "addon version: " + str(addon_version)
 print(msg)

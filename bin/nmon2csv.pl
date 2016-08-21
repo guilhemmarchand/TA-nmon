@@ -565,6 +565,9 @@ foreach $FILENAME (@nmon_files) {
     # Print SPLUNK_HOME
     print "Splunk Root Directory (\$SPLUNK_HOME): $SPLUNK_HOME \n";
 
+    # Show addon type
+    print "addon type: $APP \n";
+
     # Show application version
     print "addon version: $addon_version \n";
 
