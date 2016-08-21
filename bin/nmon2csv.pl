@@ -286,7 +286,7 @@ if ( -e $APP_CONF_FILE ) {
         chomp $l;
 
         # If SN is undetermined, set it equal to HOSTNAME
-        if ( $l =~ m/version\s*=\s*([\d|\.]*).+/ ) {
+        if ( $l =~ m/version\s*=\s*([\d|\.]*)/ ) {
             $addon_version = $1;
         }
     }
