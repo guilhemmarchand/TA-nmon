@@ -96,8 +96,11 @@
 #                                         - Manage the alternative TA-nmon_selfmode
 # - 08/20/2016: V1.2.24: Guilhem Marchand:
 #                                         - Extracting the add-on version from app.conf to be used in asset analysis
+# - 08/26/2016: V1.2.25: Guilhem Marchand:
+#                                         - OStype field in not generated for TOP and UARG sections
 
-$version = "1.2.24";
+
+$version = "1.2.25";
 
 use Time::Local;
 use Time::HiRes;
@@ -1286,6 +1289,7 @@ foreach $FILENAME (@nmon_files) {
                         type . ","
                       . serialnum . ","
                       . hostname . ","
+                      . OStype . ","
                       . ZZZZ . ","
                       . logical_cpus . ","
                       . virtual_cpus . ","
@@ -1324,6 +1328,7 @@ foreach $FILENAME (@nmon_files) {
                         $section . ","
                       . $SN . ","
                       . $HOSTNAME . ","
+                      . $OStype . ","
                       . $timestamp . ","
                       . $logical_cpus . ","
                       . $virtual_cpus . ","
@@ -1589,6 +1594,7 @@ foreach $FILENAME (@nmon_files) {
                                 type . ","
                               . serialnum . ","
                               . hostname . ","
+                              . OStype . ","
                               . ZZZZ . ","
                               . logical_cpus . ","
                               . virtual_cpus . ","
@@ -1614,6 +1620,7 @@ foreach $FILENAME (@nmon_files) {
                                 type . ","
                               . serialnum . ","
                               . hostname . ","
+                              . OStype . ","
                               . ZZZZ . ","
                               . logical_cpus . ","
                               . virtual_cpus . ","
@@ -1684,6 +1691,7 @@ m/^UARG\,T\d+\,\s*([0-9]*)\s*\,\s*([0-9]*)\s*\,\s*([a-zA-Z\-\/\_\:\.0-9]*)\s*\,\
                                 $section . ","
                               . $SN . ","
                               . $HOSTNAME . ","
+                              . $OStype . ","
                               . $timestamp . ","
                               . $logical_cpus . ","
                               . $virtual_cpus . ","
@@ -1748,6 +1756,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
                                 $section . ","
                               . $SN . ","
                               . $HOSTNAME . ","
+                              . $OStype . ","
                               . $timestamp . ","
                               . $logical_cpus . ","
                               . $virtual_cpus . ","
