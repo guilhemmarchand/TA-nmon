@@ -56,8 +56,9 @@
 # 2016/07/30, Guilhem Marchand:         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # 2016/08/02, Guilhem Marchand:         - Manage the TA-nmon_selfmode
 # 2016/08/13, Guilhem Marchand:         - typo in stale word #7
+# 2016/08/31, Guilhem Marchand:         - Feature request - Linux_unlimited_capture improvement #9
 
-# Version 1.3.26
+# Version 1.3.27
 
 # For AIX / Linux / Solaris
 
@@ -1123,24 +1124,32 @@ SunOS )
 
 Linux )
 
-	if [ ${Linux_NFS} -eq 1 ]; then
+    # Since 1.2.47, Linux_unlimited_capture feature has changed
+    # For historical reason, and in case the old activation value (1) has been set in local/nmon.conf, manage it.
+    case ${Linux_unlimited_capture} in
+    "1")
+        Linux_unlimited_capture="-1" ;;
+    esac
+
+    if [ ${Linux_NFS} -eq 1 ]; then
 
         # Verify the limit configuration for processes and disks capture
-	    if [ ${Linux_unlimited_capture} -eq 1 ]; then
-	        nmon_command="${NMON} -f -T -N -s ${interval} -c ${snapshot} -I -1 -p"
-        else
+        if [ ${Linux_unlimited_capture} -eq 0 ]; then
             nmon_command="${NMON} -f -T -d ${Linux_devices} -N -s ${interval} -c ${snapshot} -p"
+        else
+
+            nmon_command="${NMON} -f -T -N -s ${interval} -c ${snapshot} -I ${Linux_unlimited_capture} -p"
         fi
 
-	else
+    else
 
         # Verify the limit configuration for processes and disks capture
-	    if [ ${Linux_unlimited_capture} -eq 1 ]; then
-	        nmon_command="${NMON} -f -T -s ${interval} -c ${snapshot} -I -1 -p"
+        if [ ${Linux_unlimited_capture} -eq 0 ]; then
+            nmon_command="${NMON} -f -T -d ${Linux_devices} -s ${interval} -c ${snapshot} -p"
         else
-		    nmon_command="${NMON} -f -T -d ${Linux_devices} -s ${interval} -c ${snapshot} -p"
+            nmon_command="${NMON} -f -T -s ${interval} -c ${snapshot} -I ${Linux_unlimited_capture} -p"
         fi
-	fi
+    fi
 ;;
 
 esac
