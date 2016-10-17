@@ -139,6 +139,9 @@
 #                                         - Always extract configuration in colddata mode
 # - 08/20/2016: V1.1.24: Guilhem Marchand:
 #                                         - Extracting the add-on version from app.conf to be used in asset analysis
+# - 10/17/2016: V1.1.25: Guilhem Marchand:
+#                                         - See: https://github.com/guilhemmarchand/TA-nmon/issues/11
+#                                           Solaris 10 failure with non explicit integers
 
 # Load libs
 
@@ -158,7 +161,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.24'
+nmon2csv_version = '1.1.25'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1536,7 +1539,7 @@ def standard_section_fn(section):
 
                         if realtime:
 
-                            if ZZZZ_epochtime > last_epoch_filter:
+                            if int(ZZZZ_epochtime) > int(last_epoch_filter):
 
                                 # increment
                                 count += 1
@@ -1588,9 +1591,9 @@ def standard_section_fn(section):
                                 currsection.write(final_perfdata)
                             else:
                                 if debug:
-                                    print ("DEBUG, " + section + " ignoring event " + ZZZZ_timestamp +
-                                    " ( " + ZZZZ_epochtime + " is lower than last known epoch time for this section " +
-                                           last_epoch_filter + " )")
+                                    print ("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
+                                    " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
+                                                                  "this section " + str(last_epoch_filter) + " )")
 
                         elif colddata:
 
@@ -1853,7 +1856,7 @@ def top_section_fn(section):
 
                     if realtime:
 
-                        if ZZZZ_epochtime > last_epoch_filter:
+                        if int(ZZZZ_epochtime) > int(last_epoch_filter):
 
                             # increment
                             count += 1
@@ -1865,9 +1868,9 @@ def top_section_fn(section):
                                 SNAPSHOTS + ',' + perfdata + '\n'),
                         else:
                             if debug:
-                                print ("DEBUG, " + section + " ignoring event " + ZZZZ_timestamp +
-                                       " ( " + ZZZZ_epochtime + " is lower than last known epoch time for this"
-                                                                " section " + last_epoch_filter + " )")
+                                print("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
+                                      " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
+                                                                    "this section " + str(last_epoch_filter) + " )")
 
                     elif colddata:
 
@@ -2143,7 +2146,7 @@ def uarg_section_fn(section):
 
                     if realtime:
 
-                        if ZZZZ_epochtime > last_epoch_filter:
+                        if int(ZZZZ_epochtime) > int(last_epoch_filter):
 
                             # increment
                             count += 1
@@ -2155,9 +2158,9 @@ def uarg_section_fn(section):
                                 perfdata + '\n'),
                         else:
                             if debug:
-                                print ("DEBUG, " + section + " ignoring event " + ZZZZ_timestamp +
-                                " ( " + ZZZZ_epochtime + " is lower than last known epoch time "
-                                                        "for this section " + last_epoch_filter + " )")
+                                print("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
+                                      " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
+                                                                    "this section " + str(last_epoch_filter) + " )")
 
                     elif colddata:
 
@@ -2384,7 +2387,7 @@ def dynamic_section_fn(section):
 
                     if realtime:
 
-                        if ZZZZ_epochtime > last_epoch_filter:
+                        if int(ZZZZ_epochtime) > int(last_epoch_filter):
 
                             # increment
                             count += 1
@@ -2430,9 +2433,9 @@ def dynamic_section_fn(section):
                             membuffer.write(ZZZZ_timestamp + ',' + perfdata + '\n'),
                         else:
                             if debug:
-                                print ("DEBUG, " + section + " ignoring event " + ZZZZ_timestamp +
-                                " ( " + ZZZZ_epochtime + " is lower than last known epoch time for this section " +
-                                       last_epoch_filter + " )")
+                                print("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
+                                      " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
+                                                                    "this section " + str(last_epoch_filter) + " )")
 
                     elif colddata:
 
@@ -2761,7 +2764,7 @@ def solaris_wlm_section_fn(section):
 
                     if realtime:
 
-                        if ZZZZ_epochtime > last_epoch_filter:
+                        if int(ZZZZ_epochtime) > int(last_epoch_filter):
 
                             # increment
                             count += 1
@@ -2808,9 +2811,9 @@ def solaris_wlm_section_fn(section):
 
                         else:
                             if debug:
-                                print ("DEBUG, " + section + " ignoring event " + ZZZZ_timestamp +
-                                " ( " + ZZZZ_epochtime + " is lower than last known epoch time for this section " +
-                                       last_epoch_filter + " )")
+                                print("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
+                                      " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
+                                                                    "this section " + str(last_epoch_filter) + " )")
 
                     elif colddata:
 
