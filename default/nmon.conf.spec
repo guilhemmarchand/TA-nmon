@@ -171,3 +171,24 @@ Solaris_UARG=<string>
 # AIX_options="-f -T -A -d -K -L -M -P -^ -p"
 
 AIX_options=<string>
+
+#############################
+# Application related options
+#############################
+
+#
+# These options are not directly related to nmon processes but to general features of the technical add-on
+#
+
+# This option can be used to force the technical add-on to use the Splunk configured value of the server hostname
+# If for some reason, you need to use the Splunk host value instead of the system real hostname value, set this value to "1"
+
+# We will search for the value of host=<value> in $SPLUNK_HOME/etc/system/local/inputs.conf
+# If no value can be found, or if the file does not exist, we will fallback to the normal behavior
+
+# Default is use system hostname
+
+# FQDN management in nmon2csv.pl/nmon2csv.py: The --fqdn option is not compatible with the host name override, if the override_sys_hostname
+# is activated, the --fqdn argument will have no effect
+
+override_sys_hostname=<string>

@@ -142,6 +142,10 @@
 # - 10/17/2016: V1.1.25: Guilhem Marchand:
 #                                         - See: https://github.com/guilhemmarchand/TA-nmon/issues/11
 #                                           Solaris 10 failure with non explicit integers
+# - 11/16/2016: V1.1.26: Guilhem Marchand:
+#                                         - See: https://github.com/guilhemmarchand/TA-nmon/issues/12
+#                                           Feature request, override host value using Splunk host definition
+
 
 # Load libs
 
@@ -161,7 +165,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.25'
+nmon2csv_version = '1.1.26'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -625,6 +629,58 @@ logical_cpus = "-1"
 virtual_cpus = "-1"
 OStype = "Unknown"
 
+# The hostname value returned by nmon and nmon2csv.py can be overridden by setting the option
+# override_sys_hostname="1" in local/nmon.conf
+# If so, we will search for a value in $SPLUNK_HOME/etc/system/local/inputs.conf to set the hostname
+# default is use system host name (see above)
+# If the option is activated, and we failed finding a value, fall back to system hostname (see above)
+
+SPLUNK_HOSTNAME_OVERRIDE = False
+
+if is_windows:
+    SPLUNK_SYSTEM_INPUTS = SPLUNK_HOME + "\\etc\\system\\local\\inputs.conf"
+else:
+    SPLUNK_SYSTEM_INPUTS = SPLUNK_HOME + "/etc/system/local/inputs.conf"
+
+if is_windows:
+    NMON_LOCAL_CONF = APP + "\\local\\nmon.conf"
+else:
+    NMON_LOCAL_CONF = APP + "/local/nmon.conf"
+
+if os.path.isfile(NMON_LOCAL_CONF):
+
+    with open(NMON_LOCAL_CONF, "r") as f:
+        for config in f:
+            override_sys_hostname_match = re.match(r'override_sys_hostname=\"1\"', config)
+            if override_sys_hostname_match:
+                SPLUNK_HOSTNAME_OVERRIDE = True
+
+# Enter only if the option has been activated
+if SPLUNK_HOSTNAME_OVERRIDE:
+
+    if os.path.isfile(SPLUNK_SYSTEM_INPUTS):
+
+        with open(SPLUNK_SYSTEM_INPUTS, "r") as f:
+            for config in f:
+                splunk_hostname_match = re.match(r'host\s*=\s*(.+)\n', config)
+            if splunk_hostname_match:
+                splunk_hostname = splunk_hostname_match.group(1)
+
+                # override with the first occurrence only
+                HOSTNAME = splunk_hostname
+                print("HOSTNAME:", HOSTNAME)
+            else:
+                print("WARN: overriding the hostname value has been requested using override_sys_hostname in "
+                      "local/nmon.conf but no value could be extracted from Splunk system/local/input.conf, reverted to"
+                      "system value.")
+                SPLUNK_HOSTNAME_OVERRIDE = False
+
+elif use_fqdn:
+    host = socket.getfqdn()
+    if host:
+        HOSTNAME = host
+        print("HOSTNAME:", HOSTNAME)
+
 for line in data:
 
     # Set HOSTNAME
@@ -632,11 +688,8 @@ for line in data:
     # if the option --use_fqdn has been set, use the fully qualified domain name by the running OS
     # The value will be equivalent to the stdout of the os "hostname -f" command
     # CAUTION: This option must not be used to manage nmon data out of Splunk ! (eg. central repositories)
-    if use_fqdn:
-        host=socket.getfqdn()
-        if host:
-            HOSTNAME = host
-    else:
+
+    if not SPLUNK_HOSTNAME_OVERRIDE and not use_fqdn:
         host = re.match(r'^(AAA),(host),(.+)\n', line)
         if host:
             HOSTNAME = host.group(3)
@@ -1206,6 +1259,11 @@ if config_run == 0:
                     if AAABBB:
                         # Increment
                         count += 1
+
+                        # Host override feature, if this option is activated, we want this line to be rewritten
+                        if 'AAA,host,' in line:
+                            if SPLUNK_HOSTNAME_OVERRIDE:
+                                line = 'AAA,host,' + str(HOSTNAME) + '\n'
 
                         # Increment the BBB counter
                         if "BBB" in line:

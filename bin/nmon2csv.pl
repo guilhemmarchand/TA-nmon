@@ -98,9 +98,11 @@
 #                                         - Extracting the add-on version from app.conf to be used in asset analysis
 # - 08/26/2016: V1.2.25: Guilhem Marchand:
 #                                         - OStype field in not generated for TOP and UARG sections
+# - 11/16/2016: V1.2.26: Guilhem Marchand:
+#                                         - See: https://github.com/guilhemmarchand/TA-nmon/issues/12
+#                                           Feature request, override host value using Splunk host definition
 
-
-$version = "1.2.25";
+$version = "1.2.26";
 
 use Time::Local;
 use Time::HiRes;
@@ -939,14 +941,6 @@ foreach $FILENAME (@nmon_files) {
 
     # Open ID_REF for writing in append mode
     open( ID_REF, ">>$ID_REF" );
-
-    # Save Analysis
-    if ( $realtime eq "True" ) {
-        print ID_REF "ANALYSIS: Assuming Nmon realtime data \n";
-    }
-    elsif ( $colddata eq "True" ) {
-        print ID_REF "ANALYSIS: Assuming Nmon cold data \n";
-    }
 
     # Show and Save timestamps information
     print "Starting_epochtime: $starting_epochtime \n";
@@ -2037,12 +2031,57 @@ sub config_extract {
     # Get nmon/server settings (search string, return column, delimiter)
     $AIXVER = &get_setting( "AIX", 2, "," );
 
-    # Allow hostname from OS
+   # Allow hostname os
     if ($USE_FQDN) {
         chomp( $HOSTNAME = `hostname -f` );
     }
     else {
         $HOSTNAME = &get_setting( "host", 2, "," );
+    }
+
+    $SPLUNK_HOSTNAME_OVERRIDE = False;
+    $NMON_LOCAL_CONF = "$APP/local/nmon.conf";
+    $SPLUNK_SYSTEM_INPUTS = "$SPLUNK_HOME/etc/system/local/inputs.conf";
+
+    if ( -e $NMON_LOCAL_CONF ) {
+
+        open( NMON_LOCAL_CONF, "< $NMON_LOCAL_CONF" ) or die "ERROR: Can't open $NMON_LOCAL_CONF : $!";
+        chomp $NMON_LOCAL_CONF;
+
+        if (grep { /override_sys_hostname=\"1\"/ } <NMON_LOCAL_CONF>) {
+
+            $SPLUNK_HOSTNAME_OVERRIDE = True;
+
+            if ( -e $SPLUNK_SYSTEM_INPUTS ) {
+
+                # Open
+                open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS" or die "$time ERROR:$!\n";
+
+                while ( defined( my $l = <FILE> ) ) {
+                    chomp $l;
+
+                        if ( $l =~ m/host\s*=\s*(.+)/ ) {
+                            $splunk_hostname   = $1;
+                        }
+                        #else {
+                        #    $SPLUNK_HOSTNAME_OVERRIDE = False;
+                        #}
+                }
+
+                if ( $splunk_hostname eq "") {
+                    $SPLUNK_HOSTNAME_OVERRIDE = False;
+                }
+
+                close SPLUNK_SYSTEM_INPUTS;
+            }
+
+            close NMON_LOCAL_CONF;
+        }
+
+    }
+
+    if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
+        $HOSTNAME = $splunk_hostname;
     }
 
     $DATE = &get_setting( "AAA,date", 2, "," );
@@ -2083,6 +2122,10 @@ sub config_extract {
 
             my $write = $x;
 
+            # Manage the host rewrite
+            if ( $write =~ /^AAA,host,/ ) {
+                $write = "AAA,host,$HOSTNAME\n";
+            }
             print( INSERT "$write\n" );
             $count++;
 
@@ -3110,12 +3153,62 @@ sub get_nmon_data {
     $AIXVER = &get_setting( "AIX",  2, "," );
     $DATE   = &get_setting( "date", 2, "," );
 
-    # Allow hostname os
+    # The hostname value returned by nmon and nmon2csv.py can be overridden by setting the option
+    # override_sys_hostname="1" in local/nmon.conf
+    # If so, we will search for a value in $SPLUNK_HOME/etc/system/local/inputs.conf to set the hostname
+    # default is use system host name (see above)
+    # If the option is activated, and we failed finding a value, fall back to system hostname (see above)
+
+   # Allow hostname os
     if ($USE_FQDN) {
         chomp( $HOSTNAME = `hostname -f` );
     }
     else {
         $HOSTNAME = &get_setting( "host", 2, "," );
+    }
+
+    $SPLUNK_HOSTNAME_OVERRIDE = False;
+    $NMON_LOCAL_CONF = "$APP/local/nmon.conf";
+    $SPLUNK_SYSTEM_INPUTS = "$SPLUNK_HOME/etc/system/local/inputs.conf";
+
+    if ( -e $NMON_LOCAL_CONF ) {
+
+        open( NMON_LOCAL_CONF, "< $NMON_LOCAL_CONF" ) or die "ERROR: Can't open $NMON_LOCAL_CONF : $!";
+        chomp $NMON_LOCAL_CONF;
+
+        if (grep { /override_sys_hostname=\"1\"/ } <NMON_LOCAL_CONF>) {
+
+            $SPLUNK_HOSTNAME_OVERRIDE = True;
+
+            if ( -e $SPLUNK_SYSTEM_INPUTS ) {
+
+                # Open
+                open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS" or die "$time ERROR:$!\n";
+
+                while ( defined( my $l = <FILE> ) ) {
+                    chomp $l;
+
+                        if ( $l =~ m/host\s*=\s*(.+)/ ) {
+                            $splunk_hostname   = $1;
+                        }
+                }
+
+                # Protect against misconfiguration (eg. option is activated but no value can be found, however there is no reason it could happen)
+                if ( $splunk_hostname eq "") {
+                    $SPLUNK_HOSTNAME_OVERRIDE = False;
+                }
+
+                close SPLUNK_SYSTEM_INPUTS;
+            }
+
+            close NMON_LOCAL_CONF;
+        }
+
+    }
+
+    # Finally override
+    if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
+        $HOSTNAME = $splunk_hostname;
     }
 
     $INTERVAL = &get_setting( "interval", 2, "," );    # nmon sampling interval
