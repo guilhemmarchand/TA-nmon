@@ -18,6 +18,8 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 02/08/2016: V1.1.15: Guilhem Marchand:
 #                                         - Manage the TA-nmon_selfmode
+# - 03/12/2016: V1.1.16: Guilhem Marchand:
+#                                         - Prevents from generating errors when nmon2csv has not at least once
 
 # Load libs
 
@@ -33,7 +35,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.15'
+version = '1.1.16'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -238,21 +240,8 @@ else:
     CONFIG_DIR = APP_VAR + '/' + config_repository
     NMON_DIR = APP_VAR + '/' + nmon_repository
 
-# Check
-if not os.path.exists(NMON_DIR):
-    msg = 'The Nmon repository location ' + NMON_DIR + ' could not be found, We tried: ' + str(NMON_DIR)
-    logging.error(msg)
-    sys.exit(1)
-
 # List of directories to be proceeded
 WORKING_DIR = {CSV_DIR, CONFIG_DIR}
-
-# Verify directory exist
-for DIR in WORKING_DIR:
-    if not os.path.exists(DIR):
-        msg = 'The CSV Data directory ' + DIR + ' could not be found, We tried: ' + str(DIR)
-        logging.error(msg)
-        sys.exit(1)
 
 # Starting time of process
 start_time = time.time()
@@ -283,99 +272,101 @@ if cleancsv:
 
     for DIR in WORKING_DIR:
 
-        # cd to directory
-        os.chdir(DIR)
-
-        # Verify we have data to manage
-        counter = len(glob.glob1(DIR, "*.csv"))
-
-        # print (counter)
-
-        if counter == 0:
-            msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
-            print (msg)
-
-        else:
-
+        if os.path.exists(DIR):
             # cd to directory
             os.chdir(DIR)
 
-            # counter of files with retention expired
-            counter_expired = 0
+            # Verify we have data to manage
+            counter = len(glob.glob1(DIR, "*.csv"))
 
-            curtime = time.time()
-            limit = maxseconds_csv
+            # print (counter)
 
-            for xfile in glob.glob('*.csv'):
+            if counter == 0:
+                msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
+                print (msg)
 
-                filemtime = os.path.getmtime(xfile)
+            else:
 
-                if curtime - filemtime > limit:
+                # cd to directory
+                os.chdir(DIR)
 
-                    counter_expired += 1
+                # counter of files with retention expired
+                counter_expired = 0
 
-                    size_mb = os.path.getsize(xfile)/1000.0/1000.0
-                    size_mb = format(size_mb, '.2f')
+                curtime = time.time()
+                limit = maxseconds_csv
 
-                    mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(filemtime))  # Human readable datetime
+                for xfile in glob.glob('*.csv'):
 
-                    msg = 'Max set retention of ' + str(maxseconds_csv) + ' seconds expired for file: ' + xfile + ' size(MB): '\
-                          + str(size_mb) + ' mtime: ' + str(mtime)
-                    print (msg)
+                    filemtime = os.path.getmtime(xfile)
 
-                    os.remove(xfile)  # Permanently remove the file!
+                    if curtime - filemtime > limit:
 
-            msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
-            print (msg)
+                        counter_expired += 1
+
+                        size_mb = os.path.getsize(xfile)/1000.0/1000.0
+                        size_mb = format(size_mb, '.2f')
+
+                        mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(filemtime))  # Human readable datetime
+
+                        msg = 'Max set retention of ' + str(maxseconds_csv) + ' seconds expired for file: ' + xfile + ' size(MB): '\
+                              + str(size_mb) + ' mtime: ' + str(mtime)
+                        print (msg)
+
+                        os.remove(xfile)  # Permanently remove the file!
+
+                msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
+                print (msg)
 
 # Proceed to NMON cleaning
-
-# cd to directory
-DIR = NMON_DIR
-
-os.chdir(DIR)
-
-# Verify we have data to manage
-counter = len(glob.glob1(DIR, "*.nmon"))
-
-# print (counter)
-
-if counter == 0:
-    msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
-    print (msg)
-
-else:
+if os.path.exists(NMON_DIR):
 
     # cd to directory
+    DIR = NMON_DIR
+
     os.chdir(DIR)
 
-    # counter of files with retention expired
-    counter_expired = 0
+    # Verify we have data to manage
+    counter = len(glob.glob1(DIR, "*.nmon"))
 
-    curtime = time.time()
-    limit = maxseconds_csv
+    # print (counter)
 
-    for xfile in glob.glob('*.nmon'):
+    if counter == 0:
+        msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
+        print (msg)
 
-        filemtime = os.path.getmtime(xfile)
+    else:
 
-        if curtime - filemtime > limit:
+        # cd to directory
+        os.chdir(DIR)
 
-            counter_expired += 1
+        # counter of files with retention expired
+        counter_expired = 0
 
-            size_mb = os.path.getsize(xfile)/1000.0/1000.0
-            size_mb = format(size_mb, '.2f')
+        curtime = time.time()
+        limit = maxseconds_csv
 
-            mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(filemtime))  # Human readable datetime
+        for xfile in glob.glob('*.nmon'):
 
-            msg = 'Max set retention of ' + str(maxseconds_nmon) + ' seconds expired for file: ' + xfile + ' size(MB): '\
-                  + str(size_mb) + ' mtime: ' + str(mtime)
-            print (msg)
+            filemtime = os.path.getmtime(xfile)
 
-            os.remove(xfile)  # Permanently remove the file!
+            if curtime - filemtime > limit:
 
-    msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
-    print (msg)
+                counter_expired += 1
+
+                size_mb = os.path.getsize(xfile)/1000.0/1000.0
+                size_mb = format(size_mb, '.2f')
+
+                mtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(filemtime))  # Human readable datetime
+
+                msg = 'Max set retention of ' + str(maxseconds_nmon) + ' seconds expired for file: ' + xfile + ' size(MB): '\
+                      + str(size_mb) + ' mtime: ' + str(mtime)
+                print (msg)
+
+                os.remove(xfile)  # Permanently remove the file!
+
+        msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
+        print (msg)
 
 ###################
 # End
