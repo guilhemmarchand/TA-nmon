@@ -844,7 +844,7 @@ PIDFILE=${APP_VAR}/nmon.pid
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
-set -x
+
 case $UNAME in
 
 	AIX )
