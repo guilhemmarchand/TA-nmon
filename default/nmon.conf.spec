@@ -142,6 +142,13 @@ Linux_unlimited_capture=<value>
 
 Linux_devices=<value>
 
+# Enable disks extended statistics (DG*)
+# Default is true, which activates and generates DG statistics
+Linux_disk_dg_enable=<string>
+
+# Name of the User Defined Disk Groups file, "auto" generates this for you
+Linux_disk_dg_group=<value>
+
 ########################################################################################################################
 ### SOLARIS OPTIONS ###
 ########################################################################################################################

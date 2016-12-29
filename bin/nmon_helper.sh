@@ -57,8 +57,10 @@
 # 2016/08/02, Guilhem Marchand:         - Manage the TA-nmon_selfmode
 # 2016/08/13, Guilhem Marchand:         - typo in stale word #7
 # 2016/08/31, Guilhem Marchand:         - Feature request - Linux_unlimited_capture improvement #9
+# 2016/12/28, Guilhem Marchand:         - Implementation of Linux extended disk statistics
+#                                       - Allow configuring custom settings in /etc/nmon.conf on a per server basis
 
-# Version 1.3.27
+# Version 1.3.28
 
 # For AIX / Linux / Solaris
 
@@ -209,6 +211,12 @@ Linux_unlimited_capture="0"
 # see nmon.conf (this value will be overwritten by nmon.conf)
 endtime_margin="240"
 
+# Linux disks extended statistics (see nmon.conf)
+Linux_disk_dg_enable="1"
+
+# Name of the DG group file
+Linux_disk_dg_group="auto"
+
 # source default nmon.conf
 if [ -f $APP/default/nmon.conf ]; then
 	. $APP/default/nmon.conf
@@ -217,9 +225,13 @@ fi
 # source local nmon.conf, if any
 
 # Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/nmon|TA-nmon|PA-nmon/local
-
 if [ -f $APP/local/nmon.conf ]; then
 	. $APP/local/nmon.conf
+fi
+
+# On a per server basis, you can also set in /etc/nmon.conf
+if [ -f /etc/nmon.conf ]; then
+	. /etc/nmon.conf
 fi
 
 # Nmon Binary
@@ -832,7 +844,7 @@ PIDFILE=${APP_VAR}/nmon.pid
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
-
+set -x
 case $UNAME in
 
 	AIX )
@@ -840,10 +852,34 @@ case $UNAME in
 	;;
 
 	Linux )
-		${nmon_command} > ${PIDFILE}
+
+	    # Activation of Linux disks extended stats generate a message in stdout
+	    # We don't want this as we need to retrieve the pid from nmon output
+	    # However, we also want to analyse the return code, so we can't filter out in only one operation
+		${nmon_command} > ${APP_VAR}/nmon_output.txt
 		if [ $? -ne 0 ]; then
 			echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
 		fi
+
+		# Store the PID file (very last line of nmon output)
+		if [ -f ${APP_VAR}/nmon_output.txt ]; then
+		    awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+	    fi
+
+        # old nmon versions might not be compatible with disks extended stats, or the group file does not exist
+        # In such a case, echo a WARN, remove the option and last chance start
+        if grep 'opening disk group file' ${APP_VAR}/nmon_output.txt >/dev/null; then
+
+            echo "`date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
+    	    ${nmon_command}=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
+	        ${nmon_command} > ${PIDFILE}
+
+            if [ $? -ne 0 ]; then
+			    echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+		    fi
+
+        fi
+
 	;;
 
 	SunOS )
@@ -1131,25 +1167,27 @@ Linux )
         Linux_unlimited_capture="-1" ;;
     esac
 
-    if [ ${Linux_NFS} -eq 1 ]; then
+    # Set the default Linux minimal args list
+    Linux_nmon_args="-f -T -s ${interval} -c ${snapshot} -d ${Linux_devices}"
 
-        # Verify the limit configuration for processes and disks capture
-        if [ ${Linux_unlimited_capture} -eq 0 ]; then
-            nmon_command="${NMON} -f -T -d ${Linux_devices} -N -s ${interval} -c ${snapshot} -p"
-        else
+    case ${Linux_NFS} in
+    "1" )
+        Linux_default_args="$Linux_nmon_args -N" ;;
+    esac
 
-            nmon_command="${NMON} -f -T -N -s ${interval} -c ${snapshot} -I ${Linux_unlimited_capture} -p"
-        fi
+    case ${Linux_unlimited_capture} in
+    "-1" )
+        Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}" ;;
+    esac
 
-    else
+    case ${Linux_disk_dg_enable} in
+    "1" )
+        Linux_nmon_args="$Linux_nmon_args -g auto -D" ;;
+    esac
 
-        # Verify the limit configuration for processes and disks capture
-        if [ ${Linux_unlimited_capture} -eq 0 ]; then
-            nmon_command="${NMON} -f -T -d ${Linux_devices} -s ${interval} -c ${snapshot} -p"
-        else
-            nmon_command="${NMON} -f -T -s ${interval} -c ${snapshot} -I ${Linux_unlimited_capture} -p"
-        fi
-    fi
+    # Set the nmon command for Linux
+    nmon_command="${NMON} $Linux_nmon_args -p"
+
 ;;
 
 esac
