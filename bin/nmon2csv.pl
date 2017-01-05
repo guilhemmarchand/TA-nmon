@@ -103,6 +103,7 @@
 #                                           Feature request, override host value using Splunk host definition
 # - 12/28/2016: V1.2.27: Guilhem Marchand:
 #                                         - Implementation of disks extended statistics (DG*)
+#                                         - Accounting lines is incorrect (header is accounted)
 
 $version = "1.2.27";
 
@@ -1383,7 +1384,7 @@ foreach $FILENAME (@nmon_files) {
             }
 
             # If we wrote more than the header
-            if ( $count > 1 ) {
+            if ( $count >= 1 ) {
 
                 if ( $sanity_check == 0 ) {
 
@@ -1796,7 +1797,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
                 }
 
                 # If we wrote more than the header
-                if ( $count > 1 ) {
+                if ( $count >= 1 ) {
 
                     if ( $sanity_check == 0 ) {
 
@@ -2349,7 +2350,6 @@ sub static_sections_insert {
     print INSERT (
 qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapshots,$x\n|
     );
-    $count++;
 
 # For CPUnn case, filter on perf data only (multiple headers are present in rawdata)
     if ( $nmon_var eq "CPUnn" ) {
@@ -2473,7 +2473,7 @@ qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus"
     }
 
     else {
-        if ( $count > 1 ) {
+        if ( $count >= 1 ) {
             print "$key section: Wrote $count lines\n";
             print ID_REF "$key section: Wrote $count lines\n";
 
@@ -2765,7 +2765,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
     }
 
     else {
-        if ( $count > 1 ) {
+        if ( $count >= 1 ) {
             print "$key section: Wrote $count lines\n";
             print ID_REF "$key section: Wrote $count lines\n";
 
@@ -3056,7 +3056,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
     }
 
     else {
-        if ( $count > 1 ) {
+        if ( $count >= 1 ) {
             print "$key section: Wrote $count lines\n";
             print ID_REF "$key section: Wrote $count lines\n";
 
