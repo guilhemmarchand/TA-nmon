@@ -59,8 +59,9 @@
 # 2016/08/31, Guilhem Marchand:         - Feature request - Linux_unlimited_capture improvement #9
 # 2016/12/28, Guilhem Marchand:         - Implementation of Linux extended disk statistics
 #                                       - Allow configuring custom settings in /etc/nmon.conf on a per server basis
+# 2017/01/05, Guilhem Marchand:         - Correction for generic builds calling ARCH instead of ARCH_NAME
 
-# Version 1.3.28
+# Version 1.3.29
 
 # For AIX / Linux / Solaris
 
@@ -697,13 +698,13 @@ if [ ! -x "$NMON" ];then
 
                 # Big endian
                 0 )
-                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}_be"
+                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_be"
 
                 ;;
 
                 # Little endian
                 1)
-                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}_le"
+                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_le"
                 ;;
 
                 esac
@@ -712,7 +713,7 @@ if [ ! -x "$NMON" ];then
 
             # Other arch
             * )
-                NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}"
+                NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}"
 
             ;;
 
@@ -755,13 +756,13 @@ if [ ! -x "$NMON" ];then
 
                 # Big endian
                 0 )
-                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}_be"
+                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_be"
 
                 ;;
 
                 # Little endian
                 1)
-                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}_le"
+                    NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_le"
                 ;;
 
                 esac
@@ -770,7 +771,7 @@ if [ ! -x "$NMON" ];then
 
             # Other arch
             * )
-                NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH}"
+                NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}"
 
             ;;
 
