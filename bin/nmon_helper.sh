@@ -354,6 +354,10 @@ if [ ! -x "$NMON" ];then
     arm* )
 
         ARCH_NAME="arm" ;; # arm architecture
+
+    * )
+
+        ARCH_NAME="${ARCH}" ;; # None of those!
 	
 	esac
 
