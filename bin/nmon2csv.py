@@ -669,6 +669,9 @@ if SPLUNK_HOSTNAME_OVERRIDE:
         with open(SPLUNK_SYSTEM_INPUTS, "r") as f:
             for config in f:
                 splunk_hostname_match = re.match(r'host\s*=\s*(.+)\n', config)
+                # If we have found a match, abort reading rest of file
+                if splunk_hostname_match:
+                    break
             if splunk_hostname_match:
                 splunk_hostname = splunk_hostname_match.group(1)
 
