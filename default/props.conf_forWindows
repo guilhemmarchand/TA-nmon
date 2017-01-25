@@ -121,6 +121,9 @@ TIME_FORMAT=%s
 TIME_PREFIX=timestamp="
 MAX_TIMESTAMP_LOOKAHEAD=26
 
+# Manage carriage returns sent by syslog
+SEDCMD-carriage_return2 = s/#012/\n/g
+
 # Rewrite host Metadata using standard syslog rewrite
 TRANSFORMS = syslog-host
 
@@ -192,6 +195,9 @@ TIME_FORMAT=%s
 TIME_PREFIX=timestamp="
 TRUNCATE=0
 
+# Manage carriage returns sent by syslog
+SEDCMD-carriage_return2 = s/#012/\n/g
+
 # Rewrite host Metadata using standard syslog rewrite
 TRANSFORMS = syslog-host
 
@@ -210,6 +216,9 @@ TIME_PREFIX=nmon2csv:
 CHARSET=UTF-8
 BREAK_ONLY_BEFORE=nmon2csv:
 
+# Manage carriage returns sent by syslog
+SEDCMD-carriage_return2 = s/#012/\n/g
+
 # Rewrite host Metadata using standard syslog rewrite
 TRANSFORMS = syslog-host
 
@@ -221,6 +230,9 @@ TRANSFORMS-processingdata_fromsyslog = nmon_processing_fromsyslog_rewrite
 #
 
 [nmon_collect:fromsyslog]
+
+# Manage carriage returns sent by syslog
+SEDCMD-carriage_return2 = s/#012/\n/g
 
 # Rewrite host Metadata using standard syslog rewrite
 TRANSFORMS = syslog-host
@@ -239,6 +251,9 @@ BREAK_ONLY_BEFORE=Starting nmon cleaning
 TIME_FORMAT=%c
 TIME_PREFIX=\w*\s
 CHARSET=UTF-8
+
+# Manage carriage returns sent by syslog
+SEDCMD-carriage_return2 = s/#012/\n/g
 
 # Rewrite host Metadata using standard syslog rewrite
 TRANSFORMS = syslog-host
