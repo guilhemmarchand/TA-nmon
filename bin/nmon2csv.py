@@ -147,7 +147,8 @@
 #                                           Feature request, override host value using Splunk host definition
 # - 12/28/2016: V1.1.27: Guilhem Marchand:
 #                                         - Implementation of disks extended statistics (DG*)
-
+# - 01/25/2017: V1.1.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
+#                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
 
 # Load libs
 
@@ -167,7 +168,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.27'
+nmon2csv_version = '1.1.28'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
