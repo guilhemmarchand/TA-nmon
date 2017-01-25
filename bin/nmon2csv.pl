@@ -104,8 +104,10 @@
 # - 12/28/2016: V1.2.27: Guilhem Marchand:
 #                                         - Implementation of disks extended statistics (DG*)
 #                                         - Accounting lines is incorrect (header is accounted)
+# - 01/25/2017: V1.2.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
+#                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
 
-$version = "1.2.27";
+$version = "1.2.28";
 
 use Time::Local;
 use Time::HiRes;
@@ -2089,7 +2091,11 @@ sub config_extract {
                     chomp $l;
 
                     if ( $l =~ m/host\s*=\s*(.+)/ ) {
+
+                        # break at first occurence
                         $splunk_hostname = $1;
+                        last;
+
                     }
 
                     #else {
