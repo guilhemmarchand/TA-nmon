@@ -60,8 +60,10 @@
 # 2016/12/28, Guilhem Marchand:         - Implementation of Linux extended disk statistics
 #                                       - Allow configuring custom settings in /etc/nmon.conf on a per server basis
 # 2017/01/05, Guilhem Marchand:         - Correction for generic builds calling ARCH instead of ARCH_NAME
+# 2017/02/10, Guilhem Marchand:         - Prevents failure for Nmon Linux with disk group on older Nmon releases
+#                                       - Identification failure for Fedora OS
 
-# Version 1.3.29
+# Version 1.3.30
 
 # For AIX / Linux / Solaris
 
@@ -412,7 +414,14 @@ if [ ! -x "$NMON" ];then
 		# Great, let's try to find the better binary for that system
 	
 		linux_vendor=`grep '^ID=' $OSRELEASE | awk -F= '{print $2}' | sed 's/\"//g' | sed 's/ //g'`	# The Linux distribution
-		linux_mainversion=`grep '^VERSION_ID=' $OSRELEASE | awk -F'"' '{print $2}' | awk -F'.' '{print $1}'`	# The main release (eg. rhel 7) 	
+		linux_mainversion=`grep '^VERSION_ID=' $OSRELEASE | awk -F'"' '{print $2}' | awk -F'.' '{print $1}'`	# The main release (eg. rhel 7)
+
+        # some distribution (eg. Fedora) seem to use a non standard format
+        case $linux_mainversion in
+        "")
+            linux_mainversion=`grep '^VERSION_ID=' $OSRELEASE | sed 's/ //g' | sed 's/\"//' | awk -F'=' '{print $2}'` ;;
+        esac
+
 		linux_subversion=`grep '^VERSION_ID=' $OSRELEASE | awk -F'"' '{print $2}' | awk -F'.' '{print $2}'`	# The sub level release (eg. "1" from rhel 7.1)
 		linux_fullversion=`grep '^VERSION_ID=' $OSRELEASE | awk -F'"' '{print $2}' | sed 's/\.//g'`	# Concatenated version of the release (eg. 71 for rhel 7.1)	
 
@@ -858,30 +867,56 @@ case $UNAME in
 
 	Linux )
 
-	    # Activation of Linux disks extended stats generate a message in stdout
-	    # We don't want this as we need to retrieve the pid from nmon output
-	    # However, we also want to analyse the return code, so we can't filter out in only one operation
-		${nmon_command} > ${APP_VAR}/nmon_output.txt
-		if [ $? -ne 0 ]; then
-			echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
-		fi
+	    # Retrieve the nmon Linux version
+	    # Nmon 16x or superior is required to run disk group statistics
 
-		# Store the PID file (very last line of nmon output)
-		if [ -f ${APP_VAR}/nmon_output.txt ]; then
-		    awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
-	    fi
+        NMON_VERSION=`$NMON -h | sed -n 's/.*[v|V]ersion[^0-9]*\([0-9][0-9]*\).*$/\1/p' | head -1`
 
-        # old nmon versions might not be compatible with disks extended stats, or the group file does not exist
-        # In such a case, echo a WARN, remove the option and last chance start
-        if grep 'opening disk group file' ${APP_VAR}/nmon_output.txt >/dev/null; then
+        # Assume we can fail
+        case $NMON_VERSION in
+        "")
+            # Set a default to 14 in case of identification failure
+            NMON_VERSION="14" ;;
+        esac
 
-            echo "`date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
-    	    ${nmon_command}=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
-	        ${nmon_command} > ${PIDFILE}
+        if [ $NMON_VERSION -ge "16" ]; then
+
+            # Activation of Linux disks extended stats generate a message in stdout
+            # We don't want this as we need to retrieve the pid from nmon output
+            # However, we also want to analyse the return code, so we can't filter out in only one operation
+            ${nmon_command} &> ${APP_VAR}/nmon_output.txt
+            if [ $? -ne 0 ]; then
+                echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+            fi
+
+            # Store the PID file (very last line of nmon output)
+            if [ -f ${APP_VAR}/nmon_output.txt ]; then
+                awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+            fi
+
+            # old nmon versions might not be compatible with disks extended stats, or the group file does not exist
+            # In such a case, echo a WARN, remove the option and last chance start
+            if grep 'opening disk group file' ${APP_VAR}/nmon_output.txt >/dev/null; then
+
+                echo "`date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
+                nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
+                ${nmon_command} &> ${PIDFILE}
+
+                if [ $? -ne 0 ]; then
+                    echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+                fi
+
+            fi
+
+        else
+
+            # This version is not compatible with the auto group disk
+            nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
+            ${nmon_command} &> ${PIDFILE}
 
             if [ $? -ne 0 ]; then
-			    echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
-		    fi
+                echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+            fi
 
         fi
 

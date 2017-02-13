@@ -106,8 +106,9 @@
 #                                         - Accounting lines is incorrect (header is accounted)
 # - 01/25/2017: V1.2.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
+# - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 
-$version = "1.2.28";
+$version = "1.2.29";
 
 use Time::Local;
 use Time::HiRes;
@@ -1164,7 +1165,7 @@ foreach $FILENAME (@nmon_files) {
             @rawdataheader = grep( /^TOP,\+PID,/, @nmon );
             if ( @rawdataheader < 1 ) {
                 $msg =
-"ERROR: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
+"WARN: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
                 print "$msg";
                 print ID_REF "$msg";
 
@@ -1460,7 +1461,7 @@ foreach $FILENAME (@nmon_files) {
                 @rawdataheader = grep( /^UARG,\+Time,/, @nmon );
                 if ( @rawdataheader < 1 ) {
                     $msg =
-"ERROR: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
+"WARN: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
                     print "$msg";
                     print ID_REF "$msg";
 
@@ -2316,7 +2317,7 @@ sub static_sections_insert {
 
         if ( @rawdataheader < 1 ) {
             $msg =
-"ERROR: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
+"WARN: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
             print "$msg";
             print ID_REF "$msg";
 
@@ -2595,7 +2596,7 @@ sub variable_sections_insert {
         @rawdataheader = grep( /^$nmon_var,([^T].+),/, @nmon );
         if ( @rawdataheader < 1 ) {
             $msg =
-"ERROR: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
+"WARN: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
             print "$msg";
             print ID_REF "$msg";
 
@@ -2886,7 +2887,7 @@ sub solaris_wlm_section_fn {
         @rawdataheader = grep( /^$nmon_var,([^T].+),/, @nmon );
         if ( @rawdataheader < 1 ) {
             $msg =
-"ERROR: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
+"WARN: hostname: $HOSTNAME :$key section data is not consistent: the data header could not be identified, dropping the section to prevent data inconsistency \n";
             print "$msg";
             print ID_REF "$msg";
 

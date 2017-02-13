@@ -149,6 +149,7 @@
 #                                         - Implementation of disks extended statistics (DG*)
 # - 01/25/2017: V1.1.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
+# - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 
 # Load libs
 
@@ -168,7 +169,7 @@ import glob
 import socket
 
 # Converter version
-nmon2csv_version = '1.1.28'
+nmon2csv_version = '1.1.29'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1639,7 +1640,7 @@ def standard_section_fn(section):
 
                                     if num_cols_perfdata > num_cols_header:
 
-                                        msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                        msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                               ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                               ' fields in data, ' + str(num_cols_header) \
                                               + ' fields in header, extra fields detected (more fields in data ' \
@@ -1695,7 +1696,7 @@ def standard_section_fn(section):
 
                                 if num_cols_perfdata > num_cols_header:
 
-                                    msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                    msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                           ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                           ' fields in data, ' + str(num_cols_header) \
                                           + ' fields in header, extra fields detected (more fields in data ' \
@@ -2475,7 +2476,7 @@ def dynamic_section_fn(section):
 
                                 if num_cols_perfdata > num_cols_header:
 
-                                    msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                    msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                           ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                           ' fields in data, ' + str(num_cols_header) +\
                                           ' fields in header, extra fields detected (more fields in data than header)' \
@@ -2525,7 +2526,7 @@ def dynamic_section_fn(section):
 
                             if num_cols_perfdata > num_cols_header:
 
-                                msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                       ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                       ' fields in data, ' + str(num_cols_header) +\
                                       ' fields in header, extra fields detected (more fields in data than header),' \
@@ -2860,7 +2861,7 @@ def solaris_wlm_section_fn(section):
 
                                 if num_cols_perfdata > num_cols_header:
 
-                                    msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                    msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                           ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                           ' fields in data, ' + str(num_cols_header) +\
                                           ' fields in header, extra fields detected (more fields in data than header)' \
@@ -2911,7 +2912,7 @@ def solaris_wlm_section_fn(section):
 
                             if num_cols_perfdata > num_cols_header:
 
-                                msg = 'ERROR: hostname: ' + HOSTNAME + ' :' + section +\
+                                msg = 'WARN: hostname: ' + HOSTNAME + ' :' + section +\
                                       ' section data is not consistent: ' + str(num_cols_perfdata) +\
                                       ' fields in data, ' + str(num_cols_header) +\
                                       ' fields in header, extra fields detected (more fields in data than header),' \
