@@ -21,7 +21,9 @@
 # The default mode for Nmon data generation is set to "longperiod_low" which is the most preservative mode to limit the CPU usage due the Nmon/Splunk processing steps
 # Feel free to test available modes or custom mode to set better options that answer your needs and requirements
 
-# The "longperiod_high" mode is a good compromise between accuracy, CPU / licensing cost and operational intelligence, and should relevant for very large deployment in Production environments
+# The "longperiod_high" mode is a good compromise between accuracy, CPU / licensing cost and operational intelligence, and can be used in most case
+# Reducing CPU foot print can be achieved using one of the following modes, increasing the interval value and limiting the snapshot value are the factors that will impact the TA footprint
+# If you observe a too large CPU foot print on your servers, please choose a different mode, or a custom mode
 
 # Available modes for proposal below:
 
@@ -49,10 +51,10 @@
 #			interval="60"
 #			snapshot="120"
 
-# Benchmarking of January 2015 with Version 1.5.0 shows that:
+# custom --> Set a custom interval and snapshot value, if unset short default values will be used (see custom_interval and custom_snapshot)
 
-# longperiod_middle --> CPU usage starts to notably increase after 4 hours of Nmon runtime
-
+# Default is longperiod_high
+mode="longperiod_high"
 
 # custom --> Set a custom interval and snapshot value, if unset short default values will be used (see custom_interval and custom_snapshot)
 
