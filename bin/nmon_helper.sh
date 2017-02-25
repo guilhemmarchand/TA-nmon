@@ -62,8 +62,10 @@
 # 2017/01/05, Guilhem Marchand:         - Correction for generic builds calling ARCH instead of ARCH_NAME
 # 2017/02/10, Guilhem Marchand:         - Prevents failure for Nmon Linux with disk group on older Nmon releases
 #                                       - Identification failure for Fedora OS
+# 2017/02/25, Guilhem Marchand:         - Linux NFS option is not recognised (broken update)
+#                                       - Linux unlimited capture custom value is not recognised (broken update)
 
-# Version 1.3.30
+# Version 1.3.31
 
 # For AIX / Linux / Solaris
 
@@ -1212,12 +1214,22 @@ Linux )
 
     case ${Linux_NFS} in
     "1" )
-        Linux_default_args="$Linux_nmon_args -N" ;;
+        Linux_nmon_args="$Linux_nmon_args -N" ;;
     esac
 
     case ${Linux_unlimited_capture} in
+    "0" )
+        Linux_nmon_args="$Linux_nmon_args" ;;
     "-1" )
         Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}" ;;
+    * )
+        if [ `echo "${Linux_unlimited_capture} > 0" | bc -l` ] && [ `echo "${Linux_unlimited_capture} < 100" | bc -l` ]; then
+            Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
+        else
+            echo "`date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is out of [0.x - 100] range)"
+            exit 2
+        fi
+        ;;
     esac
 
     case ${Linux_disk_dg_enable} in
