@@ -64,8 +64,10 @@
 #                                       - Identification failure for Fedora OS
 # 2017/02/25, Guilhem Marchand:         - Linux NFS option is not recognised (broken update)
 #                                       - Linux unlimited capture custom value is not recognised (broken update)
+# 2017/02/26, Guilhem Marchand:         - Potential redirection issue
+#                                       - Avoid bc utilization and check unlimited linux capture type rather than range
 
-# Version 1.3.31
+# Version 1.3.32
 
 # For AIX / Linux / Solaris
 
@@ -886,7 +888,7 @@ case $UNAME in
             # Activation of Linux disks extended stats generate a message in stdout
             # We don't want this as we need to retrieve the pid from nmon output
             # However, we also want to analyse the return code, so we can't filter out in only one operation
-            ${nmon_command} &> ${APP_VAR}/nmon_output.txt
+            ${nmon_command} > ${APP_VAR}/nmon_output.txt
             if [ $? -ne 0 ]; then
                 echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
             fi
@@ -914,7 +916,7 @@ case $UNAME in
 
             # This version is not compatible with the auto group disk
             nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
-            ${nmon_command} &> ${PIDFILE}
+            ${nmon_command} > ${PIDFILE}
 
             if [ $? -ne 0 ]; then
                 echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
@@ -1223,10 +1225,10 @@ Linux )
     "-1" )
         Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}" ;;
     * )
-        if [ `echo "${Linux_unlimited_capture} > 0" | bc -l` ] && [ `echo "${Linux_unlimited_capture} < 100" | bc -l` ]; then
+        if [ `echo "${Linux_unlimited_capture}" | grep -E "^[0-9]+(\.[0-9]+)?$"` ]; then
             Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
         else
-            echo "`date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is out of [0.x - 100] range)"
+            echo "`date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
             exit 2
         fi
         ;;
