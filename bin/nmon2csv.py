@@ -150,6 +150,7 @@
 # - 01/25/2017: V1.1.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
 # - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
+# - 03/02/2017: V1.1.30: Guilhem Marchand: Manage the option json mode generation for performance data
 
 # Load libs
 
@@ -167,9 +168,10 @@ import platform
 import optparse
 import glob
 import socket
+import json
 
 # Converter version
-nmon2csv_version = '1.1.29'
+nmon2csv_version = '1.1.30'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -440,6 +442,8 @@ parser.add_option('--use_fqdn', action='store_true', dest='use_fqdn', help='Use 
                                                                            ' (eg. central repositories)')
 parser.add_option('--dumpargs', action='store_true', dest='dumpargs',
                   help='only dump the passed arguments and exit (for debugging purposes only)')
+parser.add_option('--json_output', action='store_true', dest='json_output',
+                  help='generate nmon performance data in json format instead of legacy csv')
 parser.add_option('--debug', action='store_true', dest='debug', help='Activate debug for testing purposes')
 
 (options, args) = parser.parse_args()
@@ -454,6 +458,12 @@ if options.debug:
     debug = True
 else:
     debug = False
+
+# Generate json data
+if options.json_output:
+    json_output = True
+else:
+    json_output = False
 
 # Set hostname mode
 if options.use_fqdn:
@@ -569,6 +579,19 @@ def numbertomonth(month):
 def openRef():
     global ref
     ref = open(ID_REF, "w")
+
+
+# Convert csv data into key=value format
+def write_json(input, json_file):
+    with open(json_file, 'ab') as f:
+        reader = csv.DictReader(input)
+
+        for row in reader:
+            f.write(json.dumps(row, sort_keys=False, indent=4, separators=(',', ': '), encoding="utf-8",
+                               ensure_ascii=False))
+            f.write('\n')
+            #print(row)
+            #print('\n')
 
 ####################################################################
 #           Main Program
@@ -1361,10 +1384,21 @@ elif config_run == 1:
 
 def standard_section_fn(section):
 
+    # if generating json data
+    if json_output:
 
-    # Set output file
-    currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                         '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
+                             minute + second + '_' + section + '_' + str(bytes_total) + '_' +\
+                             csv_timestamp + '.nmon.json'
+
+    # default is legacy csv
+    else:
+
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
+                             minute + second + '_' + section + '_' + str(bytes_total) + '_' +\
+                             csv_timestamp + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -1427,6 +1461,10 @@ def standard_section_fn(section):
         count += 1
 
     if count >= 1:
+
+        # Create a membuffer is we are using json
+        if json_output:
+            membuffer = cStringIO.StringIO()
 
         # Open output for writing
         with open(currsection_output, "wb") as currsection:
@@ -1500,7 +1538,10 @@ def standard_section_fn(section):
                             num_cols_header = final_header.count(',')
 
                             # Write header
-                            currsection.write(final_header)
+                            if json_output:
+                                membuffer.write(final_header)
+                            else:
+                                currsection.write(final_header)
 
                     # Old Nmon version sometimes incorporates a Txxxx reference in the header, this is unclean
                     # but we want to try getting the header anyway
@@ -1536,7 +1577,10 @@ def standard_section_fn(section):
                                 num_cols_header = final_header.count(',')
 
                                 # Write header
-                                currsection.write(final_header)
+                                if json_output:
+                                    membuffer.write(final_header)
+                                else:
+                                    currsection.write(final_header)
 
                     # Extract timestamp
 
@@ -1656,8 +1700,13 @@ def standard_section_fn(section):
                                         # Affect a sanity check to 0, good data
                                         sanity_check = 0
 
-                                # Write perf data
-                                currsection.write(final_perfdata)
+                                if json_output:
+                                    # Write perf data
+                                    membuffer.write(final_perfdata)
+                                else:
+                                    # Write perf data
+                                    currsection.write(final_perfdata)
+
                             else:
                                 if debug:
                                     print ("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
@@ -1712,8 +1761,25 @@ def standard_section_fn(section):
                                     # Affect a sanity check to 0, good data
                                     sanity_check = 0
 
-                            # Write perf data
-                            currsection.write(final_perfdata)
+                            if json_output:
+                                # Write perf data
+                                membuffer.write(final_perfdata)
+                            else:
+                                # Write perf data
+                                currsection.write(final_perfdata)
+
+            # If we generate data in json, time to conver the membuffer to the final json data
+
+            if json_output:
+
+                # Rewind temp
+                membuffer.seek(0)
+
+                # Write final kv file in append mode
+                write_json(membuffer, currsection_output)
+
+                # Discard memory membuffer
+                membuffer.close()
 
         # Verify sanity check
         # Verify that the number of lines is at least 2 lines which should be the case if we are here (header + data)
@@ -1760,9 +1826,16 @@ if OStype in ("Solaris", "Unknown"):
 
 def top_section_fn(section):
 
-    # Set output file
-    currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                         '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+    # if generating json data
+    if json_output:
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+
+    else:
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -1815,6 +1888,10 @@ def top_section_fn(section):
 
     if count >= 1:
 
+        # Create a membuffer is we are using json
+        if json_output:
+            membuffer = cStringIO.StringIO()
+
         # Open output for writing
         with open(currsection_output, "wb") as currsection:
 
@@ -1858,10 +1935,17 @@ def top_section_fn(section):
                             count += 1
 
                             # Write header
-                            currsection.write(
-                                'type' + ',' + 'serialnum' + ',' + 'hostname' + ',' + 'OStype' + ',' +
-                                'logical_cpus' + ',' + 'virtual_cpus' + ',' + 'ZZZZ' + ',' + 'interval' + ',' +
-                                'snapshots' + ',' + header + '\n'),
+                            if json_output:
+                                membuffer.write(
+                                    'type' + ',' + 'serialnum' + ',' + 'hostname' + ',' + 'OStype' + ',' +
+                                    'logical_cpus' + ',' + 'virtual_cpus' + ',' + 'ZZZZ' + ',' + 'interval' + ',' +
+                                    'snapshots' + ',' + header + '\n'),
+
+                            else:
+                                currsection.write(
+                                    'type' + ',' + 'serialnum' + ',' + 'hostname' + ',' + 'OStype' + ',' +
+                                    'logical_cpus' + ',' + 'virtual_cpus' + ',' + 'ZZZZ' + ',' + 'interval' + ',' +
+                                    'snapshots' + ',' + header + '\n'),
 
                     # Extract timestamp
 
@@ -1931,10 +2015,18 @@ def top_section_fn(section):
                             count += 1
 
                             # Write perf data
-                            currsection.write(
-                                section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
-                                ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
-                                SNAPSHOTS + ',' + perfdata + '\n'),
+                            if json_output:
+                                membuffer.write(
+                                    section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
+                                    ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
+                                    SNAPSHOTS + ',' + perfdata + '\n'),
+
+                            else:
+                                currsection.write(
+                                    section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
+                                    ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
+                                    SNAPSHOTS + ',' + perfdata + '\n'),
+
                         else:
                             if debug:
                                 print("DEBUG, " + section + " ignoring event " + str(ZZZZ_timestamp) +
@@ -1947,10 +2039,29 @@ def top_section_fn(section):
                         count += 1
 
                         # Write perf data
-                        currsection.write(
-                            section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
-                            ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
-                            SNAPSHOTS + ',' + perfdata + '\n'),
+
+                        if json_output:
+                            membuffer.write(
+                                section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
+                                ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
+                                SNAPSHOTS + ',' + perfdata + '\n'),
+
+                        else:
+                            currsection.write(
+                                section + ',' + SN + ',' + HOSTNAME + ',' + OStype + ',' + logical_cpus +
+                                ',' + virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' +
+                                SNAPSHOTS + ',' + perfdata + '\n'),
+
+        # If we generate data in json, time to conver the membuffer to the final json data
+        if json_output:
+            # Rewind temp
+            membuffer.seek(0)
+
+            # Write final kv file in append mode
+            write_json(membuffer, currsection_output)
+
+            # Discard memory membuffer
+            membuffer.close()
 
         # Verify that the number of lines is at least 2 lines which should be the case if we are here (header + data)
         # In any case, don't allow empty files to kept in repository
@@ -1987,9 +2098,16 @@ for section in top_section:
 
 def uarg_section_fn(section):
 
-    # Set output file
-    currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                         '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+    # if generating json data
+    if json_output:
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+
+    else:
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second + \
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -2261,9 +2379,13 @@ def uarg_section_fn(section):
                 # Rewind temp
                 membuffer.seek(0)
 
-                # write
-                for line in membuffer:
-                    currsection.write(line)
+                # write data
+                if json_output:
+                    write_json(membuffer, currsection_output)
+
+                else:
+                    for line in membuffer:
+                        currsection.write(line)
 
                 # close membuffer
                 membuffer.close()
@@ -2281,9 +2403,15 @@ if OStype in ('AIX', 'Linux', 'Solaris', 'Unknown'):
 
 def dynamic_section_fn(section):
 
-    # Set output file (will be opened for writing after data transposition)
-    currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                         '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+    if json_output:
+        # Set output file (will be opened for writing after data transposition)
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second + \
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+
+    else:
+        # Set output file (will be opened for writing after data transposition)
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
 
     # Sequence to search for
     seq = str(section) + ',' + 'T'
@@ -2556,13 +2684,15 @@ def dynamic_section_fn(section):
             # Reset counter
             count = 0
 
-            # Open final for writing
-            with open(currsection_output, "wb") as currsection:
+            # for json format, we have an intermediate step to be proceeded
+            if json_output:
+
+                final_membuffer = cStringIO.StringIO()
 
                 # Rewind temp
                 membuffer.seek(0)
 
-                writer = csv.writer(currsection)
+                writer = csv.writer(final_membuffer)
                 writer.writerow(
                     ['type', 'serialnum', 'hostname', 'OStype', 'interval', 'snapshots', 'ZZZZ', 'device',
                      'value'])
@@ -2580,6 +2710,42 @@ def dynamic_section_fn(section):
                         writer.writerow(row)
 
                         # End for
+
+                # Rewind temp
+                final_membuffer.seek(0)
+
+                # Write final kv file in append mode
+                write_json(final_membuffer, currsection_output)
+
+                # Discard memory membuffer
+                final_membuffer.close()
+
+            else:
+
+                # Open final for writing
+                with open(currsection_output, "wb") as currsection:
+
+                    # Rewind temp
+                    membuffer.seek(0)
+
+                    writer = csv.writer(currsection)
+                    writer.writerow(
+                        ['type', 'serialnum', 'hostname', 'OStype', 'interval', 'snapshots', 'ZZZZ', 'device',
+                         'value'])
+
+                    # increment
+                    count += 1
+
+                    for d in csv.DictReader(membuffer):
+                        ZZZZ = d.pop('ZZZZ')
+                        for device, value in sorted(d.items()):
+                            # increment
+                            count += 1
+
+                            row = [section, SN, HOSTNAME, OStype, INTERVAL, SNAPSHOTS, ZZZZ, device, value]
+                            writer.writerow(row)
+
+                            # End for
 
             # Verify that the number of lines is at least 2 lines which should be the case if
             #  we are here (header + data)
@@ -2666,9 +2832,18 @@ if OStype in ("AIX", "Unknown"):
 
 def solaris_wlm_section_fn(section):
 
-    # Set output file (will be opened for writing after data transposition)
-    currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                         '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+    if json_output:
+
+        # Set output file (will be opened for writing after data transposition)
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
+                             minute + second + \
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+
+    else:
+        # Set output file (will be opened for writing after data transposition)
+        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
+                             minute + second +\
+                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
 
     # Sequence to search for
     seq = str(section) + ',' + 'T'
@@ -2942,16 +3117,18 @@ def solaris_wlm_section_fn(section):
             # Reset counter
             count = 0
 
-            # Open final for writing
-            with open(currsection_output, "wb") as currsection:
+            # for json format, we have an intermediate step to be proceeded
+            if json_output:
+
+                final_membuffer = cStringIO.StringIO()
 
                 # Rewind temp
                 membuffer.seek(0)
 
-                writer = csv.writer(currsection)
+                writer = csv.writer(final_membuffer)
                 writer.writerow(
-                    ['type', 'serialnum', 'hostname', 'OStype', 'logical_cpus', 'interval', 'snapshots',
-                     'ZZZZ', 'device', 'value'])
+                    ['type', 'serialnum', 'hostname', 'OStype', 'interval', 'snapshots', 'ZZZZ', 'device',
+                     'value'])
 
                 # increment
                 count += 1
@@ -2962,11 +3139,44 @@ def solaris_wlm_section_fn(section):
                         # increment
                         count += 1
 
-                        row = [section, SN, HOSTNAME, OStype, logical_cpus, INTERVAL, SNAPSHOTS,
-                               ZZZZ, device, value]
+                        row = [section, SN, HOSTNAME, OStype, INTERVAL, SNAPSHOTS, ZZZZ, device, value]
                         writer.writerow(row)
 
                         # End for
+
+                # Rewind temp
+                final_membuffer.seek(0)
+
+                # Write final kv file in append mode
+                write_json(final_membuffer, currsection_output)
+
+            else:
+
+                # Open final for writing
+                with open(currsection_output, "wb") as currsection:
+
+                    # Rewind temp
+                    membuffer.seek(0)
+
+                    writer = csv.writer(currsection)
+                    writer.writerow(
+                        ['type', 'serialnum', 'hostname', 'OStype', 'logical_cpus', 'interval', 'snapshots',
+                         'ZZZZ', 'device', 'value'])
+
+                    # increment
+                    count += 1
+
+                    for d in csv.DictReader(membuffer):
+                        ZZZZ = d.pop('ZZZZ')
+                        for device, value in sorted(d.items()):
+                            # increment
+                            count += 1
+
+                            row = [section, SN, HOSTNAME, OStype, logical_cpus, INTERVAL, SNAPSHOTS,
+                                   ZZZZ, device, value]
+                            writer.writerow(row)
+
+                            # End for
 
             # Verify that the number of lines is at least 2 lines which should be the case if we are
             # here (header + data)
