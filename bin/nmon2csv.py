@@ -394,8 +394,10 @@ if not os.path.exists(DATA_DIR):
 # CSV Perf data working directory (files are moved at the end from DATA_DIR to DATAWORKING_DIR)
 if is_windows:
     DATAFINAL_DIR = APP_VAR + '\\csv_repository\\'
+    DATAFINAL_DIR_JSON = APP_VAR + '\\json_repository\\'
 else:
     DATAFINAL_DIR = APP_VAR + '/csv_repository/'
+    DATAFINAL_DIR_JSON = APP_VAR + '/json_repository/'
 if not os.path.exists(DATA_DIR):
     os.mkdir(DATA_DIR)
 
@@ -487,6 +489,14 @@ if not os.path.exists(DATAFINAL_DIR):
     except Exception as ex:
         logging.error("Unable to create data output directory '%s': %s" % (DATAFINAL_DIR, ex))
         sys.exit(1)
+
+if json_output:
+    if not os.path.exists(DATAFINAL_DIR_JSON):
+        try:
+            os.makedirs(DATAFINAL_DIR_JSON)
+        except Exception as ex:
+            logging.error("Unable to create data output directory '%s': %s" % (DATAFINAL_DIR_JSON, ex))
+            sys.exit(1)
 
 if not os.path.exists(CONFIG_DIR):
     try:
@@ -587,11 +597,9 @@ def write_json(input, json_file):
         reader = csv.DictReader(input)
 
         for row in reader:
-            f.write(json.dumps(row, sort_keys=False, indent=4, separators=(',', ': '), encoding="utf-8",
+            f.write(json.dumps(row, sort_keys=False, indent=None, separators=(',', ': '), encoding="utf-8",
                                ensure_ascii=False))
             f.write('\n')
-            #print(row)
-            #print('\n')
 
 ####################################################################
 #           Main Program
@@ -3223,11 +3231,17 @@ if OStype in ("Solaris", "Unknown"):
 # cd to directory
 os.chdir(DATA_DIR)
 
-# Move csv final perf data
+# Move final perf data
 for xfile in glob.glob('*.csv'):
     src = DATA_DIR + xfile
     dst = DATAFINAL_DIR + xfile
     os.rename(src, dst)
+
+if json_output:
+    for xfile in glob.glob('*.json'):
+        src = DATA_DIR + xfile
+        dst = DATAFINAL_DIR_JSON + xfile
+        os.rename(src, dst)
 
 ###################
 # End
