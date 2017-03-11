@@ -66,8 +66,10 @@
 #                                       - Linux unlimited capture custom value is not recognised (broken update)
 # 2017/02/26, Guilhem Marchand:         - Potential redirection issue
 #                                       - Avoid bc utilization and check unlimited linux capture type rather than range
+# 2017/03/11, Guilhem Marchand:         - Write to FIFO
 
-# Version 1.3.32
+
+# Version 1.3.33
 
 # For AIX / Linux / Solaris
 
@@ -855,6 +857,29 @@ NMON_REPOSITORY=${APP_VAR}/var/nmon_repository
 # Nmon PID file
 PIDFILE=${APP_VAR}/nmon.pid
 
+# FIFO file 1
+FIFO1_DIR=${NMON_REPOSITORY}/fifo1
+FIFO1=${FIFO1_DIR}/nmon.fifo
+
+# FIFO file 2
+FIFO2_DIR=${NMON_REPOSITORY}/fifo2
+FIFO2=${FIFO2_DIR}/nmon.fifo
+
+# create dir
+[ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
+[ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
+
+# create fifo files if required
+if [ ! -p $FIFO1 ]; then
+    mkfifo $FIFO1
+fi
+
+if [ ! -p $FIFO2 ]; then
+    mkfifo $FIFO2
+fi
+
+[ -d ${APP_VAR}/var/csv_repository ] || { mkdir -p ${APP_VAR}/var/csv_repository; }
+
 ############################################
 # functions
 ############################################
@@ -870,6 +895,13 @@ case $UNAME in
 	;;
 
 	Linux )
+
+        case $1 in
+        "fifo1")
+            nmon_command=${nmon_command_fifo1} ;;
+        "fifo2")
+            nmon_command=${nmon_command_fifo2} ;;
+        esac
 
 	    # Retrieve the nmon Linux version
 	    # Nmon 16x or superior is required to run disk group statistics
@@ -1212,7 +1244,7 @@ Linux )
     esac
 
     # Set the default Linux minimal args list
-    Linux_nmon_args="-f -T -s ${interval} -c ${snapshot} -d ${Linux_devices}"
+    Linux_nmon_args="-T -s ${interval} -c ${snapshot} -d ${Linux_devices}"
 
     case ${Linux_NFS} in
     "1" )
@@ -1240,7 +1272,8 @@ Linux )
     esac
 
     # Set the nmon command for Linux
-    nmon_command="${NMON} $Linux_nmon_args -p"
+    nmon_command_fifo1="${NMON} -F ${FIFO1} $Linux_nmon_args -p"
+    nmon_command_fifo2="${NMON} -F ${FIFO2} $Linux_nmon_args -p"
 
 ;;
 
@@ -1279,7 +1312,7 @@ if [ ! -f ${PIDFILE} ]; then
 	"")
 	
 		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-		start_nmon
+		start_nmon fifo1
 		sleep 5 # Let nmon time to start
 		write_pid
 		exit 0
@@ -1355,7 +1388,7 @@ else
 		"")
 
 			echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-			start_nmon
+			start_nmon fifo1
 			sleep 5 # Let nmon time to start
 			# Relevant for Solaris Only
 			write_pid
@@ -1430,7 +1463,7 @@ else
 				*)
 					if [ $PIDAGE -gt $endtime ]; then
 						echo "`date`, ${HOST} INFO: To prevent data gaps between 2 Nmon collections, a new process will be started, its PID will be available on next execution"
-						start_nmon
+						start_nmon fifo2
 						sleep 5 # Let nmon time to start
 						# Relevant for Solaris Only		
 						write_pid
@@ -1455,7 +1488,7 @@ else
 		rm -f ${PIDFILE}
 
 		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-		start_nmon
+		start_nmon fifo1
 		sleep 5 # Let nmon time to start
 		# Relevant for Solaris Only		
 		write_pid
