@@ -66,24 +66,55 @@ else
 
 fi
 
-# Verify that our fifo_reader are running, and start if required
-ps -ef | grep 'fifo_reader.sh fifo1' | grep -v grep >/dev/null
+# Python is the default choice, if it is not available launch the Perl version
+PYTHON=`which python >/dev/null 2>&1`
 
-if [ $? -ne 0 ]; then
-    echo "`date`, ${HOST} INFO: starting the fifo_reader fifo1"
-    $SPLUNK_HOME/etc/apps/TA-nmon/bin/fifo_reader.sh fifo1 &
+if [ $? -eq 0 ]; then
+
+	# Supplementary check: Ensure Python is at least 2.7 version
+	python_subversion=`python --version 2>&1`
+
+	echo $python_subversion | grep '2.7' >/dev/null
+
+	if [ $? -eq 0 ]; then
+		INTERPRETER="python"
+	else
+		INTERPRETER="perl"
+	fi
+
 else
-    echo "`date`, ${HOST} INFO: The fifo_reader fifo1 is running"
+
+	INTERPRETER="perl"
+
 fi
 
+start_reader () {
+
+FIFO=$1
+
 # Verify that our fifo_reader are running, and start if required
-ps -ef | grep 'fifo_reader.sh fifo2' | grep -v grep >/dev/null
+ps -ef | egrep "fifo_reader\.p[l|y] -F ${FIFO}" | grep -v grep >/dev/null
 
 if [ $? -ne 0 ]; then
-    echo "`date`, ${HOST} INFO: starting the fifo_reader fifo2"
-    $SPLUNK_HOME/etc/apps/TA-nmon/bin/fifo_reader.sh fifo2 &
+    echo "`date`, ${HOST} INFO: starting the fifo_reader ${FIFO}"
+
+    case $INTERPRETER in
+    "python")
+        $SPLUNK_HOME/etc/apps/TA-nmon/bin/fifo_reader.py -F ${FIFO} &
+        ;;
+    "perl")
+        $SPLUNK_HOME/etc/apps/TA-nmon/bin/fifo_reader.pl -F ${FIFO} &
+        ;;
+    esac
+
 else
-    echo "`date`, ${HOST} INFO: The fifo_reader fifo2 is running"
+    echo "`date`, ${HOST} INFO: The fifo_reader $FIFO is running"
 fi
+
+}
+
+# Start our readers
+start_reader fifo1
+start_reader fifo2
 
 exit 0
