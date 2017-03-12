@@ -22,6 +22,16 @@ FIFO=$1
 # hostname
 HOST=`hostname`
 
+# Which type of OS are we running
+UNAME=`uname`
+
+# Currently, the fifo mode is not available on Solaris OS
+case $UNAME in
+SunOS )
+    # Don't do nothing and exit
+    exit 0 ;;
+esac
+
 if [ -z "${SPLUNK_HOME}" ]; then
 	echo "`date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
 	exit 1

@@ -19,6 +19,16 @@
 # hostname
 HOST=`hostname`
 
+# Which type of OS are we running
+UNAME=`uname`
+
+# Currently, the fifo mode is not available on Solaris OS
+case $UNAME in
+SunOS )
+    # Don't do nothing and exit
+    exit 0 ;;
+esac
+
 if [ -z "${SPLUNK_HOME}" ]; then
 	echo "`date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
@@ -92,10 +102,30 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
         ;;
     esac
 
-    # file should have last mtime of mini 5 sec
-    if [ $nmon_data_mtime -gt 5 ]; then
-        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
-    fi
+    # file should have last mtime of mini 15 sec
+
+    while [ $nmon_data_mtime -lt 15 ];
+    do
+
+        sleep 1
+
+        # get data mtime
+        case $INTERPRETER in
+        "perl")
+            perl -e "\$mtime=(stat(\"$nmon_data\"))[9]; \$cur_time=time();  print \$cur_time - \$mtime;" >$temp_file
+            nmon_data_mtime=`cat $temp_file`
+            ;;
+
+        "python")
+            python -c "import os; import time; now = time.strftime(\"%s\"); print(int(int(now)-(os.path.getmtime('$nmon_data'))))" >$temp_file
+            nmon_data_mtime=`cat $temp_file`
+            ;;
+        esac
+
+
+    done
+
+    cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
 
     # empty the nmon_data file
     > $nmon_data

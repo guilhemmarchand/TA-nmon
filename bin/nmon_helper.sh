@@ -196,7 +196,12 @@ interval="60"
 snapshot="120"
 
 # AIX common options default, will be overwritten by nmon.conf (unless the file would not be available)
-AIX_options="-f -T -A -d -K -L -M -P -O -W -S -^ -p"
+
+# Note: Since the version 1.3.0, AIX uses fifo files to minimize the CPU footprint, this requires the -F option
+# and is not compatible with the "-f" option that defines output to csv
+# The -F option is implicitly added by the nmon_helper.sh script during processing
+
+AIX_options="-T -A -d -K -L -M -P -O -W -S -^ -p"
 
 # Linux max devices (-d option), default to 1500
 Linux_devices="1500"
@@ -892,6 +897,12 @@ case $UNAME in
 
 	AIX )
 		${nmon_command} > ${PIDFILE}
+        case $1 in
+        "fifo1")
+            ${nmon_command_fifo1} > ${PIDFILE} ;;
+        "fifo2")
+            ${nmon_command_fifo2} > ${PIDFILE} ;;
+        esac
 	;;
 
 	Linux )
@@ -1207,26 +1218,30 @@ AIX )
 	true )
 	
 		if [ ${AIX_NFS23} -eq 1 ]; then
-			nmon_command="${NMON} ${AIX_options} -N -s ${interval} -c ${snapshot}"
+			nmon_command="-N -s ${interval} -c ${snapshot}"
 		elif [ ${AIX_NFS4} -eq 1 ]; then
-			nmon_command="${NMON} ${AIX_options} -NN -s ${interval} -c ${snapshot}"
+			nmon_command="-NN -s ${interval} -c ${snapshot}"
 		else
-			nmon_command="${NMON} ${AIX_options} -s ${interval} -c ${snapshot}"
+			nmon_command="-s ${interval} -c ${snapshot}"
 		fi
 	;;
 	
 	false )
 	
 		if [ ${AIX_NFS23} -eq 1 ]; then
-			nmon_command="${NMON} ${AIX_options} -N -s ${interval} -c ${snapshot}"
+			nmon_command="-N -s ${interval} -c ${snapshot}"
 		elif [ ${AIX_NFS4} -eq 1 ]; then
-			nmon_command="${NMON} ${AIX_options} -NN -s ${interval} -c ${snapshot}"
+			nmon_command="-NN -s ${interval} -c ${snapshot}"
 		else
-			nmon_command="${NMON} ${AIX_options} -s ${interval} -c ${snapshot}"
+			nmon_command="-s ${interval} -c ${snapshot}"
 		fi
 	;;	
 	
-	esac	
+	esac
+
+    # Set the nmon command for AIX
+    nmon_command_fifo1="${NMON} -F ${FIFO1} ${AIX_options} ${nmon_command}"
+    nmon_command_fifo2="${NMON} -F ${FIFO2} ${AIX_options} ${nmon_command}"
 	
 ;;
 
@@ -1312,7 +1327,16 @@ if [ ! -f ${PIDFILE} ]; then
 	"")
 	
 		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-		start_nmon fifo1
+
+		case $UNAME in
+
+        AIX | Linux)
+		    start_nmon fifo1 ;;
+        Solaris)
+		    start_nmon ;;
+
+        esac
+
 		sleep 5 # Let nmon time to start
 		write_pid
 		exit 0
@@ -1388,7 +1412,16 @@ else
 		"")
 
 			echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-			start_nmon fifo1
+
+            case $UNAME in
+
+            AIX | Linux)
+                start_nmon fifo1 ;;
+            Solaris)
+                start_nmon ;;
+
+            esac
+
 			sleep 5 # Let nmon time to start
 			# Relevant for Solaris Only
 			write_pid
@@ -1463,7 +1496,16 @@ else
 				*)
 					if [ $PIDAGE -gt $endtime ]; then
 						echo "`date`, ${HOST} INFO: To prevent data gaps between 2 Nmon collections, a new process will be started, its PID will be available on next execution"
-						start_nmon fifo2
+
+                        case $UNAME in
+
+                        AIX | Linux)
+                            start_nmon fifo2 ;;
+                        Solaris)
+                            start_nmon ;;
+
+                        esac
+
 						sleep 5 # Let nmon time to start
 						# Relevant for Solaris Only		
 						write_pid
@@ -1488,7 +1530,16 @@ else
 		rm -f ${PIDFILE}
 
 		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-		start_nmon fifo1
+
+		case $UNAME in
+
+        AIX | Linux)
+		    start_nmon fifo1 ;;
+        Solaris)
+		    start_nmon ;;
+
+        esac
+
 		sleep 5 # Let nmon time to start
 		# Relevant for Solaris Only		
 		write_pid

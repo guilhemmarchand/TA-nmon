@@ -73,7 +73,7 @@ FIFO_INPUT=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/${FIFO}/nmon.fifo
 
 # If the fifo does not yet exist, we are not ready to read
 if [ ! -p $FIFO_INPUT ]; then
-	echo "`date`, ${HOST} WARN, the fifo input file does exist yet ($FIFO_INPUT)"
+	echo "`date`, ${HOST} WARN, the fifo input file does not exist yet ($FIFO_INPUT)"
 	exit 1
 fi
 
