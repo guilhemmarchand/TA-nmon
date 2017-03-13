@@ -84,8 +84,8 @@ FIFO=$1
 # consume fifo1
 nmon_config=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat
 nmon_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat
-nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
 nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat
+nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
 
 # all files must be existing to be managed
 if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
@@ -126,7 +126,14 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
 
     done
 
-    cat $nmon_config $nmon_header $nmon_timestamp $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+    # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
+    head -1 $nmon_data | grep 'ZZZZ,T' >/dev/null
+    if [ $? -ne 0 ]; then
+        tail -1 $nmon_timestamp >$temp_file
+        cat $nmon_config $nmon_header $temp_file $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+    else
+        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+    fi
 
     # empty the nmon_data file
     > $nmon_data

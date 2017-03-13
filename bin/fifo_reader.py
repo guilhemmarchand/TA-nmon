@@ -73,9 +73,9 @@ fifo_path = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon.fifo'
 # define the various files to be written
 nmon_config_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_config.dat'
 nmon_header_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_header.dat'
-nmon_timestamp_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_timestamp.dat'
 nmon_data_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_data.dat'
-nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_data_dat}
+nmon_timestamp_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_timestamp.dat'
+nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_timestamp_dat, nmon_data_dat}
 
 # Remove file
 for file in nmon_dat:
@@ -100,7 +100,7 @@ else:
         nmon_config_match = re.match(r'^[AAA|BBB].+', line)
         nmon_header_match = re.match(r'^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,[^T].*', line)
         nmon_header_TOP_match = re.match(r'^TOP,(?!\d*,)', line)
-        nmon_timestamp_match = re.match(r'ZZZZ,T\d*', line)
+        nmon_timestamp_match = re.match(r'^ZZZZ,T\d*', line)
 
         if nmon_config_match:
             with open(nmon_config_dat, "ab") as nmon_config:
@@ -114,9 +114,12 @@ else:
             with open(nmon_header_dat, "ab") as nmon_header:
                 nmon_header.write(line)
 
+        # timestamp management: write the nmon timestamp in nmon_data and as well nmon_timestamp for later use
         elif nmon_timestamp_match:
             with open(nmon_timestamp_dat, "ab") as nmon_timestamp:
                 nmon_timestamp.write(line)
+            with open(nmon_data_dat, "ab") as nmon_data:
+                nmon_data.write(line)
 
         else:
             with open(nmon_data_dat, "ab") as nmon_data:
