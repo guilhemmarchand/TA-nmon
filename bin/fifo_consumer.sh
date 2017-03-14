@@ -103,9 +103,9 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
         ;;
     esac
 
-    # file should have last mtime of mini 15 sec
+    # file should have last mtime of mini 5 sec
 
-    while [ $nmon_data_mtime -lt 15 ];
+    while [ $nmon_data_mtime -lt 5 ];
     do
 
         sleep 1

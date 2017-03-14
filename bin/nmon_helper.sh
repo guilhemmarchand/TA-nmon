@@ -862,27 +862,36 @@ NMON_REPOSITORY=${APP_VAR}/var/nmon_repository
 # Nmon PID file
 PIDFILE=${APP_VAR}/nmon.pid
 
-# FIFO file 1
-FIFO1_DIR=${NMON_REPOSITORY}/fifo1
-FIFO1=${FIFO1_DIR}/nmon.fifo
+# fifo files are currently supported only on AIX and Linux
+case $UNAME in
 
-# FIFO file 2
-FIFO2_DIR=${NMON_REPOSITORY}/fifo2
-FIFO2=${FIFO2_DIR}/nmon.fifo
+AIX|Linux)
 
-# create dir
-[ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
-[ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
+    # FIFO file 1
+    FIFO1_DIR=${NMON_REPOSITORY}/fifo1
+    FIFO1=${FIFO1_DIR}/nmon.fifo
 
-# create fifo files if required
-if [ ! -p $FIFO1 ]; then
-    mkfifo $FIFO1
-fi
+    # FIFO file 2
+    FIFO2_DIR=${NMON_REPOSITORY}/fifo2
+    FIFO2=${FIFO2_DIR}/nmon.fifo
 
-if [ ! -p $FIFO2 ]; then
-    mkfifo $FIFO2
-fi
+    # create dir
+    [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
+    [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
 
+    # create fifo files if required
+    if [ ! -p $FIFO1 ]; then
+        mkfifo $FIFO1
+    fi
+
+    if [ ! -p $FIFO2 ]; then
+        mkfifo $FIFO2
+    fi
+
+;;
+esac
+
+# csv_repository
 [ -d ${APP_VAR}/var/csv_repository ] || { mkdir -p ${APP_VAR}/var/csv_repository; }
 
 ############################################
@@ -1118,6 +1127,22 @@ case $UNAME in
 			
 }
 
+start_fifo_reader () {
+
+FIFO=$1
+
+# Verify that our fifo_reader are running, and start if required
+ps -ef | grep 'fifo_reader.sh ${FIFO}' | grep -v grep >/dev/null
+
+if [ $? -ne 0 ]; then
+    echo "`date`, ${HOST} INFO: starting the fifo_reader ${FIFO}"
+    nohup $APP/bin/fifo_reader.sh ${FIFO} </dev/null >/dev/null 2>&1 &
+else
+    echo "`date`, ${HOST} INFO: The fifo_reader ${FIFO} is running"
+fi
+
+}
+
 ############################################
 # Defaults values for interval and snapshot
 ############################################
@@ -1331,7 +1356,10 @@ if [ ! -f ${PIDFILE} ]; then
 		case $UNAME in
 
         AIX | Linux)
-		    start_nmon fifo1 ;;
+		    start_fifo_reader fifo1
+		    sleep 1
+		    start_nmon fifo1
+		    ;;
         Solaris)
 		    start_nmon ;;
 
@@ -1416,6 +1444,8 @@ else
             case $UNAME in
 
             AIX | Linux)
+    		    start_fifo_reader fifo1
+	    	    sleep 1
                 start_nmon fifo1 ;;
             Solaris)
                 start_nmon ;;
@@ -1500,6 +1530,8 @@ else
                         case $UNAME in
 
                         AIX | Linux)
+                            start_fifo_reader fifo2
+                            sleep 1
                             start_nmon fifo2 ;;
                         Solaris)
                             start_nmon ;;
@@ -1534,6 +1566,8 @@ else
 		case $UNAME in
 
         AIX | Linux)
+		    start_fifo_reader fifo1
+		    sleep 1
 		    start_nmon fifo1 ;;
         Solaris)
 		    start_nmon ;;
