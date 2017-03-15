@@ -66,8 +66,7 @@
 #                                       - Linux unlimited capture custom value is not recognised (broken update)
 # 2017/02/26, Guilhem Marchand:         - Potential redirection issue
 #                                       - Avoid bc utilization and check unlimited linux capture type rather than range
-# 2017/03/11, Guilhem Marchand:         - Write to FIFO
-
+# 2017/03/11, Guilhem Marchand:         - Lowering the CPU footprint: Write to FIFO files for AIX and Linux OS
 
 # Version 1.3.33
 
@@ -906,6 +905,7 @@ case $UNAME in
 
 	AIX )
 
+        # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
             ${nmon_command_fifo1} > ${PIDFILE} ;;
@@ -916,6 +916,7 @@ case $UNAME in
 
 	Linux )
 
+        # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
             nmon_command=${nmon_command_fifo1} ;;

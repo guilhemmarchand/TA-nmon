@@ -8,7 +8,7 @@
 # Disclaimer:  this provided "as is".
 # Date - June 2014
 
-# Version 1.3.33
+# Version 1.0.0
 
 # For AIX / Linux / Solaris
 
@@ -71,14 +71,25 @@ FIFO_VAR=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/${FIFO}
 # FIFO input
 FIFO_INPUT=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/${FIFO}/nmon.fifo
 
+####################################################################
+#############		Main Program 			############
+####################################################################
+
 # If the fifo does not yet exist, we are not ready to read
 if [ ! -p $FIFO_INPUT ]; then
 	echo "`date`, ${HOST} WARN, the fifo input file does exist yet ($FIFO_INPUT)"
 	exit 1
 fi
 
+# At startup, rotate any existing non empty .dat file if nmon_data.dat is not empty
+if [ -s $FIFO_VAR/nmon_data.dat ]; then
+    for dat_file in nmon_config.dat nmon_header.dat nmon_timestamp.dat nmon_data.dat; do
+        mv $FIFO_VAR/$dat_file $FIFO_VAR/${dat_file}.rotated
+    done
+fi
+
 # Clean any existing dat file in the fifo directory
-rm -f $SPLUNK_HOME/var/log/nmon/var/nmon_repository/${FIFO}/*.dat
+rm -f $FIFO_VAR/*.dat
 
 while IFS= read -r line
 do
@@ -95,7 +106,7 @@ do
         echo $line >> $FIFO_VAR/nmon_header.dat
     fi
 
-    # Save timestamp for later potential use
+    # Save timestamp for later usage
     echo $line | egrep -v '^ZZZZ,[0-9]+' >/dev/null
     if [ $? -eq 0 ]; then
         echo $line >> $FIFO_VAR/nmon_timestamp.dat

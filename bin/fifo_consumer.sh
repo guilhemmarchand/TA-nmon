@@ -3,7 +3,7 @@
 # set -x
 
 # Program name: fifo_consumer.sh
-# Purpose - consumme data produced by the fifo readers
+# Purpose - consume data produced by the fifo readers
 # Author - Guilhem Marchand
 # Disclaimer:  this provided "as is".
 # Date - June 2014
@@ -75,17 +75,50 @@ else
     INTERPRETER="python"
 fi
 
+############################################
+# functions
+############################################
+
 # consume function
 consume_data () {
 
 # fifo name (valid choices are: fifo1 | fifo2)
 FIFO=$1
 
-# consume fifo1
+# consume fifo
+
+# realtime
 nmon_config=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat
 nmon_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat
 nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat
 nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
+
+# rotated
+nmon_config_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat.rotated
+nmon_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat.rotated
+nmon_timestamp_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat.rotated
+nmon_data_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat.rotated
+
+# manage rotated data if existing, prevent any data loss
+
+# all files must be existing to be managed
+if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data_rotated ]; then
+
+    # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
+    head -1 $nmon_data_rotated | grep 'ZZZZ,T' >/dev/null
+    if [ $? -ne 0 ]; then
+        tail -1 $nmon_timestamp_rotated >$temp_file
+        cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+    else
+        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+    fi
+
+    # remove rotated
+    rm -f $SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/*.dat_rotated
+
+fi
+
+# Manage realtime files
 
 # all files must be existing to be managed
 if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
@@ -142,11 +175,22 @@ fi
 
 }
 
-# consume the data
+####################################################################
+#############		Main Program 			############
+####################################################################
+
+# consume fifo1
 consume_data fifo1
+
+# allow 1 sec idle
+sleep 1
+
+# consume fifo2
 consume_data fifo2
 
 # remove the temp file
-rm -f $temp_file
+if [ -f $temp_file ]; then
+    rm -f $temp_file
+fi
 
 exit 0
