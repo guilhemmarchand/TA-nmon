@@ -905,8 +905,8 @@ start_nmon () {
 case $UNAME in
 
 	AIX )
-		${nmon_command} > ${PIDFILE}
-        case $1 in
+
+        case $fifo_started in
         "fifo1")
             ${nmon_command_fifo1} > ${PIDFILE} ;;
         "fifo2")
@@ -916,7 +916,7 @@ case $UNAME in
 
 	Linux )
 
-        case $1 in
+        case $fifo_started in
         "fifo1")
             nmon_command=${nmon_command_fifo1} ;;
         "fifo2")
@@ -1129,16 +1129,25 @@ case $UNAME in
 
 start_fifo_reader () {
 
-FIFO=$1
+# Check fifo readers, start if either fifo1 or fifo2 is free
+fifo_started="none"
+running_fifo=`ps -ef | grep 'fifo_reader.sh' | grep -v grep`
+echo $running_fifo | grep 'fifo_reader.sh fifo1' >/dev/null
 
-# Verify that our fifo_reader are running, and start if required
-ps -ef | grep 'fifo_reader.sh ${FIFO}' | grep -v grep >/dev/null
-
-if [ $? -ne 0 ]; then
-    echo "`date`, ${HOST} INFO: starting the fifo_reader ${FIFO}"
-    nohup $APP/bin/fifo_reader.sh ${FIFO} </dev/null >/dev/null 2>&1 &
+if [ $? -eq 0 ]; then
+    echo "`date`, ${HOST} INFO: The fifo_reader fifo1 is running"
+	echo $running_fifo | grep 'fifo_reader.sh fifo2' >/dev/null
+	if [ $? -eq 0 ]; then
+        echo "`date`, ${HOST} INFO: The fifo_reader fifo2 is running"
+	else
+        echo "`date`, ${HOST} INFO: starting the fifo_reader fifo2"
+        nohup $APP/bin/fifo_reader.sh fifo2 </dev/null >/dev/null 2>&1 &
+        export fifo_started="fifo2"
+	fi
 else
-    echo "`date`, ${HOST} INFO: The fifo_reader ${FIFO} is running"
+    echo "`date`, ${HOST} INFO: starting the fifo_reader fifo1"
+    nohup $APP/bin/fifo_reader.sh fifo1 </dev/null >/dev/null 2>&1 &
+    export fifo_started="fifo1"
 fi
 
 }
@@ -1356,9 +1365,9 @@ if [ ! -f ${PIDFILE} ]; then
 		case $UNAME in
 
         AIX | Linux)
-		    start_fifo_reader fifo1
+		    start_fifo_reader
 		    sleep 1
-		    start_nmon fifo1
+		    start_nmon
 		    ;;
         Solaris)
 		    start_nmon ;;
@@ -1444,9 +1453,9 @@ else
             case $UNAME in
 
             AIX | Linux)
-    		    start_fifo_reader fifo1
+    		    start_fifo_reader
 	    	    sleep 1
-                start_nmon fifo1 ;;
+                start_nmon ;;
             Solaris)
                 start_nmon ;;
 
@@ -1530,9 +1539,9 @@ else
                         case $UNAME in
 
                         AIX | Linux)
-                            start_fifo_reader fifo2
+                            start_fifo_reader
                             sleep 1
-                            start_nmon fifo2 ;;
+                            start_nmon ;;
                         Solaris)
                             start_nmon ;;
 
@@ -1566,9 +1575,9 @@ else
 		case $UNAME in
 
         AIX | Linux)
-		    start_fifo_reader fifo1
+		    start_fifo_reader
 		    sleep 1
-		    start_nmon fifo1 ;;
+		    start_nmon ;;
         Solaris)
 		    start_nmon ;;
 
