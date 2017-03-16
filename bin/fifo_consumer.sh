@@ -75,6 +75,26 @@ else
     INTERPRETER="python"
 fi
 
+# default values relevant for our context
+nmon2csv_options="--mode realtime"
+
+# source default nmon.conf
+if [ -f $APP/default/nmon.conf ]; then
+	. $APP/default/nmon.conf
+fi
+
+# source local nmon.conf, if any
+
+# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/nmon|TA-nmon|PA-nmon/local
+if [ -f $APP/local/nmon.conf ]; then
+	. $APP/local/nmon.conf
+fi
+
+# On a per server basis, you can also set in /etc/nmon.conf
+if [ -f /etc/nmon.conf ]; then
+	. /etc/nmon.conf
+fi
+
 ############################################
 # functions
 ############################################
@@ -163,9 +183,9 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
     head -1 $nmon_data | grep 'ZZZZ,T' >/dev/null
     if [ $? -ne 0 ]; then
         tail -1 $nmon_timestamp >$temp_file
-        cat $nmon_config $nmon_header $temp_file $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        cat $nmon_config $nmon_header $temp_file $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     else
-        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # empty the nmon_data file

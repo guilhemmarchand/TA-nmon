@@ -201,3 +201,14 @@ AIX_options=<string>
 # is activated, the --fqdn argument will have no effect
 
 override_sys_hostname=<string>
+
+# Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
+# the following option allows specifying the options sent to the nmon2csv parsers
+
+# consult the documentation to get the full list of available options
+
+# --mode realtime --> explicitly manage realtime data (default)
+# --use_fqdn --> use the host fully qualified domain name
+# --json_output --> generate the performance data in json format instead of regular csv data
+
+nmon2csv_options=<string>
