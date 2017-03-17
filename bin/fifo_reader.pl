@@ -161,13 +161,11 @@ if ( !-p $fifo_path ) {
 else {
 
     my $fifoh;
-    open( $fifoh, "+<", $fifo_path ) or die "The FIFO file cant be found";
+    # Open the named pipe "a la shell" to ensure that we we will quite when the nmon process has ended as well
+    open($fifoh, "while IFS= read -r line; do echo \$line; done <$fifo_path|");
+
     while (<$fifoh>) {
         chomp($_);
-
-        if (length($_) == 0) {
-            break;
-        }
 
         $nmon_config_match = '^[AAA|BBB].+';
         $nmon_header_match = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,[^T].*';
