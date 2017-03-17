@@ -194,6 +194,9 @@ else {
             open(my $fh, '>>', $nmon_timestamp_dat) or die "Could not open file '$nmon_timestamp_dat' $!";
             print $fh "$_\n";
             close $fh;
+            open(my $fh, '>>', $nmon_data_dat) or die "Could not open file '$nmon_data_dat' $!";
+            print $fh "$_\n";
+            close $fh;
         }
 
         else
