@@ -18,8 +18,11 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 02/08/2016: V1.1.5: Guilhem Marchand:
 #                                         - Manage the TA-nmon_selfmode
+# - 03/17/2016: V1.1.6: Guilhem Marchand:
+#                                         - Increasing default value for csv cleaning to 14320 seconds
+#                                         - Include json cleaning
 
-$version = "1.1.5";
+$version = "1.1.6";
 
 use Time::Local;
 use Time::HiRes;
@@ -36,6 +39,7 @@ use File::stat;    # use the object-oriented interface to stat
 
 # Default values
 my $CSV_REPOSITORY    = "csv_repository";
+my $JSON_REPOSITORY    = "json_repository";
 my $APP               = "";
 my $CONFIG_REPOSITORY = "config_repository";
 my $NMON_REPOSITORY   = "nmon_repository";
@@ -44,6 +48,7 @@ my $verbose;
 
 $result = GetOptions(
     "csv_repository=s"    => \$CSV_REPOSITORY,       # string
+    "json_repository=s"    => \$JSON_REPOSITORY,     # string
     "config_repository=s" => \$CONFIG_REPOSITORY,    # string
     "nmon_repository=s"   => \$NMON_REPOSITORY,      # string
     "cleancsv"            => \$CLEANCSV,             # string
@@ -74,9 +79,11 @@ Available options are:
 	
 --cleancsv :Activate the purge of csv files from csv repository and config repository (see also options above)
 --maxseconds_csv <value> :Set the maximum file retention in seconds for csv data, every files older than this value will be permanently removed
+--maxseconds_json <value> :Set the maximum file retention in seconds for json data, every files older than this value will be permanently removed
 --maxseconds_nmon <value> :Set the maximum file retention in seconds for nmon files, every files older than this value will be permanently removed
 --approot <value> :Set a custom value for the Application root directory (default are: nmon / TA-nmon / PA-nmon)
 --csv_repository <value> :Set a custom location for directory containing csv data (default: csv_repository)
+--json_repository <value> :Set a custom location for directory containing json data (default: json_repository)
 --config_repository <value> :Set a custom location for directory containing config data (default: config_repository)
 --nmon_repository <value> :Set a custom location for directory containing nmon raw data (default: nmon_repository)
 --version :Show current program version \n
@@ -90,8 +97,11 @@ Available options are:
 ##      Parameters
 #################################################
 
-# Default values for CSV retention (10 minutes)
-my $MAXSECONDS_CSV_DEFAULT = 900;
+# Default values for CSV retention (4 hours less 1 minute)
+my $MAXSECONDS_CSV_DEFAULT = 14320;
+
+# Default values for CSV retention (4 hours less 1 minute)
+my $MAXSECONDS_JSON_DEFAULT = 14320;
 
 # Default values for NMON retention (1 day)
 my $MAXSECONDS_NMON_DEFAULT = 86400;
@@ -109,9 +119,6 @@ my $t_start = [Time::HiRes::gettimeofday];
 
 # Local time
 my $time = localtime;
-
-# Default Environment Variable SPLUNK_HOME, this shall be automatically defined if as the script shall be launched by Splunk
-my $SPLUNK_HOME = $ENV{SPLUNK_HOME};
 
 # Default Environment Variable SPLUNK_HOME, this shall be automatically defined if as the script shall be launched by Splunk
 my $SPLUNK_HOME = $ENV{SPLUNK_HOME};
@@ -183,6 +190,10 @@ if ( not "$MAXSECONDS_CSV" ) {
     $MAXSECONDS_CSV = $MAXSECONDS_CSV_DEFAULT;
 }
 
+if ( not "$MAXSECONDS_JSON" ) {
+    $MAXSECONDS_JSON = $MAXSECONDS_JSON_DEFAULT;
+}
+
 # check retention
 if ( not "$MAXSECONDS_NMON" ) {
     $MAXSECONDS_NMON = $MAXSECONDS_NMON_DEFAULT;
@@ -204,7 +215,7 @@ if ($CLEANCSV) {
 
     # CSV Items to clean
     @cleaning =
-      ( "$APP_VAR/$CSV_REPOSITORY/*.csv", "$APP_VAR/$CONFIG_REPOSITORY/*.csv" );
+      ( "$APP_VAR/$CSV_REPOSITORY/*.csv", "$APP_VAR/$JSON_REPOSITORY/*.json", "$APP_VAR/$CONFIG_REPOSITORY/*.csv" );
 
     # Enter loop
     foreach $key (@cleaning) {

@@ -20,6 +20,9 @@
 #                                         - Manage the TA-nmon_selfmode
 # - 03/12/2016: V1.1.16: Guilhem Marchand:
 #                                         - Prevents from generating errors when nmon2csv has not at least once
+# - 03/17/2016: V1.1.6: Guilhem Marchand:
+#                                         - Increasing default value for csv cleaning to 14320 seconds
+#                                         - Include json cleaning
 
 # Load libs
 
@@ -35,7 +38,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.16'
+version = '1.1.17'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -69,6 +72,10 @@ parser.add_argument('--maxseconds_csv', action='store', dest='MAXSECONDS_CSV', t
                     help='Set the maximum file retention in seconds for csv data, every files older'
                          ' than this value will be permanently removed')
 
+parser.add_argument('--maxseconds_json', action='store', dest='MAXSECONDS_JSON', type=check_negative,
+                    help='Set the maximum file retention in seconds for json data, every files older'
+                         ' than this value will be permanently removed')
+
 parser.add_argument('--maxseconds_nmon', action='store', dest='MAXSECONDS_NMON', type=check_negative,
                     help='Set the maximum file retention in seconds for nmon files, every files older'
                          ' than this value will be permanently removed')
@@ -79,6 +86,9 @@ parser.add_argument('--approot', action='store', dest='APP',
 
 parser.add_argument('--csv_repository', action='store', dest='CSV_REPOSITORY',
                     help='Set a custom location for directory containing csv data (default: csv_repository)')
+
+parser.add_argument('--json_repository', action='store', dest='JSON_REPOSITORY',
+                    help='Set a custom location for directory containing json data (default: json_repository)')
 
 parser.add_argument('--config_repository', action='store', dest='CONFIG_REPOSITORY',
                     help='Set a custom location for directory containing config data (default: config_repository)')
@@ -107,6 +117,7 @@ now = time.strftime("%c")
 
 # Set maxseconds
 maxseconds_csv = args.MAXSECONDS_CSV
+maxseconds_json = args.MAXSECONDS_JSON
 maxseconds_nmon = args.MAXSECONDS_NMON
 
 # Set cleancsv
@@ -123,6 +134,12 @@ if not args.CSV_REPOSITORY:
     csv_repository = "csv_repository"
 else:
     csv_repository = args.CSV_REPOSITORY
+
+# If the json_repository is not defined, apply default 'json_repository' value
+if not args.JSON_REPOSITORY:
+    json_repository = "json_repository"
+else:
+    json_repository = args.JSON_REPOSITORY
 
 # If the config_repository is not defined, apply default 'config_repository' value
 if not args.CONFIG_REPOSITORY:
@@ -233,15 +250,18 @@ if not os.path.exists(APP_MAINVAR):
 # Repositories definition
 if is_windows:
     CSV_DIR = APP_VAR + '\\' + csv_repository
+    JSON_DIR = APP_VAR + '\\' + json_repository
     CONFIG_DIR = APP_VAR + '\\' + config_repository
     NMON_DIR = APP_VAR + '\\' + nmon_repository
 else:
     CSV_DIR = APP_VAR + '/' + csv_repository
+    JSON_DIR = APP_VAR + '/' + json_repository
     CONFIG_DIR = APP_VAR + '/' + config_repository
     NMON_DIR = APP_VAR + '/' + nmon_repository
 
 # List of directories to be proceeded
 WORKING_DIR = {CSV_DIR, CONFIG_DIR}
+JSON_WORKING_DIR = {CSV_DIR, CONFIG_DIR}
 
 # Starting time of process
 start_time = time.time()
@@ -252,7 +272,11 @@ start_time = time.time()
 
 # Default value for CSV retention
 if maxseconds_csv is None:
-    maxseconds_csv = 900
+    maxseconds_csv = 14320
+
+# Default value for JSON retention
+if maxseconds_json is None:
+    maxseconds_json = 14320
 
 # Default value for NMON retention
 if maxseconds_nmon is None:
@@ -317,6 +341,56 @@ if cleancsv:
 
                 msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
                 print (msg)
+
+            for DIR in JSON_DIR:
+
+                if os.path.exists(DIR):
+                    # cd to directory
+                    os.chdir(DIR)
+
+                    # Verify we have data to manage
+                    counter = len(glob.glob1(DIR, "*.json"))
+
+                    # print (counter)
+
+                    if counter == 0:
+                        msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
+                        print(msg)
+
+                    else:
+
+                        # cd to directory
+                        os.chdir(DIR)
+
+                        # counter of files with retention expired
+                        counter_expired = 0
+
+                        curtime = time.time()
+                        limit = maxseconds_json
+
+                        for xfile in glob.glob('*.json'):
+
+                            filemtime = os.path.getmtime(xfile)
+
+                            if curtime - filemtime > limit:
+                                counter_expired += 1
+
+                                size_mb = os.path.getsize(xfile) / 1000.0 / 1000.0
+                                size_mb = format(size_mb, '.2f')
+
+                                mtime = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                      time.localtime(filemtime))  # Human readable datetime
+
+                                msg = 'Max set retention of ' + str(
+                                    maxseconds_json) + ' seconds expired for file: ' + xfile + ' size(MB): ' \
+                                      + str(size_mb) + ' mtime: ' + str(mtime)
+                                print(msg)
+
+                                os.remove(xfile)  # Permanently remove the file!
+
+                        msg = str(
+                            counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
+                        print(msg)
 
 # Proceed to NMON cleaning
 if os.path.exists(NMON_DIR):

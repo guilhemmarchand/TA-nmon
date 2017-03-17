@@ -11,7 +11,6 @@
 
 disabled = false
 move_policy = sinkhole
-recursive = false
 index = nmon
 sourcetype = nmon_processing
 crcSalt = <SOURCE>
@@ -27,7 +26,6 @@ crcSalt = <SOURCE>
 
 disabled = false
 move_policy = sinkhole
-recursive = false
 crcSalt = <SOURCE>
 index = nmon
 sourcetype = nmon_data
@@ -43,7 +41,6 @@ sourcetype = nmon_data
 
 disabled = false
 move_policy = sinkhole
-recursive = false
 crcSalt = <SOURCE>
 index = nmon
 sourcetype = nmon_config

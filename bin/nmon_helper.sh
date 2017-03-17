@@ -1152,6 +1152,16 @@ start_fifo_reader () {
 
 # Check fifo readers, start if either fifo1 or fifo2 is free
 fifo_started="none"
+
+# Verify Perl availability (Perl will be more commonly available than Python)
+PERL=`which perl >/dev/null 2>&1`
+
+if [ $? -eq 0 ]; then
+    INTERPRETER="perl"
+else
+    INTERPRETER="python"
+fi
+
 running_fifo=`ps -ef | egrep 'fifo_reader\.p[l|y]\s--fifo\sfifo[1|2]'`
 echo $running_fifo | grep 'fifo1' >/dev/null
 
@@ -1162,13 +1172,23 @@ if [ $? -eq 0 ]; then
         echo "`date`, ${HOST} INFO: The fifo_reader fifo2 is running"
 	else
         echo "`date`, ${HOST} INFO: starting the fifo_reader fifo2"
-        nohup $APP/bin/fifo_reader.py --fifo fifo2 </dev/null >/dev/null 2>&1 &
+        case $INTERPRETER in
+        "perl")
+            nohup $APP/bin/fifo_reader.pl --fifo fifo2 </dev/null >/dev/null 2>&1 & ;;
+        "python")
+            nohup $APP/bin/fifo_reader.py --fifo fifo2 </dev/null >/dev/null 2>&1 & ;;
+        esac
         echo $! > ${APP_VAR}/var/fifo_reader_fifo2.pid
         export fifo_started="fifo2"
 	fi
 else
     echo "`date`, ${HOST} INFO: starting the fifo_reader fifo1"
-    nohup $APP/bin/fifo_reader.py --fifo fifo1 </dev/null >/dev/null 2>&1 &
+    case $INTERPRETER in
+    "perl")
+        nohup $APP/bin/fifo_reader.pl --fifo fifo1 </dev/null >/dev/null 2>&1 & ;;
+    "python")
+        nohup $APP/bin/fifo_reader.py --fifo fifo1 </dev/null >/dev/null 2>&1 & ;;
+    esac
     echo $! > /tmp/fifo_reader_fifo1.pid
     export fifo_started="fifo1"
 fi
