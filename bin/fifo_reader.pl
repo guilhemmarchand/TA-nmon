@@ -162,7 +162,7 @@ else {
 
     my $fifoh;
     # Open the named pipe "a la shell" to ensure that we we will quite when the nmon process has ended as well
-    open($fifoh, "while IFS= read -r line; do echo \$line; done <$fifo_path|");
+    open($fifoh, "$APP/bin/fifo_reader.sh $fifo_path|");
 
     while (<$fifoh>) {
         chomp($_);

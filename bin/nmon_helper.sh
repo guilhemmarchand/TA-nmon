@@ -1154,12 +1154,12 @@ start_fifo_reader () {
 fifo_started="none"
 
 # Verify Perl availability (Perl will be more commonly available than Python)
-PERL=`which perl >/dev/null 2>&1`
+PYTHON=`which python >/dev/null 2>&1`
 
 if [ $? -eq 0 ]; then
-    INTERPRETER="perl"
-else
     INTERPRETER="python"
+else
+    INTERPRETER="perl"
 fi
 
 running_fifo=`ps -ef | egrep 'fifo_reader\.p[l|y]\s--fifo\sfifo[1|2]'`
