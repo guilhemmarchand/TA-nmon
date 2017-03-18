@@ -120,7 +120,7 @@ if ( !-d "$APP_MAINVAR" ) {
 
 # check fifo_name
 if ( not "$fifo_name" ) {
-    print( "\n$time ERROR: the --fifo_name <name of fifo> is mandatory\n" );
+    print("\n$time ERROR: the --fifo_name <name of fifo> is mandatory\n");
     die;
 }
 
@@ -134,16 +134,35 @@ my $fifo_path = "$APP_VAR/nmon_repository/$fifo_name/nmon.fifo";
 # realtime files
 my $nmon_config_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_config.dat";
 my $nmon_header_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_header.dat";
-my $nmon_data_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_data.dat";
-my $nmon_timestamp_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_timestamp.dat";
+my $nmon_data_dat   = "$APP_VAR/nmon_repository/$fifo_name/nmon_data.dat";
+my $nmon_timestamp_dat =
+  "$APP_VAR/nmon_repository/$fifo_name/nmon_timestamp.dat";
 
-@nmon_dat = ( "$nmon_config_dat", "$nmon_header_dat", "$nmon_data_dat", "$nmon_timestamp_dat" );
+@nmon_dat = (
+    "$nmon_config_dat", "$nmon_header_dat",
+    "$nmon_data_dat",   "$nmon_timestamp_dat"
+);
+
+# Remove any existing rotated file
+foreach $file (@nmon_dat) {
+    $rotated_file = "$file.rotated";
+    if (-e $rotated_file) {
+        unlink $rotated_file;
+    }
+}
 
 # Manage existing files and do the rotation if required
 if ( !-z $nmon_data_dat ) {
     foreach $file (@nmon_dat) {
         $rotated_file = "$file.rotated";
-        move($file, $rotated_file);
+        move( $file, $rotated_file );
+    }
+}
+else {
+    foreach $file (@nmon_dat) {
+        if ( -e $file ) {
+            unlink $file;
+        }
     }
 }
 
@@ -161,47 +180,53 @@ if ( !-p $fifo_path ) {
 else {
 
     my $fifoh;
-    # Open the named pipe "a la shell" to ensure that we we will quite when the nmon process has ended as well
-    open($fifoh, "$APP/bin/fifo_reader.sh $fifo_path|");
+
+# Open the named pipe "a la shell" to ensure that we we will quite when the nmon process has ended as well
+    open( $fifoh, "$APP/bin/fifo_reader.sh $fifo_path|" );
 
     while (<$fifoh>) {
         chomp($_);
 
-        $nmon_config_match = '^[AAA|BBB].+';
-        $nmon_header_match = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,[^T].*';
+        $nmon_config_match     = '^[AAA|BBB].+';
+        $nmon_header_match     = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,[^T].*';
         $nmon_header_TOP_match = '^TOP,(?!\d*,)';
-        $nmon_timestamp_match = '^ZZZZ,T\d*';
+        $nmon_timestamp_match  = '^ZZZZ,T\d*';
 
         if ( $_ =~ /$nmon_config_match/ ) {
-            open(my $fh, '>>', $nmon_config_dat) or die "Could not open file '$nmon_config_dat' $!";
+            open( my $fh, '>>', $nmon_config_dat )
+              or die "Could not open file '$nmon_config_dat' $!";
             print $fh "$_\n";
             close $fh;
         }
 
         elsif ( $_ =~ /$nmon_header_match/ ) {
-            open(my $fh, '>>', $nmon_header_dat) or die "Could not open file '$nmon_header_dat' $!";
+            open( my $fh, '>>', $nmon_header_dat )
+              or die "Could not open file '$nmon_header_dat' $!";
             print $fh "$_\n";
             close $fh;
         }
 
         elsif ( $_ =~ /$nmon_header_TOP_match/ ) {
-            open(my $fh, '>>', $nmon_header_dat) or die "Could not open file '$nmon_header_dat' $!";
+            open( my $fh, '>>', $nmon_header_dat )
+              or die "Could not open file '$nmon_header_dat' $!";
             print $fh "$_\n";
             close $fh;
         }
 
         elsif ( $_ =~ /$nmon_timestamp_match/ ) {
-            open(my $fh, '>>', $nmon_timestamp_dat) or die "Could not open file '$nmon_timestamp_dat' $!";
+            open( my $fh, '>>', $nmon_timestamp_dat )
+              or die "Could not open file '$nmon_timestamp_dat' $!";
             print $fh "$_\n";
             close $fh;
-            open(my $fh, '>>', $nmon_data_dat) or die "Could not open file '$nmon_data_dat' $!";
+            open( my $fh, '>>', $nmon_data_dat )
+              or die "Could not open file '$nmon_data_dat' $!";
             print $fh "$_\n";
             close $fh;
         }
 
-        else
-        {
-            open(my $fh, '>>', $nmon_data_dat) or die "Could not open file '$nmon_data_dat' $!";
+        else {
+            open( my $fh, '>>', $nmon_data_dat )
+              or die "Could not open file '$nmon_data_dat' $!";
             print $fh "$_\n";
             close $fh;
         }
