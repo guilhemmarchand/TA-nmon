@@ -24,11 +24,8 @@
 
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
-# empty nmon_external.csv
->$NMON_EXTERNAL_DIR/nmon_external.dat
-
 # number of running processes
-echo "PROCCOUNT,Process Count, Procs" >>$NMON_EXTERNAL_DIR/nmon_external.dat
+echo "PROCCOUNT,Process Count, Procs" >>$NMON_EXTERNAL_DIR/nmon.fifo
 
 # uptime information
-echo "UPTIME,Server Uptime and load,uptime" >>$NMON_EXTERNAL_DIR/nmon_external.dat
+echo "UPTIME,Server Uptime and load,uptime" >>$NMON_EXTERNAL_DIR/nmon.fifo

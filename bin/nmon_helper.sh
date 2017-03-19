@@ -1012,10 +1012,7 @@ case $UNAME in
 
 	SunOS )
 
-	    # nmon_external
-	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
-	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
-	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+	    # nmon_external is currently no supported on Solaris
 
 		NMONNOSAFILE=1 # Do not generate useless sa files
 		export NMONNOSAFILE
@@ -1439,7 +1436,7 @@ if [ ! -f ${PIDFILE} ]; then
 		    sleep 1
 		    start_nmon
 		    ;;
-        Solaris)
+        SunOS)
 		    start_nmon ;;
 
         esac
@@ -1534,7 +1531,7 @@ else
     		    start_fifo_reader
 	    	    sleep 1
                 start_nmon ;;
-            Solaris)
+            SunOS)
                 start_nmon ;;
 
             esac
@@ -1620,7 +1617,7 @@ else
                             start_fifo_reader
                             sleep 1
                             start_nmon ;;
-                        Solaris)
+                        SunOS)
                             start_nmon ;;
 
                         esac
@@ -1656,7 +1653,7 @@ else
 		    start_fifo_reader
 		    sleep 1
 		    start_nmon ;;
-        Solaris)
+        SunOS)
 		    start_nmon ;;
 
         esac

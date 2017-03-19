@@ -1193,6 +1193,17 @@ foreach $FILENAME (@nmon_files) {
 
     }    # end foreach
 
+    foreach $key (@nmon_external) {
+        $BASEFILENAME =
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+        $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
+
+        &static_sections_insert($key);
+        $now = time();
+        $now = $now - $start;
+
+    }    # end foreach
+
     # These sections are specific for Micro Partitions, can be AIX or PowerLinux
     if ( $OStype eq "AIX" || $OStype eq "Linux" || $OStype eq "Unknown" ) {
 
