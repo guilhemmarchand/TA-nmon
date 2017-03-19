@@ -79,7 +79,8 @@ nmon_config_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_config.dat'
 nmon_header_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_header.dat'
 nmon_data_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_data.dat'
 nmon_timestamp_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_timestamp.dat'
-nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_timestamp_dat, nmon_data_dat}
+nmon_external_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_external.dat'
+nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_timestamp_dat, nmon_data_dat, nmon_external_dat}
 
 # Manage existing files and do the rotation if required
 if os.path.exists(nmon_data_dat) and os.path.getsize(nmon_data_dat) > 0:

@@ -112,12 +112,14 @@ nmon_config=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat
 nmon_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat
 nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat
 nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
+nmon_external=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat
 
 # rotated
 nmon_config_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat.rotated
 nmon_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat.rotated
 nmon_timestamp_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat.rotated
 nmon_data_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat.rotated
+nmon_external_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat.rotated
 
 # manage rotated data if existing, prevent any data loss
 
@@ -128,9 +130,9 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
     head -1 $nmon_data_rotated | grep 'ZZZZ,T' >/dev/null
     if [ $? -ne 0 ]; then
         tail -1 $nmon_timestamp_rotated >$temp_file
-        cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
     else
-        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
     fi
 
     # remove rotated
@@ -183,9 +185,9 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
     head -1 $nmon_data | grep 'ZZZZ,T' >/dev/null
     if [ $? -ne 0 ]; then
         tail -1 $nmon_timestamp >$temp_file
-        cat $nmon_config $nmon_header $temp_file $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config $nmon_header $temp_file $nmon_data $nmon_external | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     else
-        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config $nmon_header $nmon_data $nmon_external | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # empty the nmon_data file

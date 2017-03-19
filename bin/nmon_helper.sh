@@ -67,8 +67,9 @@
 # 2017/02/26, Guilhem Marchand:         - Potential redirection issue
 #                                       - Avoid bc utilization and check unlimited linux capture type rather than range
 # 2017/03/11, Guilhem Marchand:         - Lowering the CPU footprint: Write to FIFO files for AIX and Linux OS
+# 2017/03/18, Guilhem Marchand:         - Implement the nmon external feature
 
-# Version 1.3.33
+# Version 1.3.34
 
 # For AIX / Linux / Solaris
 
@@ -925,6 +926,11 @@ case $UNAME in
 
 	AIX )
 
+	    # nmon_external
+	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
+	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
+	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
@@ -935,6 +941,11 @@ case $UNAME in
 	;;
 
 	Linux )
+
+	    # nmon_external
+	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
+	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
+        export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
 
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
@@ -1000,6 +1011,12 @@ case $UNAME in
 	;;
 
 	SunOS )
+
+	    # nmon_external
+	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
+	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
+	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+
 		NMONNOSAFILE=1 # Do not generate useless sa files
 		export NMONNOSAFILE
 

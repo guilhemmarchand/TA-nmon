@@ -151,6 +151,7 @@
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
 # - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 # - 03/02/2017: V1.1.30: Guilhem Marchand: Manage the option json mode generation for performance data
+# - 03/19/2017: V1.1.31: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
 
 # Load libs
 
@@ -171,7 +172,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.30'
+nmon2csv_version = '1.1.31'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -183,60 +184,62 @@ nmon2csv_version = '1.1.30'
 #      Parameters
 #################################################
 
-# Customizations goes here:
+# The nmon sections to be proceeded is not anymore statically defined
+# The sections are now defined through the nmonparser_config.json file located eith in default or local
 
 # Sections of Performance Monitors with standard dynamic header but no "device" notion that would require the data
 # to be transposed.
 # You can add or remove any section depending on your needs
-static_section = ["CPUnn", "CPU_ALL", "FILE", "MEM", "PAGE", "MEMNEW", "MEMUSE", "PROC", "VM", "NFSSVRV2",
-                  "NFSSVRV3", "NFSSVRV4", "NFSCLIV2", "NFSCLIV3", "NFSCLIV4"]
+static_section = ""
 
 # Some specific sections per OS
-Solaris_static_section = ["PROCSOL"]
+Solaris_static_section = ""
 
 # Some specfic sections for micro partitions (AIX or Power Linux)
-LPAR_static_section = ["LPAR", "POOLS"]
+LPAR_static_section = ""
 
 # This is the TOP section which contains Performance data of top processes
 # It has a specific structure and requires specific treatment
-top_section = ["TOP"]
+top_section = ""
 
 # This is the UARG section which contains full command line arguments with some other information such as PID, user,
 # group and so on.
 # It has a specific structure and requires specific treatment
-uarg_section = ["UARG"]
+uarg_section = ""
 
 # Sections of Performance Monitors with "device" notion, data needs to be transposed by time to be fully exploitable
 # This particular section will check for up to 10 subsection per Performance Monitor
 # By default, Nmon create a new subsection (add an increment from 1 to x) per step of 150 devices
 # 1500 devices (disks) will be taken in charge in default configuration
-dynamic_section1 = ["DISKBUSY", "DISKBSIZE", "DISKREAD", "DISKWRITE", "DISKXFER", "DISKRIO", "DISKWIO", "DISKREADSERV",
-                    "DISKWRITESERV"]
+dynamic_section1 = ""
 
 # Sections of Performance Monitors with "device" notion, data needs to be transposed by time to be fully exploitable
-dynamic_section2 = ["IOADAPT", "NETERROR", "NET", "NETPACKET", "JFSFILE", "JFSINODE", "FCREAD", "FCWRITE", "FCXFERIN",
-                    "FCXFEROUT"]
+dynamic_section2 = ""
 
 # disks extended statistics (DG*)
-disk_extended_section = ["DGBUSY", "DGREAD", "DGWRITE", "DGSIZE", "DGXFER", "DGREADS", "DGREADMERGE", "DGREADSERV",
-                  "DGWRITES", "DGWRITEMERGE", "DGWRITESERV", "DGINFLIGHT", "DGIOTIME", "DGBACKLOG"]
+disk_extended_section = ""
 
 # Sections of Performance Monitors for Solaris
 
 # Zone, Project, Task... performance
-solaris_WLM = ["WLMPROJECTCPU", "WLMZONECPU", "WLMTASKCPU", "WLMUSERCPU", "WLMPROJECTMEM", "WLMZONEMEM", "WLMTASKMEM",
-               "WLMUSERMEM"]
+solaris_WLM = ""
 
 # Veritas Storage Manager
-solaris_VxVM = ["VxVMREAD", "VxVMWRITE", "VxVMXFER", "VxVMBSIZE", "VxVMBUSY", "VxVMSVCTM", "VxVMWAITTM"]
+solaris_VxVM = ""
 
-solaris_dynamic_various = ["DISKSVCTM", "DISKWAITTM"]
+solaris_dynamic_various = ""
 
 # AIX only dynamic sections
-AIX_dynamic_various = ["SEA", "SEAPACKET", "SEACHPHY"]
+AIX_dynamic_various = ""
 
 # AIX Workload Management
-AIX_WLM = ["WLMCPU", "WLMMEM", "WLMBIO"]
+AIX_WLM = ""
+
+# nmon_external
+nmon_external = ""
+
+# nmon external with transposition of data
+nmon_external_transposed = ""
 
 #################################################
 #      Variables
@@ -420,6 +423,40 @@ ZZZZ_timestamp = "-1"
 INTERVAL = "-1"
 SNAPSHOTS = "-1"
 sanity_check = "-1"
+
+# load configuration from json config file
+# the config_file json may exist in default or local (if customized)
+# this will define the list of nmon section we want to extract
+
+if is_windows:
+    if os.path.isfile(APP + "\\local\\nmonparser_config.json"):
+        nmonparser_config = APP + "\\local\\nmonparser_config.json"
+    else:
+        nmonparser_config = APP + "\\default\\nmonparser_config.json"
+else:
+    if os.path.isfile(APP + "/local/nmonparser_config.json"):
+        nmonparser_config = APP + "/local/nmonparser_config.json"
+    else:
+        nmonparser_config = APP + "/default/nmonparser_config.json"
+
+with open(nmonparser_config) as nmonparser_config_json:
+    config_json = json.load(nmonparser_config_json)
+
+static_section = config_json['static_section']
+Solaris_static_section = config_json['Solaris_static_section']
+LPAR_static_section = config_json['LPAR_static_section']
+top_section = config_json['top_section']
+uarg_section = config_json['uarg_section']
+dynamic_section1 = config_json['dynamic_section1']
+dynamic_section2 = config_json['dynamic_section2']
+disk_extended_section = config_json['disk_extended_section']
+solaris_WLM = config_json['solaris_WLM']
+solaris_VxVM = config_json['solaris_VxVM']
+solaris_dynamic_various = config_json['solaris_dynamic_various']
+AIX_dynamic_various = config_json['AIX_dynamic_various']
+AIX_WLM = config_json['AIX_WLM']
+nmon_external = config_json['nmon_external']
+nmon_external_transposed = config_json['nmon_external_transposed']
 
 #################################################
 #      Arguments
@@ -1827,6 +1864,10 @@ if OStype in ("Solaris", "Unknown"):
     for section in Solaris_static_section:
         standard_section_fn(section)
 
+# nmon external
+for section in nmon_external:
+    standard_section_fn(section)
+
 ###################
 # TOP section: has a specific structure with uncommon fields, needs to be treated separately
 ###################
@@ -2829,6 +2870,14 @@ if OStype in ("AIX", "Unknown"):
         dynamic_section_fn(section)
     for section in AIX_WLM:
         dynamic_section_fn(section)
+
+###################
+# nmon external transposed
+###################
+
+# nmon external with transposition
+for section in nmon_external_transposed:
+    dynamic_section_fn(section)
 
 ###################
 # Solaris Sections : data requires to be transposed to be exploitable within Splunk
