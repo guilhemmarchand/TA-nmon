@@ -885,7 +885,24 @@ PIDFILE=${APP_VAR}/nmon.pid
 # fifo files are currently supported only on AIX and Linux
 case $UNAME in
 
-AIX|Linux)
+# AIX does not support creating fifo files before starting nmon
+AIX)
+
+    # FIFO file 1
+    FIFO1_DIR=${NMON_REPOSITORY}/fifo1
+    FIFO1=${FIFO1_DIR}/nmon.fifo
+
+    # FIFO file 2
+    FIFO2_DIR=${NMON_REPOSITORY}/fifo2
+    FIFO2=${FIFO2_DIR}/nmon.fifo
+
+    # create dir
+    [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
+    [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
+
+;;
+
+Linux)
 
     # FIFO file 1
     FIFO1_DIR=${NMON_REPOSITORY}/fifo1
@@ -907,8 +924,8 @@ AIX|Linux)
     if [ ! -p $FIFO2 ]; then
         mkfifo $FIFO2
     fi
-
 ;;
+
 esac
 
 # csv_repository
@@ -1306,6 +1323,12 @@ AIX )
 	if [ $? -ne 0 ]; then
 		AIX_options="${AIX_options} -p"
 	fi
+
+	# Since release 1.3.0, we use fifo files, -f option is prohibited
+    echo ${AIX_options} | grep '\-f' >/dev/null
+    if [ $? -eq 0 ]; then
+            AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
+    fi
 
 	case ${AIX_topas_nmon} in
 	
