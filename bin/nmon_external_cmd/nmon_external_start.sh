@@ -25,7 +25,7 @@
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # number of running processes
-echo "PROCCOUNT,Process Count, Procs" >>$NMON_EXTERNAL_DIR/nmon.fifo
+echo "PROCCOUNT,Process Count,nb_running_processes" >>$NMON_EXTERNAL_DIR/nmon.fifo
 
 # uptime information
-echo "UPTIME,Server Uptime and load,uptime" >>$NMON_EXTERNAL_DIR/nmon.fifo
+echo "UPTIME,Server Uptime and load,uptime_stdout" >>$NMON_EXTERNAL_DIR/nmon.fifo
