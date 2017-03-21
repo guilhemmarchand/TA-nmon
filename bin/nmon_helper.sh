@@ -900,6 +900,17 @@ AIX)
     [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
     [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
 
+    # fifo files must be created by nmon startup
+    # clean the fifo files if they already exist
+    # create fifo files if required
+    if [ -p $FIFO1 ]; then
+        rm -f $FIFO1
+    fi
+
+    if [ -p $FIFO2 ]; then
+        rm -f $FIFO2
+    fi
+
 ;;
 
 Linux)
