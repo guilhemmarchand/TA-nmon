@@ -152,6 +152,7 @@
 # - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 # - 03/02/2017: V1.1.30: Guilhem Marchand: Manage the option json mode generation for performance data
 # - 03/19/2017: V1.1.31: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
+# - 03/22/2017: V1.1.32: Guilhem Marchand: Power Linux serial number identification correction
 
 # Load libs
 
@@ -172,7 +173,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.31'
+nmon2csv_version = '1.1.32'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -781,9 +782,9 @@ for line in data:
         print("NMON VERSION:", VERSION)
 
     # Set SN
-    sn = re.match(r'^(BBB.+)(systemid.+)(IBM,)(\w+)(.+)\n', line)
+    sn = re.match(r'^BBB\w*,[^,]*,[^,]*,\"(?:systemid|serial_number)[^,]*IBM,(\w*)[\s|\"].*\n', line)
     if sn:
-        SN = sn.group(4)
+        SN = sn.group(1)
         print("SerialNumber:", SN)
 
     # Set DATE

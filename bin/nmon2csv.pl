@@ -555,14 +555,6 @@ while ( defined( my $l = <FILE> ) ) {
         $nmon_second = $3;
     }
 
-    # If SN is undetermined, set it equal to HOSTNAME
-    if ( $l =~ m/BBB.+systemid.+IBM,(\w+).+/ ) {
-        $SN = $1;
-    }
-    else {
-        $SN = $HOSTNAME;
-    }
-
     # Get Nmon version
     if ( $l =~ m/AAA\,version\,(.+)/ ) {
         $VERSION = $1;
@@ -2231,12 +2223,20 @@ sub config_extract {
     $DATE = &get_setting( "AAA,date", 2, "," );
     $TIME = &get_setting( "AAA,time", 2, "," );
 
-    if ( $AIXVER eq "-1" ) {
-        $SN = $HOSTNAME;    # Probably a Linux host
-    }
-    else {
+    # for AIX
+    if ( $AIXVER ne "-1" ) {
         $SN = &get_setting( "systemid", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];    # "systemid IBM,SN ..."
+        $SN = ( split( /\s+/, $SN ) )[0];                # "systemid IBM,SN ..."
+    }
+    # for Power Linux
+    else {
+        $SN = &get_setting( "serial_number", 4, "," );
+        $SN = ( split( /\s+/, $SN ) )[0];                # "serial_number=IBM,SN ..."
+    }
+
+    # undeterminated
+    if ( $SN eq "-1" ) {
+        $SN = $HOSTNAME;
     }
 
     # write event header
@@ -3367,12 +3367,20 @@ sub get_nmon_data {
     $STARTTIME = &get_setting( "AAA,time", 2, "," );
     ( $HR, $MIN ) = split( /\:/, $STARTTIME );
 
-    if ( $AIXVER eq "-1" ) {
-        $SN = $HOSTNAME;                                 # Probably a Linux host
-    }
-    else {
+    # for AIX
+    if ( $AIXVER ne "-1" ) {
         $SN = &get_setting( "systemid", 4, "," );
         $SN = ( split( /\s+/, $SN ) )[0];                # "systemid IBM,SN ..."
+    }
+    # for Power Linux
+    else {
+        $SN = &get_setting( "serial_number", 4, "," );
+        $SN = ( split( /\s+/, $SN ) )[0];                # "serial_number=IBM,SN ..."
+    }
+
+    # undeterminated
+    if ( $SN eq "-1" ) {
+        $SN = $HOSTNAME;
     }
 
     $TYPE = &get_setting( "^BBBP.*Type", 3, "," );
