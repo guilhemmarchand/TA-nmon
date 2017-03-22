@@ -194,11 +194,13 @@ Solaris_UARG=<string>
 ### AIX OPTIONS ###
 ########################################################################################################################
 
+# CAUTION: Since release 1.3.0, we use fifo files, which requires the option "-yoverwrite=1"
+
 # Change this line if you add or remove common options for AIX, do not change NFS options here (see NFS options)
 # the -p option is mandatory as it is used at launch time to save instance pid
 
 # Default value:
-# AIX_options="-f -T -A -d -K -L -M -P -^ -p"
+# AIX_options="-f -T -A -d -K -L -M -P -^ -p -yoverwrite=1"
 
 AIX_options=<string>
 

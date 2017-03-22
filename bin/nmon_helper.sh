@@ -885,8 +885,7 @@ PIDFILE=${APP_VAR}/nmon.pid
 # fifo files are currently supported only on AIX and Linux
 case $UNAME in
 
-# AIX does not support creating fifo files before starting nmon
-AIX)
+AIX|Linux)
 
     # FIFO file 1
     FIFO1_DIR=${NMON_REPOSITORY}/fifo1
@@ -900,32 +899,14 @@ AIX)
     [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
     [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
 
-    # fifo files must be created by nmon startup
-    # clean the fifo files if they already exist
-    # create fifo files if required
-    if [ -p $FIFO1 ]; then
+    # ensure fifo files do not exist currently as regular files instead of named pipe
+    if [ -s $FIFO1 ]; then
         rm -f $FIFO1
     fi
 
-    if [ -p $FIFO2 ]; then
+    if [ -s $FIFO2 ]; then
         rm -f $FIFO2
     fi
-
-;;
-
-Linux)
-
-    # FIFO file 1
-    FIFO1_DIR=${NMON_REPOSITORY}/fifo1
-    FIFO1=${FIFO1_DIR}/nmon.fifo
-
-    # FIFO file 2
-    FIFO2_DIR=${NMON_REPOSITORY}/fifo2
-    FIFO2=${FIFO2_DIR}/nmon.fifo
-
-    # create dir
-    [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
-    [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
 
     # create fifo files if required
     if [ ! -p $FIFO1 ]; then
@@ -1231,7 +1212,7 @@ else
     "python")
         nohup $APP/bin/fifo_reader.py --fifo fifo1 </dev/null >/dev/null 2>&1 & ;;
     esac
-    echo $! > /tmp/fifo_reader_fifo1.pid
+    echo $! > ${APP_VAR}/var/fifo_reader_fifo1.pid
     export fifo_started="fifo1"
 fi
 
@@ -1339,6 +1320,12 @@ AIX )
     echo ${AIX_options} | grep '\-f' >/dev/null
     if [ $? -eq 0 ]; then
             AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
+    fi
+
+    # As well, the option "-yoverwrite=1" is mandatory
+    echo ${AIX_options} | grep 'yoverwrite' >/dev/null
+    if [ $? -ne 0 ]; then
+            AIX_options="${AIX_options} -yoverwrite=1"
     fi
 
 	case ${AIX_topas_nmon} in
