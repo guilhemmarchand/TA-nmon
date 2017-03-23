@@ -174,7 +174,7 @@ else {
 
 if ( !-p $fifo_path ) {
     print(
-"\n$time INFO: The application var directory does not exist yet, we are not ready to start.\n"
+"\n$time INFO: The fifo file $fifo_path does not exist yet, we are not ready to start.\n"
     );
     exit 0;
 
@@ -190,7 +190,7 @@ else {
             chomp($_);
 
             $nmon_config_match     = '^[AAA|BBB].+';
-            $nmon_header_match     = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,[^T].*';
+            $nmon_header_match     = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,}).*';
             $nmon_header_TOP_match = '^TOP,(?!\d*,)';
             $nmon_timestamp_match  = '^ZZZZ,T\d*';
 
