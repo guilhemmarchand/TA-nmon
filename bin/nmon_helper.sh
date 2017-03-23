@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# set -x
+set -x
 
 # Program name: nmon_helper.sh
 # Purpose - nmon sample script to start collecting data with a 1mn interval refresh
@@ -930,7 +930,7 @@ esac
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
-
+set -x
 case $UNAME in
 
 	AIX )
@@ -1185,7 +1185,8 @@ else
     INTERPRETER="perl"
 fi
 
-running_fifo=`ps -ef | egrep 'fifo_reader\.p[l|y]\s--fifo\sfifo[1|2]'`
+# be portable
+running_fifo=`ps -ef | awk '/fifo_reader.py --fifo fifo1/ || /fifo_reader.py --fifo fifo2/ || /fifo_reader.pl --fifo fifo1/ || /fifo_reader.pl --fifo fifo2/' | grep -v awk`
 echo $running_fifo | grep 'fifo1' >/dev/null
 
 if [ $? -eq 0 ]; then
