@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x
+# set -x
 
 # Program name: nmon_helper.sh
 # Purpose - nmon sample script to start collecting data with a 1mn interval refresh
@@ -930,7 +930,7 @@ esac
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
-set -x
+
 case $UNAME in
 
 	AIX )
