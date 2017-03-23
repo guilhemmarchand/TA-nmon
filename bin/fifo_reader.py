@@ -88,7 +88,8 @@ if os.path.exists(nmon_data_dat) and os.path.getsize(nmon_data_dat) > 0:
         rotated_file = str(file) + ".rotated"
         if os.path.isfile(rotated_file):
             os.remove(rotated_file)
-        os.rename(file, rotated_file)
+        if os.path.isfile(file):
+            os.rename(file, rotated_file)
 
 elif os.path.exists(nmon_data_dat):
     for file in nmon_dat:
