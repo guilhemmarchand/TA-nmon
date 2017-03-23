@@ -127,8 +127,13 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
     # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
     head -1 $nmon_data_rotated | grep 'ZZZZ,T' >/dev/null
     if [ $? -ne 0 ]; then
-        tail -1 $nmon_timestamp_rotated >$temp_file
-        cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        # check timestamp dat exists before processing
+        # there is no else possible, if the the timestamp data file does not exist, there is nothing we can do
+        # and the parser will raise an error
+        if [ -f $nmon_timestamp_rotated ]; then
+            tail -1 $nmon_timestamp_rotated >$temp_file
+            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        fi
     else
         cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
     fi
