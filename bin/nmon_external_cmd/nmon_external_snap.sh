@@ -1,4 +1,4 @@
-#!//bin/sh
+#!/bin/sh
 
 # Program name: nmon_external_snap.sh
 # Purpose - Add external command results to extend nmon data
