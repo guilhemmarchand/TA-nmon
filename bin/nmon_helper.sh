@@ -68,8 +68,9 @@
 #                                       - Avoid bc utilization and check unlimited linux capture type rather than range
 # 2017/03/11, Guilhem Marchand:         - Lowering the CPU footprint: Write to FIFO files for AIX and Linux OS
 # 2017/03/18, Guilhem Marchand:         - Implement the nmon external feature
+# 2017/03/24, Guilhem Marchand:         - Be Python version restrictive for the fifo_reader choice
 
-# Version 1.3.34
+# Version 1.3.35
 
 # For AIX / Linux / Solaris
 
@@ -1180,7 +1181,17 @@ fifo_started="none"
 PYTHON=`which python >/dev/null 2>&1`
 
 if [ $? -eq 0 ]; then
-    INTERPRETER="python"
+
+	# Check Python version, nmon2csv.py compatibility starts with Python version 2.6.6
+	python_subversion=`python --version 2>&1`
+
+	case $python_subversion in
+	*" 2.7"*)
+		INTERPRETER="python" ;;
+	*)
+		INTERPRETER="perl" ;;
+	esac
+
 else
     INTERPRETER="perl"
 fi

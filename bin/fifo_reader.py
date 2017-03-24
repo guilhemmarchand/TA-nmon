@@ -5,6 +5,7 @@ import sys
 import optparse
 import logging
 import re
+import subprocess
 
 # script version
 version = '1.0.0'
@@ -41,6 +42,33 @@ if not os.path.exists(APP_VAR):
     logging.info(
         'The application var directory does not exist yet, we are not ready to start')
     sys.exit(0)
+
+# APP Directories for standard TA-nmon, TA-nmon_selfmode, PA-nmon
+TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
+TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
+PA_NMON_APP = SPLUNK_HOME + '/etc/slave-apps/PA-nmon'
+PA_NMON_APP_STANDALONE = SPLUNK_HOME + '/etc/apps/PA-nmon'
+
+# Empty APP
+APP = ''
+
+# Verify APP exist
+if os.path.exists(TA_NMON_APP):
+    APP = TA_NMON_APP
+elif os.path.exists(TA_NMON_SELFMODE_APP):
+    APP = TA_NMON_SELFMODE_APP
+elif os.path.exists(PA_NMON_APP):
+    APP = PA_NMON_APP
+elif os.path.exists(PA_NMON_APP_STANDALONE):
+    APP = PA_NMON_APP_STANDALONE
+else:
+    msg = 'The Application root directory could not be found, is TA-nmon / PA-nmon installed ? We tried: ' + \
+          str(TA_NMON_APP) + ' ' + str(PA_NMON_APP)
+    logging.error(msg)
+    sys.exit(1)
+
+# fifo_reader.sh
+fifo_reader = APP + "/bin/fifo_reader.sh"
 
 #################################################
 #      Arguments
@@ -106,11 +134,15 @@ if not os.path.exists(fifo_path):
         'The fifo file ' + fifo_path + ' does not exist yet, we are not ready to start')
     sys.exit(0)
 else:
-    fifo = open(fifo_path, "r")
+    # we use the fifo_reader.sh to read the fifo file, benchmarks have shown more stability than
+    # opening the fifo file in pure Python
+    cmd = fifo_reader + " " + fifo_path
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 
     while 1:
-        line = fifo.readline()
-        if not line: break  # stop the loop if no line was read
+        line = p.stdout.readline()
+        if line == '' and p.poll() != None:
+            break
 
         # Manage nmon config
         nmon_config_match = re.match(r'^[AAA|BBB].+', line)
@@ -140,5 +172,3 @@ else:
         else:
             with open(nmon_data_dat, "ab") as nmon_data:
                 nmon_data.write(line)
-
-    fifo.close()  # after the loop, not in it
