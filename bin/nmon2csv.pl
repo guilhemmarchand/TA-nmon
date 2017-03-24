@@ -108,8 +108,9 @@
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
 # - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 # - 03/19/2017: V1.1.30: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
+# - 03/24/2017: V1.1.31: Guilhem Marchand: PowerLinux ID correction, HOSTNAME and SN have been inversed in CONFIG header
 
-$version = "1.2.30";
+$version = "1.2.31";
 
 use Time::Local;
 use Time::HiRes;
@@ -2242,7 +2243,7 @@ sub config_extract {
     # write event header
 
     my $write =
-      $section . "," . $DATE . ":" . $TIME . "," . $SN . "," . $HOSTNAME;
+      $section . "," . $DATE . ":" . $TIME . "," . $HOSTNAME . "," . $SN;
     print( INSERT "$write\n" );
     $count++;
 
