@@ -25,9 +25,9 @@
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # Number of running processes
-/bin/echo -e "PROCCOUNT,$1,\c" >>$NMON_EXTERNAL_DIR/nmon.fifo
+/bin/echo "PROCCOUNT,$1,\c" >>$NMON_EXTERNAL_DIR/nmon.fifo
 ps -ef | wc -l >>$NMON_EXTERNAL_DIR/nmon.fifo
 
 # Uptime information (uptime command output)
-/bin/echo -e "UPTIME,$1,\c" >>$NMON_EXTERNAL_DIR/nmon.fifo
+/bin/echo "UPTIME,$1,\c" >>$NMON_EXTERNAL_DIR/nmon.fifo
 echo "\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>$NMON_EXTERNAL_DIR/nmon.fifo
