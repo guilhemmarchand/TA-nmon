@@ -13,6 +13,6 @@ metadata/local.meta
 bin/linux
 
 # Read the doc & Sphinx
-#docs/_build
-#docs/_static
-#docs/_templates
+docs/_build
+docs/_static
+docs/_templates
