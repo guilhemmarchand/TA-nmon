@@ -109,8 +109,9 @@
 # - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
 # - 03/19/2017: V1.1.30: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
 # - 03/24/2017: V1.1.31: Guilhem Marchand: PowerLinux ID correction, HOSTNAME and SN have been inversed in CONFIG header
+# - 03/25/2017: V1.1.32: Guilhem Marchand: PowerLinux ID correction, prevent empty serial number
 
-$version = "1.2.31";
+$version = "1.2.32";
 
 use Time::Local;
 use Time::HiRes;
@@ -3381,6 +3382,9 @@ sub get_nmon_data {
 
     # undeterminated
     if ( $SN eq "-1" ) {
+        $SN = $HOSTNAME;
+    }
+    elsif ( $SN eq "" ) {
         $SN = $HOSTNAME;
     }
 
