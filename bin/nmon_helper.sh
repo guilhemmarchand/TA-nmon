@@ -69,8 +69,10 @@
 # 2017/03/11, Guilhem Marchand:         - Lowering the CPU footprint: Write to FIFO files for AIX and Linux OS
 # 2017/03/18, Guilhem Marchand:         - Implement the nmon external feature
 # 2017/03/24, Guilhem Marchand:         - Be Python version restrictive for the fifo_reader choice
+#                                       - prevent AIX error messages related to LIBPATH and rpm
+#                                       - PowerLinux binaries identification failures
 
-# Version 1.3.35
+# Version 1.3.36
 
 # For AIX / Linux / Solaris
 
@@ -369,11 +371,11 @@ if [ ! -x "$NMON" ];then
 	
 		ARCH_NAME="ia64" ;; # Itanium 64 bits	
 	
-	ppp32 )
+	ppc32* )
 	
 		ARCH_NAME="power_32" ;; # powerpc 32 bits
 		
-	ppp64 )
+	ppc64* )
 	
 		ARCH_NAME="power_64" ;; # powerpc 64 bits	
 
@@ -407,7 +409,7 @@ if [ ! -x "$NMON" ];then
 
     case $ARCH in
 
-    ppp32 | ppp64 )
+    ppc32* | ppc64* )
 
         # Assign default to Little Endian in case of failure
         BYTE_ORDER_STATUS="1"
@@ -460,13 +462,13 @@ if [ ! -x "$NMON" ];then
         case $ARCH in
 
         # PowerLinux
-        ppp32 | ppp64 )
+        ppc32* | ppc64* )
 
             # Manage Big / Little Endian arch
             case ${BYTE_ORDER} in
 
             # Big Endian
-            0 )
+            "be" )
 
                 # Try the most accurate
                 if [ -f $APP_VAR/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_fullversion}_be ]; then
@@ -485,7 +487,7 @@ if [ ! -x "$NMON" ];then
             ;;
 
             # Little Endian
-            1 )
+            "le" )
 
                 # Try the most accurate
                 if [ -f $APP_VAR/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_fullversion}_le ]; then
@@ -561,7 +563,7 @@ if [ ! -x "$NMON" ];then
                 case $ARCH in
 
                 # PowerLinux
-                ppp32 | ppp64 )
+                ppc32* | ppc64* )
 
                     # Manage Big / Little Endian arch
                     case ${BYTE_ORDER} in
@@ -608,7 +610,7 @@ if [ ! -x "$NMON" ];then
             case $ARCH in
 
             # PowerLinux
-            ppp32 | ppp64 )
+            ppc32* | ppc64* )
 
                 # Manage Big / Little Endian arch
                 case ${BYTE_ORDER} in
@@ -684,7 +686,7 @@ if [ ! -x "$NMON" ];then
                     case $ARCH in
 
                     # PowerLinux
-                    ppp32 | ppp64 )
+                    ppc32* | ppc64* )
 
                         # Manage Big / Little Endian arch
                         case ${BYTE_ORDER} in
@@ -736,7 +738,7 @@ if [ ! -x "$NMON" ];then
             case $ARCH in
 
             # PowerLinux
-            ppp32 | ppp64 )
+            ppc32* | ppc64* )
 
                 # Manage Big / Little Endian arch
                 case ${BYTE_ORDER} in
@@ -794,7 +796,7 @@ if [ ! -x "$NMON" ];then
             case $ARCH in
 
             # PowerLinux
-            ppp32 | ppp64 )
+            ppc32* | ppc64* )
 
                 # Manage Big / Little Endian arch
                 case ${BYTE_ORDER} in
@@ -935,6 +937,9 @@ start_nmon () {
 case $UNAME in
 
 	AIX )
+
+        # on AIX, prevent error messages linked to /usr/opt/freeware/bin/rpm
+        unset LIBPATH
 
 	    # nmon_external
 	    # nb: for AIX there is no bin cache, as Splunk Enterprise is not supported anymore, we can safety run them
