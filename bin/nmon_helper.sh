@@ -937,8 +937,10 @@ case $UNAME in
 	AIX )
 
 	    # nmon_external
-	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
-	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
+	    # nb: for AIX there is no bin cache, as Splunk Enterprise is not supported anymore, we can safety run them
+	    # directly from the TA-nmon directory
+	    export NMON_START="${APP}/bin/nmon_external_cmd/nmon_external_start.sh"
+	    export NMON_SNAP="${APP}/bin/nmon_external_cmd/nmon_external_snap.sh"
 	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
 
         # fifo_started variable is exported by the function start_fifo_reader
