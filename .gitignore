@@ -11,3 +11,8 @@ metadata/local.meta
 
 # Ignore the bin/linux which can be extracted
 bin/linux
+
+# Read the doc & Sphinx
+docs/_build
+docs/_static
+docs/_templates
