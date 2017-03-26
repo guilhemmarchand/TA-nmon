@@ -25,11 +25,12 @@ Overview:
 ---------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    about
    releasenotes
    support
    openissue
    os_compatibility
-
+   processing_overview
+   footprint

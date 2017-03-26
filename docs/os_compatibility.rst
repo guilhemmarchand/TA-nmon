@@ -2,6 +2,10 @@
 Operating Systems compatibility
 ###############################
 
+=============
+Compatible OS
+=============
+
 **The TA-nmon is compatible with any version of:**
 
 * IBM AIX
@@ -10,6 +14,10 @@ Operating Systems compatibility
 * Linux on z Systems (s390 / s390x)
 * Linux ARM
 * Solaris 10, Solaris 11 on Sparc and x86
+
+=============
+Qualification
+=============
 
 **Here is a non exhaustive list of systems and version that the TA-nmon is been extensively qualified:**
 
@@ -21,11 +29,11 @@ Operating Systems compatibility
 
 **Linux on IBM PowerPC:**
 
-* SUSE Linux 12.2 LE (IBM POWER 8)
-* RedHat Linux 7.3 LE (IBM POWER 8)
 * SUSE Linux 11.4 BE (IBM POWER 8)
-* Ubuntu 16.04 LTS (IBM POWER 8)
+* SUSE Linux 12.2 LE (IBM POWER 8)
 * Red Hat Linux 6.9 BE (IBM POWER 8)
+* RedHat Linux 7.3 LE (IBM POWER 8)
+* Ubuntu 16.04 LTS (IBM POWER 8)
 
 **Linux x86, 32 bits and 64 bits:**
 
