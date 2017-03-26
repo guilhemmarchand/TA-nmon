@@ -29,3 +29,7 @@ Overview:
 
    about
    releasenotes
+   support
+   openissue
+   os_compatibility
+
