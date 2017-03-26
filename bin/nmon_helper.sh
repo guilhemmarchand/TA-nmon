@@ -72,7 +72,7 @@
 #                                       - prevent AIX error messages related to LIBPATH and rpm
 #                                       - PowerLinux binaries identification failures
 
-# Version 1.3.36
+# Version 1.3.37
 
 # For AIX / Linux / Solaris
 
@@ -569,13 +569,13 @@ if [ ! -x "$NMON" ];then
                     case ${BYTE_ORDER} in
 
                     # Big endian
-                    0 )
+                    "be" )
                         NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_be"
 
 				    ;;
 
 				    # Little endian
-				    1)
+				    "le")
     				    NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_le"
 				    ;;
 
@@ -616,13 +616,13 @@ if [ ! -x "$NMON" ];then
                 case ${BYTE_ORDER} in
 
                 # Big endian
-                0 )
+                "be" )
                     NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_be"
 
                 ;;
 
                 # Little endian
-                1)
+                "le")
                     NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_le"
                 ;;
 
@@ -692,13 +692,13 @@ if [ ! -x "$NMON" ];then
                         case ${BYTE_ORDER} in
 
                         # Big endian
-                        0 )
+                        "be" )
                             NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_be"
 
                         ;;
 
                         # Little endian
-                        1)
+                        "le")
                             NMON="${APP_VAR}/bin/linux/${linux_vendor}/nmon_${ARCH_NAME}_${linux_vendor}${linux_mainversion}_le"
                         ;;
 
@@ -744,13 +744,13 @@ if [ ! -x "$NMON" ];then
                 case ${BYTE_ORDER} in
 
                 # Big endian
-                0 )
+                "be" )
                     NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_be"
 
                 ;;
 
                 # Little endian
-                1)
+                "le")
                     NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_le"
                 ;;
 
@@ -802,13 +802,13 @@ if [ ! -x "$NMON" ];then
                 case ${BYTE_ORDER} in
 
                 # Big endian
-                0 )
+                "be" )
                     NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_be"
 
                 ;;
 
                 # Little endian
-                1)
+                "le")
                     NMON="${APP_VAR}/bin/linux/generic/nmon_linux_${ARCH_NAME}_le"
                 ;;
 
