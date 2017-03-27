@@ -110,8 +110,11 @@
 # - 03/19/2017: V1.1.30: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
 # - 03/24/2017: V1.1.31: Guilhem Marchand: PowerLinux ID correction, HOSTNAME and SN have been inversed in CONFIG header
 # - 03/25/2017: V1.1.32: Guilhem Marchand: PowerLinux ID correction, prevent empty serial number
+# - 03/27/2017: V1.1.33: Guilhem Marchand:
+#                                         - PowerLinux ID correction, prevent empty serial number in nmon_config
+#                                         - Remove empty line in nmon_config
 
-$version = "1.2.32";
+$version = "1.2.33";
 
 use Time::Local;
 use Time::HiRes;
@@ -2201,9 +2204,6 @@ sub config_extract {
 
                     }
 
-                    #else {
-                    #    $SPLUNK_HOSTNAME_OVERRIDE = False;
-                    #}
                 }
 
                 if ( $splunk_hostname eq "" ) {
@@ -2240,6 +2240,9 @@ sub config_extract {
     if ( $SN eq "-1" ) {
         $SN = $HOSTNAME;
     }
+    elsif ( $SN eq "" ) {
+        $SN = $HOSTNAME;
+    }
 
     # write event header
 
@@ -2270,7 +2273,7 @@ sub config_extract {
 
             # Manage the host rewrite
             if ( $write =~ /^AAA,host,/ ) {
-                $write = "AAA,host,$HOSTNAME\n";
+                $write = "AAA,host,$HOSTNAME";
             }
             print( INSERT "$write\n" );
             $count++;
