@@ -49,6 +49,18 @@ IBM AIX BENCHMARKS:
 
 **IBM AIX 7.2 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
 
+*lpar usage:*
+
+.. image:: img/bench_AIX/AIX_72/lpar_full.png
+   :alt: img/bench_AIX/AIX_72/lpar_full.png
+   :align: center
+
+*lpar usage_zoom:*
+
+.. image:: img/bench_AIX/AIX_72/lpar_zoom.png
+   :alt: img/bench_AIX/AIX_72/lpar_zoom.png
+   :align: center
+
 
 
 
