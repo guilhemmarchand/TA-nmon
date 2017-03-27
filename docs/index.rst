@@ -38,3 +38,12 @@ Overview:
    requirements
    deployment_matrix
    deployment
+
+Processing:
+---------
+
+.. toctree::
+   :maxdepth: 2
+
+   data_processing
+
