@@ -2,9 +2,9 @@
 Operating Systems compatibility
 ###############################
 
-=============
-Compatible OS
-=============
+================
+OS compatibility
+================
 
 **The TA-nmon is compatible with any version of:**
 
@@ -15,9 +15,9 @@ Compatible OS
 * Linux ARM
 * Solaris 10, Solaris 11 on Sparc and x86
 
-=============
-Qualification
-=============
+================
+OS certification
+================
 
 **Here is a non exhaustive list of systems and version that the TA-nmon is been extensively qualified:**
 

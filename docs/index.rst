@@ -25,7 +25,7 @@ Overview:
 ---------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    about
    releasenotes
@@ -34,3 +34,7 @@ Overview:
    os_compatibility
    processing_overview
    footprint
+   binaries
+   requirements
+   deployment_matrix
+   deployment

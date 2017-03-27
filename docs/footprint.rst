@@ -1,6 +1,6 @@
-################
-System footprint
-################
+###############################
+System footprint and benchmarks
+###############################
 
 ===========================
 What does cost the TA-nmon?
@@ -42,25 +42,101 @@ To avoid these risks, and limit at the maximum the amount of resources to be use
 IBM AIX BENCHMARKS:
 -------------------
 
-
 **IBM AIX 6.1 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Perl interpreter*
+
+*lpar usage over 24 hours:*
+
+*lpar usage_zoom over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
 
 **IBM AIX 7.1 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
 
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Perl interpreter*
+
+*lpar usage over 24 hours:*
+
+*lpar usage_zoom over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
+
 **IBM AIX 7.2 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
 
-*lpar usage:*
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2*
+
+*lpar usage over 24 hours:*
 
 .. image:: img/bench_AIX/AIX_72/lpar_full.png
    :alt: img/bench_AIX/AIX_72/lpar_full.png
    :align: center
 
-*lpar usage_zoom:*
+*lpar usage_zoom over 24 hours:*
 
 .. image:: img/bench_AIX/AIX_72/lpar_zoom.png
    :alt: img/bench_AIX/AIX_72/lpar_zoom.png
    :align: center
 
+*Average I/O over 24 hours:*
 
+*splunkd core CPU usage / Memory usage over 24 hours:*
 
+LINUX BENCHMARKS:
+-----------------
 
+**SUSE Linux 11.4 BE (IBM POWER 8)**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Perl interpreter, 1 CPU*
+
+*CPU % usage over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
+**SUSE Linux 12.2 LE (IBM POWER 8)**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Python interpreter, 1 CPU*
+
+*CPU % usage over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
+**Red Hat Linux 6.9 BE (IBM POWER 8)**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Perl interpreter, 1 CPU*
+
+*CPU % usage over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
+**RedHat Linux 7.3 LE (IBM POWER 8)**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Python interpreter, 1 CPU*
+
+*CPU % usage over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
+
+**Ubuntu 16.04 LTS (IBM POWER 8)**
+
+*date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Python interpreter, 1 CPU*
+
+*CPU % usage over 24 hours:*
+
+*Average I/O over 24 hours:*
+
+*splunkd core CPU usage / Memory usage over 24 hours:*
