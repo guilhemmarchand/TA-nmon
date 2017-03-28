@@ -48,12 +48,33 @@ IBM AIX BENCHMARKS:
 
 *lpar usage over 24 hours:*
 
+.. image:: img/bench_AIX/AIX_61/lpar_full.png
+   :alt: img/bench_AIX/AIX_61/lpar_full.png
+   :align: center
+
 *lpar usage_zoom over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_61/lpar_zoom.png
+   :alt: img/bench_AIX/AIX_61/lpar_zoom.png
+   :align: center
 
 *Average I/O over 24 hours:*
 
-*splunkd core CPU usage / Memory usage over 24 hours:*
+.. image:: img/bench_AIX/AIX_61/iops.png
+   :alt: img/bench_AIX/AIX_61/iops.png
+   :align: center
 
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_61/top_cpu.png
+   :alt: img/bench_AIX/AIX_61/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_61/top_memory.png
+   :alt: img/bench_AIX/AIX_61/top_memory.png
+   :align: center
 
 **IBM AIX 7.1 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
 
@@ -61,12 +82,33 @@ IBM AIX BENCHMARKS:
 
 *lpar usage over 24 hours:*
 
+.. image:: img/bench_AIX/AIX_71/lpar_full.png
+   :alt: img/bench_AIX/AIX_71/lpar_full.png
+   :align: center
+
 *lpar usage_zoom over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_71/lpar_zoom.png
+   :alt: img/bench_AIX/AIX_71/lpar_zoom.png
+   :align: center
 
 *Average I/O over 24 hours:*
 
-*splunkd core CPU usage / Memory usage over 24 hours:*
+.. image:: img/bench_AIX/AIX_71/iops.png
+   :alt: img/bench_AIX/AIX_71/iops.png
+   :align: center
 
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_71/top_cpu.png
+   :alt: img/bench_AIX/AIX_71/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_71/top_memory.png
+   :alt: img/bench_AIX/AIX_71/top_memory.png
+   :align: center
 
 **IBM AIX 7.2 ON POWER8 / Entitled 0.2 / VirtualCPUs 1:**
 
@@ -86,7 +128,21 @@ IBM AIX BENCHMARKS:
 
 *Average I/O over 24 hours:*
 
-*splunkd core CPU usage / Memory usage over 24 hours:*
+.. image:: img/bench_AIX/AIX_72/iops.png
+   :alt: img/bench_AIX/AIX_72/iops.png
+   :align: center
+
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_72/top_cpu.png
+   :alt: img/bench_AIX/AIX_72/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_AIX/AIX_72/top_memory.png
+   :alt: img/bench_AIX/AIX_72/top_memory.png
+   :align: center
 
 LINUX BENCHMARKS:
 -----------------
@@ -95,11 +151,33 @@ LINUX BENCHMARKS:
 
 *date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Perl interpreter, 1 CPU*
 
-*CPU % usage over 24 hours:*
+*CPU percentage usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_114_BE/cpu_full.png
+   :alt: img/bench_LINUX/SUSE_114_BE/cpu_full.png
+   :align: center
+
+.. image:: img/bench_LINUX/SUSE_114_BE/cpu_pct.png
+   :alt: img/bench_LINUX/SUSE_114_BE/cpu_pct.png
+   :align: center
 
 *Average I/O over 24 hours:*
 
-*splunkd core CPU usage / Memory usage over 24 hours:*
+.. image:: img/bench_LINUX/SUSE_114_BE/iops.png
+   :alt: img/bench_LINUX/SUSE_114_BE/iops.png
+   :align: center
+
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_114_BE/top_cpu.png
+   :alt: img/bench_LINUX/SUSE_114_BE/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_114_BE/top_memory.png
+   :alt: img/bench_LINUX/SUSE_114_BE/top_memory.png
+   :align: center
 
 **SUSE Linux 12.2 LE (IBM POWER 8)**
 
