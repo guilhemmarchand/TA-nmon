@@ -45,7 +45,53 @@ nmon_helper.sh tasks part2: load values and options
 * check if local/nmon.conf exist, and source file (override any previously defined values)
 * check if /etc/nmon.conf exist (provide override mechanism at local server level), and source file (override any previously defined values)
 
-******************************************************************
-nmon_helper.sh tasks part3: identify OS, architecture and binaries
-******************************************************************
+**********************************************
+nmon_helper.sh tasks part3: identify instances
+**********************************************
 
+.. image:: img/nmon_helper_part3.png
+   :alt: nmon_helper_part3.png
+   :align: center
+
+**Steps are:**
+
+* Identify Operating System
+* Verify PID file existence
+* Is PID file valid ?
+* If PID file exists, is the nmon instance running ?
+* If PID not found, is there an nmon instance running ?
+* rewrite PID file if nmon is running
+* trigger nmon startup in other cases
+
+*********************************************
+nmon_helper.sh tasks part4: identify binaries
+*********************************************
+
+.. image:: img/nmon_helper_part4.png
+   :alt: nmon_helper_part4.png
+   :align: center
+
+**Steps are:**
+
+* Identify Operating System
+* Identify Processor architecture for Linux / Solaris
+* Identify local nmon binary for AIX
+* For Linux, verify embedded binaries priority
+* For Linux, identify best binary candidate and set nmon binary
+* For Solaris, set sarmon binary
+
+***********************************
+nmon_helper.sh tasks part5: startup
+***********************************
+
+.. image:: img/nmon_helper_part5.png
+   :alt: nmon_helper_part5.png
+   :align: center
+
+**Steps are:**
+
+* Idenfity fifo_reader running
+* set the nmon destination (fifo1 / fifo2)
+* start nmon binary
+* Identify interpreter to be used
+* start the fifo_reader
