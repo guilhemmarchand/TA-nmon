@@ -1,6 +1,6 @@
-####################
-Nmon data processing
-####################
+###################
+Processing workflow
+###################
 
 ====================
 Generating Nmon data
