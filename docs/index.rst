@@ -37,8 +37,6 @@ Overview:
    binaries
    requirements
    deployment_matrix
-   deployment
-   external
 
 Processing:
 -----------
@@ -47,4 +45,16 @@ Processing:
    :maxdepth: 2
 
    data_processing
+
+Deployment and configuration:
+-----------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   deployment
+   external
+   json_indexing
+
+
 
