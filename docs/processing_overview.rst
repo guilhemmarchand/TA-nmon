@@ -1,6 +1,6 @@
-###################
-Processing overview
-###################
+###############################
+Introduction to Nmon processing
+###############################
 
 ===============
 Nmon processing
@@ -29,7 +29,7 @@ bin/nmon_helper.sh
    :align: center
 
 bin/fifo_consumer.sh
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 **The "fifo_consumer.sh" script is scheduled to be run every 60 seconds by Splunk, its purpose is consuming the dat files (different part of the nmon file) and stream its content to nmon2csv parsers:**
 
