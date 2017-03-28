@@ -1,5 +1,5 @@
 ##############
-pre-requisites
+Pre-requisites
 ##############
 
 **The pre-requisites to run the TA-nmon are quite simple:**

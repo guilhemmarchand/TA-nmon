@@ -19,7 +19,7 @@ OS compatibility
 OS certification
 ================
 
-**Here is a non exhaustive list of systems and version that the TA-nmon is been extensively qualified:**
+**Here is a non exhaustive list of systems and version that the TA-nmon is being intensively qualified:**
 
 **IBM AIX:**
 
