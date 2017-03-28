@@ -183,11 +183,33 @@ LINUX BENCHMARKS:
 
 *date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Python interpreter, 1 CPU*
 
-*CPU % usage over 24 hours:*
+*CPU percentage usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_122_LE/cpu_full.png
+   :alt: img/bench_LINUX/SUSE_122_LE/cpu_full.png
+   :align: center
+
+.. image:: img/bench_LINUX/SUSE_122_LE/cpu_pct.png
+   :alt: img/bench_LINUX/SUSE_122_LE/cpu_pct.png
+   :align: center
 
 *Average I/O over 24 hours:*
 
-*splunkd core CPU usage / Memory usage over 24 hours:*
+.. image:: img/bench_LINUX/SUSE_122_LE/iops.png
+   :alt: img/bench_LINUX/SUSE_122_LE/iops.png
+   :align: center
+
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_122_LE/top_cpu.png
+   :alt: img/bench_LINUX/SUSE_122_LE/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_LINUX/SUSE_122_LE/top_memory.png
+   :alt: img/bench_LINUX/SUSE_122_LE/top_memory.png
+   :align: center
 
 **Red Hat Linux 6.9 BE (IBM POWER 8)**
 
