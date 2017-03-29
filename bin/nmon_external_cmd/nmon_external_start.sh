@@ -6,8 +6,9 @@
 # Disclaimer:  this provided "as is".  
 # Date - March 2017
 # Guilhem Marchand 2017/03/18, initial version
+# Guilhem Marchand 2017/03/29, protect against unexpecting failure in NMON_EXTERNAL_DIR getting value
 
-# Version 1.0.0
+# Version 1.0.01
 
 # For AIX / Linux / Solaris
 
@@ -21,6 +22,14 @@
 # 2 sections are available for nmon external monitor managements:
 # - nmon_external: manage any number of fields without transposition
 # - nmon_external_transposed: manage any number of fields with a notion of device / value
+
+# Do no try to do anything unless the NMON_EXTERNAL_DIR variable has been correctly set
+# we exit without any error code, the situation is not expected but we do not want to generate bad data in nmon data
+
+if [ "$NMON_EXTERNAL_DIR" = "" ]
+then
+   exit 0
+fi
 
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 

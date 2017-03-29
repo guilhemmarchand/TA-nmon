@@ -22,6 +22,14 @@
 # - nmon_external: manage any number of fields without transposition
 # - nmon_external_transposed: manage any number of fields with a notion of device / value
 
+# Do no try to do anything unless the NMON_EXTERNAL_DIR variable has been correctly set
+# we exit without any error code, the situation is not expected but we do not want to generate bad data in nmon data
+
+if [ "$NMON_EXTERNAL_DIR" = "" ]
+then
+   exit 0
+fi
+
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # Number of running processes
