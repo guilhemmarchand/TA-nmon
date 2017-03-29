@@ -71,8 +71,9 @@
 # 2017/03/24, Guilhem Marchand:         - Be Python version restrictive for the fifo_reader choice
 #                                       - prevent AIX error messages related to LIBPATH and rpm
 #                                       - PowerLinux binaries identification failures
+# 2017/03/29, Guilhem Marchand:         - nmon command not correctly displayed in nmon_helper.sh output
 
-# Version 1.3.37
+# Version 1.3.38
 
 # For AIX / Linux / Solaris
 
@@ -951,8 +952,10 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
+            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo1} > ${PIDFILE} ;;
         "fifo2")
+            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo2} > ${PIDFILE} ;;
         esac
 	;;
@@ -989,7 +992,10 @@ case $UNAME in
             # Activation of Linux disks extended stats generate a message in stdout
             # We don't want this as we need to retrieve the pid from nmon output
             # However, we also want to analyse the return code, so we can't filter out in only one operation
+
+            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command} > ${APP_VAR}/nmon_output.txt
+
             if [ $? -ne 0 ]; then
                 echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
             fi
@@ -1004,7 +1010,9 @@ case $UNAME in
             if grep 'opening disk group file' ${APP_VAR}/nmon_output.txt >/dev/null; then
 
                 echo "`date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
+
                 nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
+                echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
                 ${nmon_command} &> ${PIDFILE}
 
                 if [ $? -ne 0 ]; then
@@ -1017,6 +1025,7 @@ case $UNAME in
 
             # This version is not compatible with the auto group disk
             nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
+            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command} > ${PIDFILE}
 
             if [ $? -ne 0 ]; then
@@ -1056,6 +1065,7 @@ case $UNAME in
 			
 		fi
 
+        echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
 		${nmon_command} >/dev/null 2>&1 &
 	;;
 
@@ -1467,8 +1477,6 @@ if [ ! -f ${PIDFILE} ]; then
 	
 	"")
 	
-		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
-
 		case $UNAME in
 
         AIX | Linux)
@@ -1562,8 +1570,6 @@ else
 		case ${PIDs} in
 	
 		"")
-
-			echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
 
             case $UNAME in
 
@@ -1684,8 +1690,6 @@ else
 		# Process not found, Nmon has terminated or is not yet started		
 		echo "`date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
-
-		echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
 
 		case $UNAME in
 
