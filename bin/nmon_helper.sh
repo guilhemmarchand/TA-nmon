@@ -72,9 +72,10 @@
 #                                       - prevent AIX error messages related to LIBPATH and rpm
 #                                       - PowerLinux binaries identification failures
 # 2017/03/29, Guilhem Marchand:         - nmon command not correctly displayed in nmon_helper.sh output
-# 2017/03/30, Guilhem Marchand:         - nmon_external improvement for AIX
+# 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external
+# 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external (act II !)
 
-# Version 1.3.39
+# Version 1.3.40
 
 # For AIX / Linux / Solaris
 
@@ -153,10 +154,6 @@ esac
 \cp -pf ${APP}/default/app.conf ${APP_VAR}/app.conf > /dev/null 2>&1
 \cp -rpf ${APP}/bin ${APP_VAR}/ > /dev/null 2>&1
 }
-# Only relevant for Linux and Solaris, binaries caching management
-case $UNAME in
-
-Linux | SunOS )
 
 # To prevents binaries overwrites during upgrades and sh cluster deployment issues, cache the bin directory
 # Binaries will be launched from the cache directory
@@ -184,9 +181,6 @@ else
     update_var_bin
 
 fi
-
-;;
-esac
 
 ###
 ### Legacy options for nmon writing to regular files (these values are used by the TA-nmon not using fifo files)
@@ -932,6 +926,28 @@ esac
 # functions
 ############################################
 
+# create snap scripts for nmon_external
+
+create_nmon_external () {
+
+# fifo_started variable is exported by the function start_fifo_reader
+case $fifo_started in
+"fifo1")
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_start.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+    chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+    chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+    ;;
+"fifo2")
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_start.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+    chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+    chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+    ;;
+esac
+
+}
+
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
@@ -944,11 +960,8 @@ case $UNAME in
         unset LIBPATH
 
 	    # nmon_external
-	    # nb: for AIX there is no bin cache, as Splunk Enterprise is not supported anymore, we can safety run them
-	    # directly from the TA-nmon directory
-	    export NMON_START="${APP}/bin/nmon_external_cmd/nmon_external_start.sh"
-	    export NMON_SNAP="${APP}/bin/nmon_external_cmd/nmon_external_snap.sh"
 	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+        export NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
         export TIMESTAMP=0
         export NMON_ONE_IN=1
         unset NMON_END
@@ -956,9 +969,23 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
+            # nmon_external
+            create_nmon_external
+            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+            export TIMESTAMP=0
+            export NMON_ONE_IN=1
+            unset NMON_END
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo1} > ${PIDFILE} ;;
         "fifo2")
+            # nmon_external
+            create_nmon_external
+            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+            export TIMESTAMP=0
+            export NMON_ONE_IN=1
+            unset NMON_END
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo2} > ${PIDFILE} ;;
         esac
@@ -966,10 +993,9 @@ case $UNAME in
 
 	Linux )
 
-	    # nmon_external
-	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
-	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
+        # nmon_external
         export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+        export NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
         export TIMESTAMP=0
         export NMON_ONE_IN=1
         unset NMON_END
@@ -977,8 +1003,16 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
+	        # nmon_external
+            create_nmon_external
+            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
             nmon_command=${nmon_command_fifo1} ;;
         "fifo2")
+	        # nmon_external
+            create_nmon_external
+            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
             nmon_command=${nmon_command_fifo2} ;;
         esac
 

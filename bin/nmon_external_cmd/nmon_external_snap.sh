@@ -22,10 +22,13 @@
 # - nmon_external: manage any number of fields without transposition
 # - nmon_external_transposed: manage any number of fields with a notion of device / value
 
-# Do no try to do anything unless the NMON_EXTERNAL_DIR variable has been correctly set
+# Do no try to do anything unless the NMON_FIFO_PATH exists
 # we exit without any error code, the situation is not expected but we do not want to generate bad data in nmon data
 
-if [ "$NMON_EXTERNAL_DIR" = "" ]
+# note: the NMON_FIFO_PATH is a pattern that will be replaced by the nmon_helper.sh script in a copy of this script
+# that lives for the time to live of the nmon process started
+
+if [ ! -p NMON_FIFO_PATH ]
 then
    exit 0
 fi
@@ -33,7 +36,7 @@ fi
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # Number of running processes
-echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>$NMON_EXTERNAL_DIR/nmon.fifo
+echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>NMON_FIFO_PATH
 
 # Uptime information (uptime command output)
-echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>$NMON_EXTERNAL_DIR/nmon.fifo
+echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>NMON_FIFO_PATH
