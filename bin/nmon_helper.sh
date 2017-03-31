@@ -72,8 +72,9 @@
 #                                       - prevent AIX error messages related to LIBPATH and rpm
 #                                       - PowerLinux binaries identification failures
 # 2017/03/29, Guilhem Marchand:         - nmon command not correctly displayed in nmon_helper.sh output
+# 2017/03/30, Guilhem Marchand:         - nmon_external improvement for AIX
 
-# Version 1.3.38
+# Version 1.3.39
 
 # For AIX / Linux / Solaris
 
@@ -948,6 +949,9 @@ case $UNAME in
 	    export NMON_START="${APP}/bin/nmon_external_cmd/nmon_external_start.sh"
 	    export NMON_SNAP="${APP}/bin/nmon_external_cmd/nmon_external_snap.sh"
 	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+        export TIMESTAMP=0
+        export NMON_ONE_IN=1
+        unset NMON_END
 
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
@@ -966,6 +970,9 @@ case $UNAME in
 	    export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start.sh"
 	    export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap.sh"
         export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+        export TIMESTAMP=0
+        export NMON_ONE_IN=1
+        unset NMON_END
 
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
