@@ -17,7 +17,7 @@ Welcome to TA-nmon documentation, the technical addon for Nmon Performance monit
 
 **Nmon Performance is now associated with Octamis to provide professional solutions for your business, and professional support for the Nmon Performance solution.**
 
-*For more information:* :
+*For more information:* : http://nmon-for-splunk.readthedocs.io/en/latest/support.html#octamis-support
 
 Contents:
 
@@ -55,6 +55,7 @@ Deployment and configuration:
    deployment
    upgrade
    external
+   nmon_config
    json_indexing
 
 Troubleshoot:
