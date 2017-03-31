@@ -14,16 +14,22 @@ Requirements
 What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ========
-V1.3.04:
+V1.3.09:
 ========
 
 **This is a major release of the TA-nmon:**
 
-- Major release of technical add-ons v1.3.0: fifo implementation (for AIX and Linux) drastically reduce the CPU and other resources footprint on client servers
-- Extend Nmon data with the nmon_external scripts, just add you own monitor (Shell, Perl, Python, REST... whatever) and extend the content of nmon data to match your needs
-- Customize in a persistent fashion the list of performance monitors to be parsed (using the nmonparser_config.json)
-- Choose between legacy csv and json data generation: you can now choose to generate performance data in json format and prioritize storage over performance and licensing volume
-- Removal of recursive stanza in inputs.conf #21
-- Increase the interval for nmon_cleaning #18
-- Correction of ID identification for PowerLinux)
-- Correction of PowerLinux systems identification
+- Feature: fantastic reduction of the system foot print (CPU,I/O,memory) with the new fifo implementation, the TA-nmon cost is now minimal!
+- Feature: easily extend the native nmon data with any external data (OS commands, scripts of any kind, shell, perl, python...) in 2 lines of codes
+- Feature: easily customize the list of performance monitors to be parsed (using the nmonparser_config.json)
+- Feature: choose between legacy csv and json data generation (limited to Python compatible hosts), you can now choose to generate performance data in json format and prioritize storage over performance and licensing volume
+- Feature: new dedicated documentation for the TA-nmon, https://readthedocs.org/projects/ta-nmon
+- Fix: Removal of recursive stanza in inputs.conf #21
+- Fix: Increase the interval for nmon_cleaning #18
+- Fix: Various corrections for Powerlinux (serial number identification, binaries and architecture identification)
+
+==================
+Previous releases:
+==================
+
+**Please refer to Nmon core release notes:** http://nmon-for-splunk.readthedocs.io/en/latest/knownissues.html
