@@ -53,6 +53,7 @@ Deployment and configuration:
    :maxdepth: 2
 
    deployment
+   upgrade
    external
    json_indexing
 

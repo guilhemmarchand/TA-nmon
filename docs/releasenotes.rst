@@ -27,9 +27,11 @@ V1.3.09:
 - Fix: Removal of recursive stanza in inputs.conf #21
 - Fix: Increase the interval for nmon_cleaning #18
 - Fix: Various corrections for Powerlinux (serial number identification, binaries and architecture identification)
+- Fix: AIX rpm lib messages at nmon_helper.sh startup #22
+- Various: deprecation of the TA-nmon_selfmode (now useless since the new release does use anymore the unarchive_cmd feature)
 
 ==================
 Previous releases:
 ==================
 
-**Please refer to Nmon core release notes:** http://nmon-for-splunk.readthedocs.io/en/latest/knownissues.html
+**Please refer to:** http://nmon-for-splunk.readthedocs.io/en/latest/knownissues.html
