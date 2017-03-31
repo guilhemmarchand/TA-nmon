@@ -57,5 +57,11 @@ Deployment and configuration:
    external
    json_indexing
 
+Troubleshoot:
+-------------
 
+.. toctree::
+   :maxdepth: 2
+
+   troubleshoot
 
