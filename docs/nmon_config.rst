@@ -10,4 +10,4 @@ The configuration file uses the Splunk configuration philosophy (default versus 
    :alt: nmon_helper_part2.png
    :align: center
 
-The configuration is widely documented here: http://nmon-for-splunk.readthedocs.io/en/latest/Userguide.html?highlight=nmon.conf#nmon-conf
+The configuration is widely documented here: http://nmon-for-splunk.readthedocs.io/en/latest/Userguide.html#nmon-conf
