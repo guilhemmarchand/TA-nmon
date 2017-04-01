@@ -18,9 +18,9 @@ The "interval" and "snapshot" variables are the 2 nmon options that will define 
 
 These 2 factors will define the time to live in seconds of a given nmon process, since the branch 1.3 of the TA-nmon, it is by default a cycle of 24 hours.
 
-++++++++++++++++++++++++++++++++++++++++++++
-Legacy options for the TA-nmon for nomn fifo
-++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++
+Legacy options for the TA-nmon for non fifo
++++++++++++++++++++++++++++++++++++++++++++
 
 The previous branch of the TA-nmon (not using fifo files) was having short cycle of nmon processes life time, to prevent from generating CPU load due to the processing of the nmon data::
 
