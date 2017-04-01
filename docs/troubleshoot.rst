@@ -142,6 +142,4 @@ Splunk monitors those directories in "batch" mode, which means index and delete.
    :alt: troubleshoot9.png
    :align: center
 
-**CONCLUSION:**
-
-If all these steps work perfectly fine, then the TA-nmon works as expected and if you have troubles that's not with the root cause ;-)
+Et voila!
