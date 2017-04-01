@@ -4,7 +4,7 @@ Configure your options with nmon.conf
 
 The TA-nmon implements a main configuration file "nmon.conf" to be used for your customizations.
 
-The configuration file uses the Splunk configuration philosophy (default versus local, etc...) such that you set your own options, and conserve them over updates.
+The configuration file uses the Splunk configuration philosophy (default versus local, etc...) such that you set your own options, and retain them over updates.
 
 .. image:: img/nmon_helper_part2.png
    :alt: nmon_helper_part2.png
