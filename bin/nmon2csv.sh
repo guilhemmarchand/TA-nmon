@@ -27,8 +27,10 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 08/02/2016: V1.0.09: Guilhem Marchand:
 #                                         - Manage the TA-nmon_selfmode
+# - 01/04/2017: V1.0.10: Guilhem Marchand:
+#                                         - Update path discovery
 
-# Version 1.0.09
+# Version 1.0.10
 
 # For AIX / Linux / Solaris
 
@@ -56,23 +58,16 @@ rm -f ${APP_VAR}/nmon2csv.temp.*
 # Set nmon_temp
 nmon_temp=${APP_VAR}/nmon2csv.temp.$$
 
-# Defined which APP we are running from (TA-nmon / TA-nmon_selfmode / PA-nmon)
+# APP path discovery
 if [ -d "$SPLUNK_HOME/etc/apps/TA-nmon" ]; then
         APP=$SPLUNK_HOME/etc/apps/TA-nmon
 
-elif [ -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ]; then
-        APP=$SPLUNK_HOME/etc/apps/TA-nmon_selfmode
-
-elif [ -d "$SPLUNK_HOME/etc/apps/PA-nmon" ];then
-        APP=$SPLUNK_HOME/etc/apps/PA-nmon
-
-elif [ -d "$SPLUNK_HOME/etc/slave-apps/_cluster" ];then
-        APP=$SPLUNK_HOME/etc/slave-apps/PA-nmon
+elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
+        APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is nmon / TA-nmon / PA-nmon installed ?"
+        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
-
 fi
 
 ####################################################################

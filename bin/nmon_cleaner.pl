@@ -18,11 +18,12 @@
 #                                         - Splunk certification requires $SPLUNK_HOME/var/log/ for files generation
 # - 02/08/2016: V1.1.5: Guilhem Marchand:
 #                                         - Manage the TA-nmon_selfmode
-# - 03/17/2016: V1.1.6: Guilhem Marchand:
+# - 03/17/2017: V1.1.6: Guilhem Marchand:
 #                                         - Increasing default value for csv cleaning to 14320 seconds
 #                                         - Include json cleaning
+# - 04/01/2017: V1.1.7: Guilhem Marchand: Update path discovery
 
-$version = "1.1.6";
+$version = "1.1.7";
 
 use Time::Local;
 use Time::HiRes;
@@ -131,20 +132,14 @@ if ( not $SPLUNK_HOME ) {
     die;
 }
 
-# Check if we are running TA-nmon / TA-nmon_selfmode / PA-nmon
+# Discover TA-nmon path
 if ( length($APP) == 0 ) {
 
     if ( -d "$SPLUNK_HOME/etc/apps/TA-nmon" ) {
         $APP = "$SPLUNK_HOME/etc/apps/TA-nmon";
     }
-    elsif ( -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ) {
-        $APP = "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode";
-    }
-    elsif ( -d "$SPLUNK_HOME/etc/slave-apps/PA-nmon" ) {
-        $APP = "$SPLUNK_HOME/etc/slave-apps/PA-nmon";
-    }
-    elsif ( -d "$SPLUNK_HOME/etc/apps/PA-nmon" ) {
-        $APP = "$SPLUNK_HOME/etc/apps/PA-nmon";
+    elsif ( -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ) {
+        $APP = "$SPLUNK_HOME/etc/slave-apps/TA-nmon";
     }
 
 }
@@ -163,11 +158,10 @@ else {
 # Verify existence of APP
 if ( !-d "$APP" ) {
     print(
-"\n$time ERROR: The Application root directory could not be found, is TA-nmon / PA-nmon installed ?\n"
+"\n$time ERROR: The Application root directory could not be found, is the TA-nmon installed ?\n"
     );
     die;
 }
-
 
 # var directories
 my $APP_MAINVAR = "$SPLUNK_HOME/var/log/nmon";

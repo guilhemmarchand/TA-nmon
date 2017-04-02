@@ -9,8 +9,9 @@
 # Releases Notes:
 
 # - March 2017, V1.0.0: Guilhem Marchand, Initial version
+# - 2017/04/01, V1.0.01: Guilhem Marchand, Update path discovery
 
-$version = "1.0.0";
+$version = "1.0.01";
 
 use Getopt::Long;
 use File::stat;
@@ -70,20 +71,14 @@ if ( not $SPLUNK_HOME ) {
     die;
 }
 
-# Check if we are running TA-nmon / TA-nmon_selfmode / PA-nmon
+# Discover TA-nmon path
 if ( length($APP) == 0 ) {
 
     if ( -d "$SPLUNK_HOME/etc/apps/TA-nmon" ) {
         $APP = "$SPLUNK_HOME/etc/apps/TA-nmon";
     }
-    elsif ( -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ) {
-        $APP = "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode";
-    }
-    elsif ( -d "$SPLUNK_HOME/etc/slave-apps/PA-nmon" ) {
-        $APP = "$SPLUNK_HOME/etc/slave-apps/PA-nmon";
-    }
-    elsif ( -d "$SPLUNK_HOME/etc/apps/PA-nmon" ) {
-        $APP = "$SPLUNK_HOME/etc/apps/PA-nmon";
+    elsif ( -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ) {
+        $APP = "$SPLUNK_HOME/etc/slave-apps/TA-nmon";
     }
 
 }
@@ -102,7 +97,7 @@ else {
 # Verify existence of APP
 if ( !-d "$APP" ) {
     print(
-"\n$time ERROR: The Application root directory could not be found, is TA-nmon / PA-nmon installed ?\n"
+"\n$time ERROR: The Application root directory could not be found, is the TA-nmon installed ?\n"
     );
     die;
 }

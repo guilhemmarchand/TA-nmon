@@ -20,9 +20,10 @@
 #                                         - Manage the TA-nmon_selfmode
 # - 03/12/2016: V1.1.16: Guilhem Marchand:
 #                                         - Prevents from generating errors when nmon2csv has not at least once
-# - 03/17/2016: V1.1.6: Guilhem Marchand:
+# - 03/17/2016: V1.1.17: Guilhem Marchand:
 #                                         - Increasing default value for csv cleaning to 14320 seconds
 #                                         - Include json cleaning
+# - 04/01/2017: V1.1.18: Guilhem Marchand: Update path discovery
 
 # Load libs
 
@@ -38,7 +39,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.17'
+version = '1.1.18'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -177,7 +178,7 @@ SPLUNK_HOME = os.environ['SPLUNK_HOME']
 # Set APP root directory
 if not APP:
 
-    # APP Directories for standard nmon, TA-nmon, PA-nmon
+    # Discover TA-nmon path
 
     if is_windows:
         TA_NMON_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon'
@@ -185,36 +186,20 @@ if not APP:
         TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
 
     if is_windows:
-        TA_NMON_SELFMODE_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon_selfmode'
+        TA_NMON_APP_CLUSTERED = SPLUNK_HOME + '\\etc\\slave-apps\\TA-nmon'
     else:
-        TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
-
-    if is_windows:
-        PA_NMON_APP = SPLUNK_HOME + '\\etc\\slave-apps\\PA-nmon'
-    else:
-        PA_NMON_APP = SPLUNK_HOME + '/etc/slave-apps/PA-nmon'
-
-    if is_windows:
-        PA_NMON_APP_STANDALONE = SPLUNK_HOME + '\\etc\\apps\\PA-nmon'
-    else:
-        PA_NMON_APP_STANDALONE = SPLUNK_HOME + '/etc/apps/PA-nmon'
+        TA_NMON_APP_CLUSTERED = SPLUNK_HOME + '/etc/slave-apps/TA-nmon'
 
     # Verify APP exist
     if os.path.exists(TA_NMON_APP):
         APP = TA_NMON_APP
 
-    elif os.path.exists(TA_NMON_SELFMODE_APP):
-        APP = TA_NMON_SELFMODE_APP
+    elif os.path.exists(TA_NMON_APP_CLUSTERED):
+        APP = TA_NMON_APP_CLUSTERED
 
-    elif os.path.exists(PA_NMON_APP):
-        APP = PA_NMON_APP
-        
-    elif os.path.exists(PA_NMON_APP_STANDALONE):
-        APP = PA_NMON_APP_STANDALONE
-        
     else:
-        msg = 'The Application root directory could not be found, is TA-nmon / PA-nmon installed ? We tried: '\
-              + str(TA_NMON_APP) + ' ' + str(PA_NMON_APP) + ' ' + str(PA_NMON_APP_STANDALONE)
+        msg = 'The Application root directory could not be found, is the TA-nmon ? We tried: '\
+              + str(TA_NMON_APP) + ' ' + str(TA_NMON_APP_CLUSTERED)
         logging.error(msg)
         sys.exit(1)
 
@@ -229,7 +214,7 @@ else:
     if os.path.exists(NMON_APP):
         APP = NMON_APP
     else:
-        msg = 'The Application root directory could not be found, is nmon / TA-nmon / PA-nmon installed ? We tried: '\
+        msg = 'The Application root directory could not be found, is the TA-nmon installed ? We tried: '\
               + str(NMON_APP)
         logging.error(msg)
         sys.exit(1)
@@ -261,7 +246,7 @@ else:
 
 # List of directories to be proceeded
 WORKING_DIR = {CSV_DIR, CONFIG_DIR}
-JSON_WORKING_DIR = {CSV_DIR, CONFIG_DIR}
+JSON_WORKING_DIR = {JSON_DIR}
 
 # Starting time of process
 start_time = time.time()
@@ -311,9 +296,6 @@ if cleancsv:
 
             else:
 
-                # cd to directory
-                os.chdir(DIR)
-
                 # counter of files with retention expired
                 counter_expired = 0
 
@@ -342,55 +324,52 @@ if cleancsv:
                 msg = str(counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
                 print (msg)
 
-            for DIR in JSON_DIR:
+    for DIR in JSON_WORKING_DIR:
 
-                if os.path.exists(DIR):
-                    # cd to directory
-                    os.chdir(DIR)
+        if os.path.exists(DIR):
+            # cd to directory
+            os.chdir(DIR)
 
-                    # Verify we have data to manage
-                    counter = len(glob.glob1(DIR, "*.json"))
+            # Verify we have data to manage
+            counter = len(glob.glob1(DIR, "*.json"))
 
-                    # print (counter)
+            # print (counter)
 
-                    if counter == 0:
-                        msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
+            if counter == 0:
+                msg = 'No files found in directory: ' + str(DIR) + ', no action required.'
+                print(msg)
+
+            else:
+
+                # counter of files with retention expired
+                counter_expired = 0
+
+                curtime = time.time()
+                limit = maxseconds_json
+
+                for xfile in glob.glob('*.json'):
+
+                    filemtime = os.path.getmtime(xfile)
+
+                    if curtime - filemtime > limit:
+                        counter_expired += 1
+
+                        size_mb = os.path.getsize(xfile) / 1000.0 / 1000.0
+                        size_mb = format(size_mb, '.2f')
+
+                        mtime = time.strftime('%Y-%m-%d %H:%M:%S',
+                                              time.localtime(filemtime))  # Human readable datetime
+
+                        msg = 'Max set retention of ' + str(
+                            maxseconds_json) + ' seconds expired for file: ' + xfile + ' size(MB): ' \
+                              + str(size_mb) + ' mtime: ' + str(mtime)
                         print(msg)
 
-                    else:
+                        os.remove(xfile)  # Permanently remove the file!
 
-                        # cd to directory
-                        os.chdir(DIR)
-
-                        # counter of files with retention expired
-                        counter_expired = 0
-
-                        curtime = time.time()
-                        limit = maxseconds_json
-
-                        for xfile in glob.glob('*.json'):
-
-                            filemtime = os.path.getmtime(xfile)
-
-                            if curtime - filemtime > limit:
-                                counter_expired += 1
-
-                                size_mb = os.path.getsize(xfile) / 1000.0 / 1000.0
-                                size_mb = format(size_mb, '.2f')
-
-                                mtime = time.strftime('%Y-%m-%d %H:%M:%S',
-                                                      time.localtime(filemtime))  # Human readable datetime
-
-                                msg = 'Max set retention of ' + str(
-                                    maxseconds_json) + ' seconds expired for file: ' + xfile + ' size(MB): ' \
-                                      + str(size_mb) + ' mtime: ' + str(mtime)
-                                print(msg)
-
-                                os.remove(xfile)  # Permanently remove the file!
-
-                        msg = str(
-                            counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
-                        print(msg)
+                msg = str(
+                    counter_expired) + ' files were permanently removed due to retention expired for directory ' + DIR
+                print(msg)
 
 # Proceed to NMON cleaning
 if os.path.exists(NMON_DIR):
@@ -410,9 +389,6 @@ if os.path.exists(NMON_DIR):
         print (msg)
 
     else:
-
-        # cd to directory
-        os.chdir(DIR)
 
         # counter of files with retention expired
         counter_expired = 0

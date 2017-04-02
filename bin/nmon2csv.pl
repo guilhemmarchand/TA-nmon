@@ -113,8 +113,9 @@
 # - 03/27/2017: V1.1.33: Guilhem Marchand:
 #                                         - PowerLinux ID correction, prevent empty serial number in nmon_config
 #                                         - Remove empty line in nmon_config
+# - 04/01/2017: V1.1.34: Guilhem Marchand: Update path discovery
 
-$version = "1.2.33";
+$version = "1.2.34";
 
 use Time::Local;
 use Time::HiRes;
@@ -260,26 +261,27 @@ if ( not $SPLUNK_HOME ) {
 # Empty init APP
 my $APP = "";
 
-# Check if we are running nmon / TA-nmon / TA-nmon_selfmode / PA-nmon
-if ( -d "$SPLUNK_HOME/etc/apps/TA-nmon" ) {
-    $APP = "$SPLUNK_HOME/etc/apps/TA-nmon";
-}
-elsif ( -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ) {
-    $APP = "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode";
-}
-elsif ( -d "$SPLUNK_HOME/etc/slave-apps/PA-nmon" ) {
-    $APP = "$SPLUNK_HOME/etc/slave-apps/PA-nmon";
-}
-elsif ( -d "$SPLUNK_HOME/etc/apps/PA-nmon" ) {
-    $APP = "$SPLUNK_HOME/etc/apps/PA-nmon";
+# Discover TA-nmon path
+if ( length($APP) == 0 ) {
+
+    if ( -d "$SPLUNK_HOME/etc/apps/TA-nmon" ) {
+        $APP = "$SPLUNK_HOME/etc/apps/TA-nmon";
+    }
+    elsif ( -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ) {
+        $APP = "$SPLUNK_HOME/etc/slave-apps/TA-nmon";
+    }
+
 }
 
-# Verify existence of APP
-if ( !-d "$APP" ) {
-    print(
-"\n$time ERROR: The Application root directory could not be found, is TA-nmon / PA-nmon installed ?\n"
-    );
-    die;
+else {
+
+    if ( !-d "$APP" ) {
+        print(
+"\n$time ERROR: The Application root directory could be verified using your custom setting: $APP \n"
+        );
+        die;
+    }
+
 }
 
 # load configuration from json config file

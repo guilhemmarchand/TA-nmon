@@ -7,8 +7,13 @@ import logging
 import re
 import subprocess
 
+# Releases Notes:
+
+# - March 2017, V1.0.0: Guilhem Marchand, Initial version
+# - 2017/04/01, V1.0.01: Guilhem Marchand, Update path discovery
+
 # script version
-version = '1.0.0'
+version = '1.0.01'
 
 #################################################
 #      Variables
@@ -43,11 +48,9 @@ if not os.path.exists(APP_VAR):
         'The application var directory does not exist yet, we are not ready to start')
     sys.exit(0)
 
-# APP Directories for standard TA-nmon, TA-nmon_selfmode, PA-nmon
+# APP Directories for TA-nmon
 TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
-TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
-PA_NMON_APP = SPLUNK_HOME + '/etc/slave-apps/PA-nmon'
-PA_NMON_APP_STANDALONE = SPLUNK_HOME + '/etc/apps/PA-nmon'
+TA_NMON_APP_CLUSTERED = SPLUNK_HOME + '/etc/slave-apps/TA-nmon'
 
 # Empty APP
 APP = ''
@@ -55,15 +58,11 @@ APP = ''
 # Verify APP exist
 if os.path.exists(TA_NMON_APP):
     APP = TA_NMON_APP
-elif os.path.exists(TA_NMON_SELFMODE_APP):
-    APP = TA_NMON_SELFMODE_APP
-elif os.path.exists(PA_NMON_APP):
-    APP = PA_NMON_APP
-elif os.path.exists(PA_NMON_APP_STANDALONE):
-    APP = PA_NMON_APP_STANDALONE
+elif os.path.exists(TA_NMON_APP_CLUSTERED):
+    APP = TA_NMON_APP_CLUSTERED
 else:
-    msg = 'The Application root directory could not be found, is TA-nmon / PA-nmon installed ? We tried: ' + \
-          str(TA_NMON_APP) + ' ' + str(PA_NMON_APP)
+    msg = 'The Application root directory could not be found, is the TA-nmon ? We tried: ' + \
+          str(TA_NMON_APP) + ' ' + str(TA_NMON_APP_CLUSTERED)
     logging.error(msg)
     sys.exit(1)
 

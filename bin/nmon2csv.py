@@ -153,6 +153,7 @@
 # - 03/02/2017: V1.1.30: Guilhem Marchand: Manage the option json mode generation for performance data
 # - 03/19/2017: V1.1.31: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
 # - 03/22/2017: V1.1.32: Guilhem Marchand: Power Linux serial number identification correction
+# - 04/01/2017: V1.1.33: Guilhem Marchand: Update path discovery
 
 # Load libs
 
@@ -173,7 +174,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.32'
+nmon2csv_version = '1.1.33'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -300,7 +301,7 @@ python_version = platform.python_version()
 # SPLUNK_HOME environment variable
 SPLUNK_HOME = os.environ['SPLUNK_HOME']
 
-# APP Directories for standard TA-nmon, TA-nmon_selfmode, PA-nmon
+# Discover TA-nmon path
 
 if is_windows:
     TA_NMON_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon'
@@ -308,19 +309,9 @@ else:
     TA_NMON_APP = SPLUNK_HOME + '/etc/apps/TA-nmon'
 
 if is_windows:
-    TA_NMON_SELFMODE_APP = SPLUNK_HOME + '\\etc\\apps\\TA-nmon_selfmode'
+    TA_NMON_APP_CLUSTERED = SPLUNK_HOME + '\\etc\\slave-apps\\TA-nmon'
 else:
-    TA_NMON_SELFMODE_APP = SPLUNK_HOME + '/etc/apps/TA-nmon_selfmode'
-
-if is_windows:
-    PA_NMON_APP = SPLUNK_HOME + '\\etc\\slave-apps\\PA-nmon'
-else:
-    PA_NMON_APP = SPLUNK_HOME + '/etc/slave-apps/PA-nmon'
-
-if is_windows:
-    PA_NMON_APP_STANDALONE = SPLUNK_HOME + '\\etc\\apps\\PA-nmon'
-else:
-    PA_NMON_APP_STANDALONE = SPLUNK_HOME + '/etc/apps/PA-nmon'
+    TA_NMON_APP_CLUSTERED = SPLUNK_HOME + '/etc/slave-apps/TA-nmon'
 
 # Empty APP
 APP = ''
@@ -328,15 +319,11 @@ APP = ''
 # Verify APP exist
 if os.path.exists(TA_NMON_APP):
     APP = TA_NMON_APP
-elif os.path.exists(TA_NMON_SELFMODE_APP):
-    APP = TA_NMON_SELFMODE_APP
-elif os.path.exists(PA_NMON_APP):
-    APP = PA_NMON_APP
-elif os.path.exists(PA_NMON_APP_STANDALONE):
-    APP = PA_NMON_APP_STANDALONE
+elif os.path.exists(TA_NMON_APP_CLUSTERED):
+    APP = TA_NMON_APP_CLUSTERED
 else:
-    msg = 'The Application root directory could not be found, is TA-nmon / PA-nmon installed ? We tried: ' + \
-          str(TA_NMON_APP) + ' ' + str(PA_NMON_APP)
+    msg = 'The Application root directory could not be found, is the TA-nmon installed ? We tried: ' + \
+          str(TA_NMON_APP) + ' ' + str(TA_NMON_APP_CLUSTERED)
     logging.error(msg)
     sys.exit(1)
 

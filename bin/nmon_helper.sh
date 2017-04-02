@@ -74,8 +74,9 @@
 # 2017/03/29, Guilhem Marchand:         - nmon command not correctly displayed in nmon_helper.sh output
 # 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external
 # 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external (act II !)
+# 2017/04/02, Guilhem Marchand:         - Update path discovery
 
-# Version 1.3.40
+# Version 1.3.41
 
 # For AIX / Linux / Solaris
 
@@ -101,23 +102,16 @@ if [ -z "${SPL_HOME}" ]; then
 	exit 1
 fi
 
-# Defined which APP we are running from (nmon / TA-nmon / TA-nmon_selfmode / PA-nmon)
+# APP path discovery
 if [ -d "$SPLUNK_HOME/etc/apps/TA-nmon" ]; then
         APP=$SPLUNK_HOME/etc/apps/TA-nmon
 
-elif [ -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ]; then
-        APP=$SPLUNK_HOME/etc/apps/TA-nmon_selfmode
-
-elif [ -d "$SPLUNK_HOME/etc/apps/PA-nmon" ];then
-        APP=$SPLUNK_HOME/etc/apps/PA-nmon
-
-elif [ -d "$SPLUNK_HOME/etc/slave-apps/_cluster" ];then
-        APP=$SPLUNK_HOME/etc/slave-apps/PA-nmon
+elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
+        APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is TA-nmon / PA-nmon installed ?"
+        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
-
 fi
 
 # Var directory for data generation
@@ -257,7 +251,7 @@ fi
 
 # source local nmon.conf, if any
 
-# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/nmon|TA-nmon|PA-nmon/local
+# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-nmon/local
 if [ -f $APP/local/nmon.conf ]; then
 	. $APP/local/nmon.conf
 fi

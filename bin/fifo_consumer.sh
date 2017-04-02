@@ -8,7 +8,10 @@
 # Disclaimer:  this provided "as is".
 # Date - June 2014
 
-# Version 1.0.0
+# Guilhem Marchand 2017/03, initial version
+# Guilhem Marchand 2017/04/01, Update path discovery
+
+# Version 1.0.01
 
 # For AIX / Linux / Solaris
 
@@ -47,23 +50,16 @@ if [ -z "${SPL_HOME}" ]; then
 	exit 1
 fi
 
-# Defined which APP we are running from (nmon / TA-nmon / TA-nmon_selfmode / PA-nmon)
+# APP path discovery
 if [ -d "$SPLUNK_HOME/etc/apps/TA-nmon" ]; then
         APP=$SPLUNK_HOME/etc/apps/TA-nmon
 
-elif [ -d "$SPLUNK_HOME/etc/apps/TA-nmon_selfmode" ]; then
-        APP=$SPLUNK_HOME/etc/apps/TA-nmon_selfmode
-
-elif [ -d "$SPLUNK_HOME/etc/apps/PA-nmon" ];then
-        APP=$SPLUNK_HOME/etc/apps/PA-nmon
-
-elif [ -d "$SPLUNK_HOME/etc/slave-apps/_cluster" ];then
-        APP=$SPLUNK_HOME/etc/slave-apps/PA-nmon
+elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
+        APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is TA-nmon / PA-nmon installed ?"
+        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
-
 fi
 
 # Verify Perl availability (Perl will be more commonly available than Python)
@@ -85,7 +81,7 @@ fi
 
 # source local nmon.conf, if any
 
-# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/nmon|TA-nmon|PA-nmon/local
+# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-nmon/local
 if [ -f $APP/local/nmon.conf ]; then
 	. $APP/local/nmon.conf
 fi
