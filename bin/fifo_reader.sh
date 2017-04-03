@@ -9,6 +9,7 @@
 # Date - June 2014
 
 # Version 1.0.0
+# 2017/04/03, Guilhem Marchand: remove -r option for better compatibility with old systems
 
 # For AIX / Linux / Solaris
 
@@ -23,7 +24,7 @@ FIFO=$1
 #############		Main Program 			############
 ####################################################################
 
-while IFS= read -r line
+while IFS= read line
 do
     echo $line
 done <$FIFO

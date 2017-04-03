@@ -75,8 +75,9 @@
 # 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external
 # 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external (act II !)
 # 2017/04/02, Guilhem Marchand:         - Update path discovery
+# 2017/04/02, Guilhem Marchand:         - Solaris new sarmon release is fifo compatible
 
-# Version 1.3.41
+# Version 1.3.42
 
 # For AIX / Linux / Solaris
 
@@ -875,43 +876,35 @@ NMON_REPOSITORY=${APP_VAR}/var/nmon_repository
 # Nmon PID file
 PIDFILE=${APP_VAR}/nmon.pid
 
-# fifo files are currently supported only on AIX and Linux
-case $UNAME in
+# FIFO file 1
+FIFO1_DIR=${NMON_REPOSITORY}/fifo1
+FIFO1=${FIFO1_DIR}/nmon.fifo
 
-AIX|Linux)
+# FIFO file 2
+FIFO2_DIR=${NMON_REPOSITORY}/fifo2
+FIFO2=${FIFO2_DIR}/nmon.fifo
 
-    # FIFO file 1
-    FIFO1_DIR=${NMON_REPOSITORY}/fifo1
-    FIFO1=${FIFO1_DIR}/nmon.fifo
+# create dir
+[ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
+[ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
 
-    # FIFO file 2
-    FIFO2_DIR=${NMON_REPOSITORY}/fifo2
-    FIFO2=${FIFO2_DIR}/nmon.fifo
+# ensure fifo files do not exist currently as regular files instead of named pipe
+if [ -s $FIFO1 ]; then
+    rm -f $FIFO1
+fi
 
-    # create dir
-    [ -d ${FIFO1_DIR} ] || { mkdir -p ${FIFO1_DIR}; }
-    [ -d ${FIFO2_DIR} ] || { mkdir -p ${FIFO2_DIR}; }
+if [ -s $FIFO2 ]; then
+    rm -f $FIFO2
+fi
 
-    # ensure fifo files do not exist currently as regular files instead of named pipe
-    if [ -s $FIFO1 ]; then
-        rm -f $FIFO1
-    fi
+# create fifo files if required
+if [ ! -p $FIFO1 ]; then
+    mkfifo $FIFO1
+fi
 
-    if [ -s $FIFO2 ]; then
-        rm -f $FIFO2
-    fi
-
-    # create fifo files if required
-    if [ ! -p $FIFO1 ]; then
-        mkfifo $FIFO1
-    fi
-
-    if [ ! -p $FIFO2 ]; then
-        mkfifo $FIFO2
-    fi
-;;
-
-esac
+if [ ! -p $FIFO2 ]; then
+    mkfifo $FIFO2
+fi
 
 # csv_repository
 [ -d ${APP_VAR}/var/csv_repository ] || { mkdir -p ${APP_VAR}/var/csv_repository; }
@@ -953,11 +946,15 @@ case $UNAME in
         # on AIX, prevent error messages linked to /usr/opt/freeware/bin/rpm
         unset LIBPATH
 
-	    # nmon_external
-	    export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
-        export NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
-        export TIMESTAMP=0
-        export NMON_ONE_IN=1
+        # global nmon_external
+	    NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+	    export NMON_EXTERNAL_DIR
+        NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
+        export NMON_EXTERNAL_FIFO
+        TIMESTAMP=0
+        export TIMESTAMP
+        NMON_ONE_IN=1
+        export NMON_ONE_IN
         unset NMON_END
 
         # fifo_started variable is exported by the function start_fifo_reader
@@ -965,21 +962,19 @@ case $UNAME in
         "fifo1")
             # nmon_external
             create_nmon_external
-            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
-            export TIMESTAMP=0
-            export NMON_ONE_IN=1
-            unset NMON_END
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+            export NMON_SNAP
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo1} > ${PIDFILE} ;;
         "fifo2")
             # nmon_external
             create_nmon_external
-            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
-            export TIMESTAMP=0
-            export NMON_ONE_IN=1
-            unset NMON_END
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+            export NMON_SNAP
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo2} > ${PIDFILE} ;;
         esac
@@ -987,11 +982,15 @@ case $UNAME in
 
 	Linux )
 
-        # nmon_external
-        export NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
-        export NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
-        export TIMESTAMP=0
-        export NMON_ONE_IN=1
+        # global nmon_external
+	    NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+	    export NMON_EXTERNAL_DIR
+        NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
+        export NMON_EXTERNAL_FIFO
+        TIMESTAMP=0
+        export TIMESTAMP
+        NMON_ONE_IN=1
+        export NMON_ONE_IN
         unset NMON_END
 
         # fifo_started variable is exported by the function start_fifo_reader
@@ -999,14 +998,18 @@ case $UNAME in
         "fifo1")
 	        # nmon_external
             create_nmon_external
-            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+            export NMON_SNAP
             nmon_command=${nmon_command_fifo1} ;;
         "fifo2")
 	        # nmon_external
             create_nmon_external
-            export NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-            export NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+            export NMON_SNAP
             nmon_command=${nmon_command_fifo2} ;;
         esac
 
@@ -1073,7 +1076,36 @@ case $UNAME in
 
 	SunOS )
 
-	    # nmon_external is currently no supported on Solaris
+        # global nmon_external
+	    NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+	    export NMON_EXTERNAL_DIR
+        NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
+        export NMON_EXTERNAL_FIFO
+        TIMESTAMP=0
+        export TIMESTAMP
+        NMON_ONE_IN=1
+        export NMON_ONE_IN
+        unset NMON_END
+
+        # fifo_started variable is exported by the function start_fifo_reader
+        case $fifo_started in
+        "fifo1")
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+            export NMON_SNAP
+            NMONOUTPUTFILE="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
+            export NMONOUTPUTFILE
+            ;;
+        "fifo2")
+            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+            export NMON_START
+            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+            export NMON_SNAP
+            NMONOUTPUTFILE="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
+            export NMONOUTPUTFILE
+            ;;
+        esac
 
 		NMONNOSAFILE=1 # Do not generate useless sa files
 		export NMONNOSAFILE
@@ -1266,7 +1298,8 @@ if [ $? -eq 0 ]; then
             nohup $APP/bin/fifo_reader.py --fifo fifo2 </dev/null >/dev/null 2>&1 & ;;
         esac
         echo $! > ${APP_VAR}/var/fifo_reader_fifo2.pid
-        export fifo_started="fifo2"
+        fifo_started="fifo2"
+        export fifo_started
 	fi
 else
     echo "`date`, ${HOST} INFO: starting the fifo_reader fifo1"
@@ -1277,7 +1310,8 @@ else
         nohup $APP/bin/fifo_reader.py --fifo fifo1 </dev/null >/dev/null 2>&1 & ;;
     esac
     echo $! > ${APP_VAR}/var/fifo_reader_fifo1.pid
-    export fifo_started="fifo1"
+    fifo_started="fifo1"
+    export fifo_started
 fi
 
 }
@@ -1426,8 +1460,8 @@ AIX )
 
 SunOS )
 
-    # writing to fifo is not currently available on Solaris
-    write_to_fifo="false"
+    # writing to fifo is now supported
+    write_to_fifo="true"
 
 	nmon_command="${NMON} ${interval} ${snapshot}"
 ;;
@@ -1512,18 +1546,9 @@ if [ ! -f ${PIDFILE} ]; then
 	
 	"")
 	
-		case $UNAME in
-
-        AIX | Linux)
-		    start_fifo_reader
-		    sleep 1
-		    start_nmon
-		    ;;
-        SunOS)
-		    start_nmon ;;
-
-        esac
-
+        start_fifo_reader
+        sleep 1
+        start_nmon
 		sleep 5 # Let nmon time to start
 		write_pid
 		exit 0
@@ -1606,18 +1631,11 @@ else
 	
 		"")
 
-            case $UNAME in
+            start_fifo_reader
+            sleep 1
+            start_nmon
 
-            AIX | Linux)
-    		    start_fifo_reader
-	    	    sleep 1
-                start_nmon ;;
-            SunOS)
-                start_nmon ;;
-
-            esac
-
-			sleep 5 # Let nmon time to start
+            sleep 5 # Let nmon time to start
 			# Relevant for Solaris Only
 			write_pid
 			exit 0
@@ -1692,16 +1710,9 @@ else
 					if [ $PIDAGE -gt $endtime ]; then
 						echo "`date`, ${HOST} INFO: To prevent data gaps between 2 Nmon collections, a new process will be started, its PID will be available on next execution"
 
-                        case $UNAME in
-
-                        AIX | Linux)
-                            start_fifo_reader
-                            sleep 1
-                            start_nmon ;;
-                        SunOS)
-                            start_nmon ;;
-
-                        esac
+                        start_fifo_reader
+                        sleep 1
+                        start_nmon
 
 						sleep 5 # Let nmon time to start
 						# Relevant for Solaris Only		
@@ -1726,16 +1737,9 @@ else
 		echo "`date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
 
-		case $UNAME in
-
-        AIX | Linux)
-		    start_fifo_reader
-		    sleep 1
-		    start_nmon ;;
-        SunOS)
-		    start_nmon ;;
-
-        esac
+        start_fifo_reader
+        sleep 1
+        start_nmon
 
 		sleep 5 # Let nmon time to start
 		# Relevant for Solaris Only		

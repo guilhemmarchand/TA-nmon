@@ -10,8 +10,9 @@
 
 # Guilhem Marchand 2017/03, initial version
 # Guilhem Marchand 2017/04/01, Update path discovery
+# Guilhem Marchand 2017/04/02, Solaris is now fifo compatible
 
-# Version 1.0.01
+# Version 1.0.02
 
 # For AIX / Linux / Solaris
 
@@ -24,13 +25,6 @@ HOST=`hostname`
 
 # Which type of OS are we running
 UNAME=`uname`
-
-# Currently, the fifo mode is not available on Solaris OS
-case $UNAME in
-SunOS )
-    # Don't do nothing and exit
-    exit 0 ;;
-esac
 
 if [ -z "${SPLUNK_HOME}" ]; then
 	echo "`date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
