@@ -61,6 +61,7 @@ The Applications brings Nmon binaries for Linux vendors and Solaris OS, on AIX t
 **For Linux OS:**
 
  * bin/linux: Main directory for Linux specific Nmon binaries
+ * bin/linux/amzn: 64 bits binaries for Amazon Linux (AMI)
  * bin/linux/centos: 32/64 bits binaries for Centos
  * bin/linux/debian: 32/64 bits binaries for Debian GNU/Linux
  * bin/linux/fedora: 32/64 bits binaries for Fedora project
