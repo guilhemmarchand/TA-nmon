@@ -19,7 +19,7 @@ OS compatibility
 OS certification
 ================
 
-**Here is a non exhaustive list of systems and version that the TA-nmon is being intensively qualified:**
+**Here is a non exhaustive list of systems and version that the TA-nmon is / has been intensively qualified:**
 
 **IBM AIX:**
 
@@ -29,11 +29,14 @@ OS certification
 
 **Linux on IBM PowerPC:**
 
-* SUSE Linux 11.4 BE (IBM POWER 8)
 * SUSE Linux 12.2 LE (IBM POWER 8)
-* Red Hat Linux 6.9 BE (IBM POWER 8)
+* SUSE Linux 11.4 BE (IBM POWER 8)
 * RedHat Linux 7.3 LE (IBM POWER 8)
+* RedHat Linux 7.2 LE (IBM POWER 8)
+* Red Hat Linux 6.9 BE (IBM POWER 8)
+* Red Hat Linux 6.5 BE (IBM POWER 8)
 * Ubuntu 16.04 LTS (IBM POWER 8)
+* Ubuntu 14.04 LTS (IBM POWER 8)
 
 **Linux x86, 32 bits and 64 bits:**
 
@@ -84,6 +87,11 @@ OS certification
 
 * fedora24
 * fedora25
+
+*Amazon AMI:*
+
+* AMI 2017.03
+* AMI 2016.09
 
 **SOLARIS:**
 

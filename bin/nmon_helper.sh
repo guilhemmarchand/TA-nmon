@@ -76,8 +76,9 @@
 # 2017/03/30, Guilhem Marchand:         - AIX issue with nmon_external (act II !)
 # 2017/04/02, Guilhem Marchand:         - Update path discovery
 # 2017/04/02, Guilhem Marchand:         - Solaris new sarmon release is fifo compatible
+# 2017/04/07, Guilhem Marchand:         - New sarmon for Solaris on Sparc is not ready, avoid starting this version for now
 
-# Version 1.3.42
+# Version 1.3.43
 
 # For AIX / Linux / Solaris
 
@@ -845,6 +846,11 @@ if [ ! -x "$NMON" ];then
 	case $? in
 	0 )
 		# arch is sparc
+
+		# sorry to break there ;-) sarmon not yet ready!
+	    echo "`date`, ${HOST} ERROR, Unsupported system ! This TA-nmon release is not yet compatible with Solaris on Sparc, please downgrade to the main previous TA-nmon branch"
+        exit 1
+
 		NMON="$APP_VAR/bin/sarmon_bin_sparc/sadc" ;;
 	* )
 		# arch is x86
