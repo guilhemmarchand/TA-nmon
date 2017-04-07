@@ -52,11 +52,8 @@ The Shell script is a wrapper script to Python / Perl scripts. (decision is made
 Embedded Binaries in the TA-nmon
 ********************************
 
-*Since the major release V1.7.4, the core application does bring any data generation releated components*
-
-Scripts and binaries are shared in exactly same versions between the PA-nmon add-on and the TA-nmon add-on.
-
-The Applications brings Nmon binaries for Linux vendors and Solaris OS, on AIX the application will only try to use the version shipped with system
+The TA-nmon embeds Nmon binaries for Linux vendors and Solaris OS.
+AIX embeds by default its own version of Nmon, known as "topas-nmon".
 
 **For Linux OS:**
 

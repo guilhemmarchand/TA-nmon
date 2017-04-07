@@ -29,6 +29,7 @@ Overview:
 
    about
    releasenotes
+   knownissues
    support
    openissue
    os_compatibility
