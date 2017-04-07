@@ -14,7 +14,7 @@ Requirements
 What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ========
-V1.3.12:
+V1.3.13:
 ========
 
 **This is a major release of the TA-nmon:**
