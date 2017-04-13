@@ -23,3 +23,15 @@ The feature works however perfectly on AIX 7.2, any Linux OS and Solaris
 The sarmon binary for Sparc processor has not been released yet and is under compilation.
 
 Once the binary will have been released, the TA-nmon using fifo will be compatible with Solaris Sparc processors.
+
+* **local/nmon.conf will generate errors messages when deployed in search heads running in SHC (Search Head Clustering):**
+
+Splunk has implemented an auto reformatting behavior in SHC deployer which makes an local/nmon.conf being incompatible with the TA-nmon.
+
+As such, customizing the TA-nmon options using a local/nmon.conf from the SHC deployer will not work and generate numerous errors in splunkd on the search heads.
+
+However, this does not impact the TA-nmon behaviors but the fact that you cannot use a local/nmon.conf for customization.
+
+Note that you can still customize the options on a per server basis using a "/etc/nmon.conf" configuration file.
+
+Git issue referenced: https://github.com/guilhemmarchand/TA-nmon/issues/23
