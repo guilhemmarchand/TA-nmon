@@ -38,6 +38,58 @@ To avoid these risks, and limit at the maximum the amount of resources to be use
 
 **Thanks to this implementation, the TA-nmon foot print is now very low and constant, better charts than words, here are some benchmark operated on various systems:**
 
+Comparing before / after TA-nmon deployment:
+--------------------------------------------
+
+Bellow a comparison on a Linux server with a first period running only the Splunk Universal Forwarder, and a second period with the TA-nmon deployed:
+
+**CPU usage comparison:**
+
+*overlapped periods:*
+
+.. image:: img/compare/compare_cpu_overlap.png
+   :alt: img/compare/compare_cpu_overlap.png
+   :align: center
+
+*period 1 focus (no TA-nmon):*
+
+.. image:: img/compare/compare_cpu_period1.png
+   :alt: img/compare/compare_cpu_period1.png
+   :align: center
+
+*period 2 focus (with TA-nmon):*
+
+.. image:: img/compare/compare_cpu_period2.png
+   :alt: img/compare/compare_cpu_period2.png
+   :align: center
+
+*full time range period:*
+
+.. image:: img/compare/compare_cpu_timerange.png
+   :alt: img/compare/compare_cpu_timerange.png
+   :align: center
+
+**Processes usage, memory and IOPS:**
+
+*full time range period:*
+
+*processes usage (core conso):*
+
+.. image:: img/compare/compare_processes_timerange.png
+   :alt: img/compare/compare_processes_timerange.png
+   :align: center
+
+*physical / swap effective memory usage:*
+
+.. image:: img/compare/compare_memory_timerange.png
+   :alt: img/compare/compare_memory_timerange.png
+   :align: center
+
+*read / write / total IOPS:*
+
+.. image:: img/compare/compare_IOPS_timerange.png
+   :alt: img/compare/compare_IOPS_timerange.png
+   :align: center
 
 IBM AIX BENCHMARKS:
 -------------------
