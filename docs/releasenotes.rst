@@ -13,6 +13,13 @@ Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+========
+V1.3.14:
+========
+
+- Fix: nmon external load average extraction failure on some OS
+
 ========
 V1.3.13:
 ========
