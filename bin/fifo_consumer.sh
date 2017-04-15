@@ -11,8 +11,9 @@
 # Guilhem Marchand 2017/03, initial version
 # Guilhem Marchand 2017/04/01, Update path discovery
 # Guilhem Marchand 2017/04/02, Solaris is now fifo compatible
+# Guilhem Marchand 2017/04/15, Fix SHC deployer re-formatting default/nmon.conf
 
-# Version 1.0.02
+# Version 1.0.03
 
 # For AIX / Linux / Solaris
 
@@ -77,7 +78,17 @@ fi
 
 # Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-nmon/local
 if [ -f $APP/local/nmon.conf ]; then
-	. $APP/local/nmon.conf
+
+    # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
+    grep '[default]' $APP/default/nmon.conf >/dev/null
+    if [ $? -eq 0 ]; then
+        sed -i 's/ = /=/g' ${APP}/default/nmon.conf
+        sed -i 's/\[default\]//g' ${APP}/default/nmon.conf
+        . $APP/default/nmon.conf
+    else
+        . $APP/default/nmon.conf
+    fi
+
 fi
 
 # On a per server basis, you can also set in /etc/nmon.conf
