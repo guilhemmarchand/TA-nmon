@@ -77,8 +77,9 @@
 # 2017/04/02, Guilhem Marchand:         - Update path discovery
 # 2017/04/02, Guilhem Marchand:         - Solaris new sarmon release is fifo compatible
 # 2017/04/07, Guilhem Marchand:         - New sarmon for Solaris on Sparc is not ready, avoid starting this version for now
+# 2017/04/16, Guilhem Marchand:         - Fix nmon.conf formatting issue when deployed on search heads in SHC
 
-# Version 1.3.43
+# Version 1.3.44
 
 # For AIX / Linux / Solaris
 
@@ -178,6 +179,13 @@ else
 
 fi
 
+# Fix nmon.conf format issue when pushed by the SHC deployer on search heads
+reformat_default_nmon_conf () {
+    sed -i 's/ = /=/g' ${APP}/default/nmon.conf
+    sed -i 's/\[default\]//g' ${APP}/default/nmon.conf
+}
+
+
 ###
 ### Legacy options for nmon writing to regular files (these values are used by the TA-nmon not using fifo files)
 ###
@@ -247,8 +255,22 @@ Linux_disk_dg_enable="1"
 Linux_disk_dg_group="auto"
 
 # source default nmon.conf
+
+# Notes: in a search head running in SHC, the creation of a local/nmon.conf will make the SHC deployer
+# reformatting the conf file in a Splunk fashion
+# this is however not compatible with a shell sourcing of the file
+# If we detect this case, the nmon.conf file will be reformatted to match our constraints
+
 if [ -f $APP/default/nmon.conf ]; then
-	. $APP/default/nmon.conf
+
+    # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
+    grep '[default]' $APP/default/nmon.conf >/dev/null
+    if [ $? -eq 0 ]; then
+        reformat_default_nmon_conf
+        . $APP/default/nmon.conf
+    else
+        . $APP/default/nmon.conf
+    fi
 fi
 
 # source local nmon.conf, if any
