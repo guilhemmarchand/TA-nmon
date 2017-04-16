@@ -19,6 +19,7 @@ V1.3.14:
 ========
 
 - Fix: nmon external load average extraction failure on some OS
+- Fix: TA-nmon local/nmon.conf from the SHC deployer is not compatible #23
 
 ========
 V1.3.13:
