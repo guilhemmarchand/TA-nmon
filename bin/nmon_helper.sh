@@ -263,14 +263,22 @@ Linux_disk_dg_group="auto"
 
 if [ -f $APP/default/nmon.conf ]; then
 
-    # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-    grep '[default]' $APP/default/nmon.conf >/dev/null
-    if [ $? -eq 0 ]; then
-        reformat_default_nmon_conf
+    case $UNAME in
+    Linux)
+        # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
+        grep '[default]' $APP/default/nmon.conf >/dev/null
+        if [ $? -eq 0 ]; then
+            reformat_default_nmon_conf
+            . $APP/default/nmon.conf
+        else
+            . $APP/default/nmon.conf
+        fi
+        ;;
+    *)
         . $APP/default/nmon.conf
-    else
-        . $APP/default/nmon.conf
-    fi
+        ;;
+    esac
+
 fi
 
 # source local nmon.conf, if any
