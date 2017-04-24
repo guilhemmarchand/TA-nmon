@@ -12,8 +12,9 @@
 # Guilhem Marchand 2017/04/01, Update path discovery
 # Guilhem Marchand 2017/04/02, Solaris is now fifo compatible
 # Guilhem Marchand 2017/04/15, Fix SHC deployer re-formatting default/nmon.conf
+# Guilhem Marchand 2017/04/24, Use the nmon var directory in Splunk dir for temp creation
 
-# Version 1.0.03
+# Version 1.0.04
 
 # For AIX / Linux / Solaris
 
@@ -32,8 +33,14 @@ if [ -z "${SPLUNK_HOME}" ]; then
 	exit 1
 fi
 
-# tmp file
-temp_file="/tmp/fifo_consumer.sh.$$"
+# tmp dir and file
+temp_dir="${SPLUNK_HOME}/var/log/nmon/tmp/"
+
+if [ ! -d ${temp_dir} ]; then
+    mkdir -p ${temp_dir}
+fi
+
+temp_file="${temp_dir}/fifo_consumer.sh.$$"
 
 # Splunk Home variable: This should automatically defined when this script is being launched by Splunk
 # If you intend to run this script out of Splunk, please set your custom value here
