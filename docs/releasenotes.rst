@@ -15,13 +15,21 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
-V1.3.14:
+V1.3.15:
 ========
 
 - Fix: nmon external load average extraction failure on some OS
 - Fix: TA-nmon local/nmon.conf from the SHC deployer is not compatible #23
 - Fix: Use the nmon var directory for fifo_consumer.sh temp file management
+- Fix: solve nmon_external issues with AIX 6.1/7.1 (collection randomly stops)
+- Fix: manage old topas-nmon version not compatible with -y option
 - Feature: binaries for Ubuntu 17 (x86 32/64, power)
+
+========
+V1.3.14:
+========
+
+- intermediate version not published
 
 ========
 V1.3.13:

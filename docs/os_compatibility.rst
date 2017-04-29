@@ -8,7 +8,9 @@ OS compatibility
 
 **The TA-nmon is compatible with any version of:**
 
-* IBM AIX
+* IBM AIX 6.1 (certified starting OSlevel 6.1.9.101, TL09)
+* IBM AIX 7.1 (certified starting OSlevel 7.1.4.1, TL04)
+* IBM AIX 7.2 (certified starting OSlevel 7.2.0.1, TL00)
 * Linux x86 (32 / 64 bits)
 * Linux PowerPC (32 / 64 bits in LE and BE)
 * Linux on z Systems (s390 / s390x)
