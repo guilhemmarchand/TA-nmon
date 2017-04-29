@@ -78,8 +78,10 @@
 # 2017/04/02, Guilhem Marchand:         - Solaris new sarmon release is fifo compatible
 # 2017/04/07, Guilhem Marchand:         - New sarmon for Solaris on Sparc is not ready, avoid starting this version for now
 # 2017/04/16, Guilhem Marchand:         - Fix nmon.conf formatting issue when deployed on search heads in SHC
+# 2017/04/29, Guilhem Marchand:
+#                                       - Fix AIX compatibility issue with old topas-nmon not accepting the -y option
 
-# Version 1.3.44
+# Version 1.3.45
 
 # For AIX / Linux / Solaris
 
@@ -1456,7 +1458,19 @@ AIX )
             AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
     fi
 
-    # As well, the option "-yoverwrite=1" is mandatory
+    # old topas-nmon version might not be compatible with the -y option, let's manage this
+    ${NMON} -y 2>&1| grep 'option requires an argument -- y' >/dev/null
+    if [ $? -ne 0 ]; then
+        # option -y is not compatible and not mandatory
+        AIX_options=`echo ${AIX_options} | sed 's/\-yoverwrite=1 //g'`
+    else
+        # option -y is compatible and mandatory, ensure it has been set
+        echo ${AIX_options} | grep 'yoverwrite' >/dev/null
+        if [ $? -ne 0 ]; then
+                AIX_options="${AIX_options} -yoverwrite=1"
+        fi
+    fi
+
     echo ${AIX_options} | grep 'yoverwrite' >/dev/null
     if [ $? -ne 0 ]; then
             AIX_options="${AIX_options} -yoverwrite=1"
@@ -1550,7 +1564,6 @@ Linux )
 
 esac
 
-
 # Initialize PID variable
 PIDs="" 
 
@@ -1581,7 +1594,6 @@ if [ ! -f ${PIDFILE} ]; then
 	case ${PIDs} in
 	
 	"")
-	
         start_fifo_reader
         sleep 1
         start_nmon
@@ -1666,7 +1678,6 @@ else
 		case ${PIDs} in
 	
 		"")
-
             start_fifo_reader
             sleep 1
             start_nmon
