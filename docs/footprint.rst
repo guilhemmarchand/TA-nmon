@@ -293,6 +293,36 @@ LINUX BENCHMARKS:
    :alt: img/bench_LINUX/SUSE_122_LE/top_memory.png
    :align: center
 
+**RedHat Linux 7.2 LE (IBM POWER 8)**
+
+*date 29/04/2013, TA-nmon release 1.3.15, Splunk Universal Forwarder 6.5.3, Python interpreter, 1 CPU*
+
+.. image:: img/bench_LINUX/RHEL_72_LE/cpu_full.png
+   :alt: img/bench_LINUX/RHEL_72_LE/cpu_full.png
+   :align: center
+
+.. image:: img/bench_LINUX/RHEL_72_LE/cpu_pct.png
+   :alt: img/bench_LINUX/RHEL_72_LE/cpu_pct.png
+   :align: center
+
+*Average I/O over 24 hours:*
+
+.. image:: img/bench_LINUX/RHEL_72_LE/iops.png
+   :alt: img/bench_LINUX/RHEL_72_LE/iops.png
+   :align: center
+
+*TOP processes CPU core usage over 24 hours:*
+
+.. image:: img/bench_LINUX/RHEL_72_LE/top_cpu.png
+   :alt: img/bench_LINUX/RHEL_72_LE/top_cpu.png
+   :align: center
+
+*TOP processes memory usage over 24 hours:*
+
+.. image:: img/bench_LINUX/RHEL_72_LE/top_memory.png
+   :alt: img/bench_LINUX/RHEL_72_LE/top_memory.png
+   :align: center
+
 **RedHat Linux 7.3 LE (IBM POWER 8)**
 
 *date 27/03/2013, TA-nmon release 1.3.05, Splunk Universal Forwarder 6.5.2, Python interpreter, 1 CPU*
