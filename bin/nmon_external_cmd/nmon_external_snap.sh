@@ -7,7 +7,9 @@
 # Date - March 2017
 # Guilhem Marchand 2017/03/18, initial version
 
-# Version 1.0.0
+# 2017/04/29, Guilhem Marchand:         - AIX compatibility issues, detach the commands in background
+
+# Version 1.0.1
 
 # For AIX / Linux / Solaris
 
@@ -36,7 +38,7 @@ fi
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # Number of running processes
-echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>NMON_FIFO_PATH
+echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>NMON_FIFO_PATH &
 
 # Uptime information (uptime command output)
-echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>NMON_FIFO_PATH
+echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>NMON_FIFO_PATH &
