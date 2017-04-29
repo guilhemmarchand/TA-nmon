@@ -37,6 +37,7 @@ OS certification
 * RedHat Linux 7.2 LE (IBM POWER 8)
 * Red Hat Linux 6.9 BE (IBM POWER 8)
 * Red Hat Linux 6.5 BE (IBM POWER 8)
+* Ubuntu 17.04 LTS (IBM POWER 8)
 * Ubuntu 16.04 LTS (IBM POWER 8)
 * Ubuntu 14.04 LTS (IBM POWER 8)
 
@@ -44,6 +45,7 @@ OS certification
 
 *Ubuntu:*
 
+* ubuntu-1704-64, ubuntu-1704-32
 * ubuntu-1610-64, ubuntu-1610-32
 * ubuntu-1604-64, ubuntu-1604-32
 * ubuntu-1404-64, ubuntu-1404-32
