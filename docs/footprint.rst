@@ -76,8 +76,22 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 - the average CPU cost is approximately 0.10 % of global CPU usage (usage-usage without UF)
 - the imputable average CPU cost of running UF + TA-nmon is approximately 1.35% (TA-nmon processing costs, Splunk UF ingestion costs)
 - the average CPU usage of system + UF + TA-nmon is approximately 1.40%
-- We can observe an hourly task consuming CPU and imputable to the Splunk Universal Forwarder only
-- due to this hourly task of the Splunk Universal Forwarder (quick CPU peaks up to 1.6%), we can observe quick CPU peaks with UF + TA-nmon up to 2.8% CPU
+- We can observe an hourly task consuming CPU and imputable to the Splunk Universal Forwarder only (peaks exist without the TA-nmon, but only when running the UF)
+- due to this hourly task of the Splunk Universal Forwarder (quick CPU peaks up to 1.7% without DS, up to 1.6% with DS connection), we can observe quick CPU peaks with UF + TA-nmon up to 2.8% CPU
+
+**Conclusions:**
+
+- the TA-nmon usage is stable and constant over time
+- due to this internal Splunk Universal Forwarder hourly task, we can observe small hourly peaks of CPU usage
+- running the Splunk Universal Forwarder + the TA-nmon generates approximately 1.35% of CPU usage on this machine
+- the Splunk Universal Forwarder itself but doing nothing has obviously a very limited CPU foot print (but this mysterious hourly task!)
+- the fifo implementation introduced in the TA-nmon 1.3.x allows now a very limited and constant system foo print!
+
+The dashboard xml code used for this analysis is available in the Git docs directory, it has hardcoded host and time ranges but can be useful if you want to do your own analysis:
+
+
+
+Enjoy!
 
 *Average physical memory % usage over period for each scenario:*
 
@@ -110,6 +124,34 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 
 - the level of IOPS imputable to the activity of the Universal Forwarder (when doing nothing) is obviously almost null
 - when running the UF + TA-nmon, the level of IOPS is approximately 1 I/O per second.
+
+*splunkd process (TOP data):*
+
+Notes:
+
+For this exercise, we use the nmon binary in unlimited processes capture mode (option -I -1), this mode allows capturing the full processes table.
+See: :ref:`manage_nmon_config`
+
+*splunkd CPU logical core usage:*
+
+.. image:: img/compare/top_splunkd_cpu_overlapped.png
+   :alt: img/compare/top_splunkd_cpu_overlapped.png
+   :align: center
+
+.. image:: img/compare/top_splunkd_cpu_multi.png
+   :alt: img/compare/top_splunkd_cpu_multi.png
+   :align: center
+
+*splunkd memory usage:*
+
+.. image:: img/compare/top_splunkd_mem.png
+   :alt: img/compare/top_splunkd_mem.png
+   :align: center
+
+*Observations:*
+
+- we can clearly observe the hourly peak of CPU due to the Splunk Universal Forwarder
+- CPU utilisation with or without deployment server connection is almost identical, the cost of calling home to the DS is almost null
 
 IBM AIX BENCHMARKS:
 -------------------

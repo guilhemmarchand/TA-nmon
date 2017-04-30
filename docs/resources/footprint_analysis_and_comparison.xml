@@ -1,0 +1,543 @@
+<dashboard>
+  <label>Splunk Univeral Forwarder and TA-nmon system footprint analysis</label>
+  <row>
+    <panel>
+      <title>CPU analysis - average over period</title>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| stats avg(cpu_load_percent) AS "cpu %: UF+TA-nmon"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connect to DS + TA-nmon</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| stats avg(cpu_load_percent) AS "cpu %: UF with DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connected to DS</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| stats avg(cpu_load_percent) AS "cpu %: UF no DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF not connected to DS</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| stats avg(cpu_load_percent) AS "cpu %: none"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">None</option>
+        <option name="unit">%</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>CPU analysis (overlapped)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF+TA-nmon"
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: none" ]
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF with DS" ]
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF no DS" ]
+| fields _time, "cpu %: UF+TA-nmon", "cpu %: UF with DS", "cpu %: UF no DS", "cpu %: none"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">0.25</option>
+        <option name="charting.axisTitleX.text">percent CPU</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">percent CPU</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">3</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">500</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>CPU analysis (multiseries)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF+TA-nmon"
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: none" ]
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF with DS" ]
+| appendcols [ search eventtype=nmon:performance type=CPU_ALL frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| timechart span=1m avg(cpu_load_percent) AS "cpu %: UF no DS" ]
+| fields _time, "cpu %: UF+TA-nmon", "cpu %: UF with DS", "cpu %: UF no DS", "cpu %: none"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">0.25</option>
+        <option name="charting.axisTitleX.text">percent CPU</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">percent CPU</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">3</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">800</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Physical memory analysis - average over period</title>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| stats avg(mem_used_effective_PCT) AS "mem %: UF+TA-nmon"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connect to DS + TA-nmon</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| stats avg(mem_used_effective_PCT) AS "mem %: UF with DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connected to DS</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| stats avg(mem_used_effective_PCT) AS "mem %: UF no DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF not connected to DS</option>
+        <option name="unit">%</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| stats avg(mem_used_effective_PCT) AS "mem %: none"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">None</option>
+        <option name="unit">%</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Physical memory analysis (overlapped)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| timechart span=1m avg(mem_used_effective_PCT) AS "mem %: UF+TA-nmon"
+| appendcols [ search eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| timechart span=1m avg(mem_used_effective_PCT) AS "mem %: none" ]
+| appendcols [ search eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| timechart span=1m avg(mem_used_effective_PCT) AS "mem %: UF with DS" ]
+| appendcols [ search eventtype=nmon:performance type=MEM frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| timechart span=1m avg(mem_used_effective_PCT) AS "mem %: UF no DS" ]
+| fields _time, "mem %: UF+TA-nmon", "mem %: UF with DS", "mem %: UF no DS", "mem %: none"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">percent memory</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">percent CPU</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">500</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>I/O per sec analysis - average over period</title>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=DGXFER frameID=* host=sys-86927 earliest=1493427600 latest=1493434800
+| stats avg(disk_total_iops) AS "IOPS %: UF+TA-nmon"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connect to DS + TA-nmon</option>
+        <option name="unit">iops</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=DGXFER frameID=* host=sys-86927 earliest=1493544000 latest=1493551200
+| stats avg(disk_total_iops) AS "IOPS %: UF with DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF connected to DS</option>
+        <option name="unit">iops</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=DGXFER frameID=* host=sys-86927 earliest=1493564400 latest=1493571600
+| stats avg(disk_total_iops) AS "IOPS %: UF no DS"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">Splunk UF not connected to DS</option>
+        <option name="unit">iops</option>
+      </single>
+      <single>
+        <search>
+          <query>eventtype=nmon:performance type=DGXFER frameID=* host=sys-86927 earliest=1493496000 latest=1493503200
+| stats avg(disk_total_iops) AS "IOPS %: none"</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="underLabel">None</option>
+        <option name="unit">iops</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>I/O per sec analysis (overlapped)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=DGXFER host=sys-86927 earliest=1493427600 latest=1493434800
+| timechart span=1m avg(disk_total_iops) as "IOPS: UF+TA-nmon"
+| appendcols [ search eventtype=nmon:performance type=DGXFER host=sys-86927 earliest=1493496000 latest=1493503200
+| timechart span=1m avg(disk_total_iops) as "IOPS: none" ]
+| appendcols [ search eventtype=nmon:performance type=DGXFER host=sys-86927 earliest=1493544000 latest=1493551200
+| timechart span=1m avg(disk_total_iops) as "IOPS: UF with DS" ]
+| appendcols [ search eventtype=nmon:performance type=DGXFER host=sys-86927 earliest=1493564400 latest=1493571600
+| timechart span=1m avg(disk_total_iops) as "IOPS: UF no DS" ]
+| fields _time, "IOPS: UF+TA-nmon", "IOPS: UF with DS", "IOPS: UF no DS", "IOPS: none"</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisLabelsY.majorUnit">0.1</option>
+        <option name="charting.axisTitleX.text">percent CPU</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">IOPS</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">1.5</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">500</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>splunkd processes (TOP) cpu logical core usage analysis (overlapped)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493427600 latest=1493434800
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF+TA-nmon"
+| timechart span=1m max(value) As value by key
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493544000 latest=1493551200
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF with DS"
+| timechart span=1m max(value) As value by key ]
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493564400 latest=1493571600
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF no DS"
+| timechart span=1m max(value) As value by key ]</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">percent CPU</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">cpu logical core</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">500</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>splunkd processes (TOP) cpu logical core usage analysis (multiseries)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493427600 latest=1493434800
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF+TA-nmon"
+| timechart span=1m max(value) As value by key
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493544000 latest=1493551200
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF with DS"
+| timechart span=1m max(value) As value by key ]
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493564400 latest=1493571600
+| bucket _time span=1m
+| stats max(pct_CPU) AS pct_CPU, max(logical_cpus) AS logical_cpus by _time,frameID,host,Command,PID
+| eval limit=(logical_cpus*100)
+| stats sum(pct_CPU) As pct_CPU, last(logical_cpus) As logical_cpus by _time,host,Command
+| eval value=(pct_CPU/100)
+| eval key=Command . ": " . "UF no DS"
+| timechart span=1m max(value) As value by key ]</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">percent CPU</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">cpu logical core</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">1</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">800</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>splunkd processes (TOP) memory (MB) usage analysis (overlapped)</title>
+      <chart>
+        <search>
+          <query>eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493427600 latest=1493434800
+| bucket _time span=1m
+| eval mem_usage_mb=case(match(OStype, "Linux"), ((ResSet)/1024), match(OStype, "AIX"), ((ResData+ResText)/1024),  match(OStype, "Solaris"), (ResSize/1024) )
+| stats sum(mem_usage_mb) As value by _time,host,Command
+| eval key=Command . ": " . "UF+TA-nmon"
+| timechart span=1m max(value) As value by key
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493544000 latest=1493551200
+| bucket _time span=1m
+| eval mem_usage_mb=case(match(OStype, "Linux"), ((ResSet)/1024), match(OStype, "AIX"), ((ResData+ResText)/1024),  match(OStype, "Solaris"), (ResSize/1024) )
+| stats sum(mem_usage_mb) As value by _time,host,Command
+| eval key=Command . ": " . "UF with DS"
+| timechart span=1m max(value) As value by key ]
+| appendcols [ search eventtype=nmon:performance type=TOP frameID=* host=sys-86927 Command=splunkd earliest=1493564400 latest=1493571600
+| bucket _time span=1m
+| eval mem_usage_mb=case(match(OStype, "Linux"), ((ResSet)/1024), match(OStype, "AIX"), ((ResData+ResText)/1024),  match(OStype, "Solaris"), (ResSize/1024) )
+| stats sum(mem_usage_mb) As value by _time,host,Command
+| eval key=Command . ": " . "UF no DS"
+| timechart span=1m max(value) As value by key ]</query>
+          <earliest>-24h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.text">MB</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.text">MB</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">500</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>

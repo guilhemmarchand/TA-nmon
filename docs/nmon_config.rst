@@ -1,3 +1,4 @@
+
 #####################################
 Configure your options with nmon.conf
 #####################################
@@ -152,6 +153,8 @@ This feature can be controlled by changing the value of the endtime_margin, and 
 
     endtime_margin="240"
 
+
+.. _manage_nmon_config:
 
 =========================
 Linux OS specific options
