@@ -79,20 +79,6 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 - We can observe an hourly task consuming CPU and imputable to the Splunk Universal Forwarder only (peaks exist without the TA-nmon, but only when running the UF)
 - due to this hourly task of the Splunk Universal Forwarder (quick CPU peaks up to 1.7% without DS, up to 1.6% with DS connection), we can observe quick CPU peaks with UF + TA-nmon up to 2.8% CPU
 
-**Conclusions:**
-
-- the TA-nmon usage is stable and constant over time
-- due to this internal Splunk Universal Forwarder hourly task, we can observe small hourly peaks of CPU usage
-- running the Splunk Universal Forwarder + the TA-nmon generates approximately 1.35% of CPU usage on this machine
-- the Splunk Universal Forwarder itself but doing nothing has obviously a very limited CPU foot print (but this mysterious hourly task!)
-- the fifo implementation introduced in the TA-nmon 1.3.x allows now a very limited and constant system foo print!
-
-The dashboard xml code used for this analysis is available in the Git docs directory, it has hardcoded host and time ranges but can be useful if you want to do your own analysis:
-
-https://github.com/guilhemmarchand/TA-nmon/blob/master/docs/resources/footprint_analysis_and_comparison.xml
-
-Enjoy!
-
 *Average physical memory % usage over period for each scenario:*
 
 .. image:: img/compare/mem_average.png
@@ -152,6 +138,20 @@ See: :ref:`manage_nmon_config`
 
 - we can clearly observe the hourly peak of CPU due to the Splunk Universal Forwarder
 - CPU utilisation with or without deployment server connection is almost identical, the cost of calling home to the DS is almost null
+
+**Conclusions:**
+
+- the TA-nmon usage is stable and constant over time
+- due to this internal Splunk Universal Forwarder hourly task, we can observe small hourly peaks of CPU usage
+- running the Splunk Universal Forwarder + the TA-nmon generates approximately 1.35% of CPU usage on this machine
+- the Splunk Universal Forwarder itself but doing nothing has obviously a very limited CPU foot print (but this mysterious hourly task!)
+- the fifo implementation introduced in the TA-nmon 1.3.x allows now a very limited and constant system foo print!
+
+The dashboard xml code used for this analysis is available in the Git docs directory, it has hardcoded host and time ranges but can be useful if you want to do your own analysis:
+
+https://github.com/guilhemmarchand/TA-nmon/blob/master/docs/resources/footprint_analysis_and_comparison.xml
+
+Enjoy!
 
 IBM AIX BENCHMARKS:
 -------------------
