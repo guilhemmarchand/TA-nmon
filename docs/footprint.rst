@@ -89,7 +89,7 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 
 The dashboard xml code used for this analysis is available in the Git docs directory, it has hardcoded host and time ranges but can be useful if you want to do your own analysis:
 
-
+https://github.com/guilhemmarchand/TA-nmon/blob/master/docs/resources/footprint_analysis_and_comparison.xml
 
 Enjoy!
 
