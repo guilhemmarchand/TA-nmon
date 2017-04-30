@@ -52,11 +52,11 @@ Analysis scenario:
 
 - analysing the system load with and without connection to a Splunk deployment server (DS) will be useful to isolate the cost of "calling home" from the UF to the DS
 
-Finally, after having a run of 2 hours minimum for each scenario, we ingest the nmon file and perform the analysis and comparison.
+Finally, after having a run of 2 hours minimum for each scenario, we ingest the external nmon file (for non TA-nmon scenarios) and perform the analysis and comparison.
 
 **CPU usage comparison:**
 
-*Average CPU % usage over period for each scenario:*
+*Average CPU % usage over periods for each scenario:*
 
 .. image:: img/compare/cpu_average.png
    :alt: img/compare/cpu_average.png
@@ -72,14 +72,14 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 
 *Observations:*
 
-- the average cost of running the Splunk Universal Forwarder (doing nothing) is similar with or without deployment server connection
-- the average CPU cost is approximately 0.10 % of global CPU usage (usage-usage without UF)
+- the average cost of running the Splunk Universal Forwarder (doing nothing) is similar with or without a connection to a deployment server
+- the average CPU cost is approximately 0.10 % of global CPU usage on this server (usage-usage without UF)
 - the imputable average CPU cost of running UF + TA-nmon is approximately 1.35% (TA-nmon processing costs, Splunk UF ingestion costs)
 - the average CPU usage of system + UF + TA-nmon is approximately 1.40%
 - We can observe an hourly task consuming CPU and imputable to the Splunk Universal Forwarder only (peaks exist without the TA-nmon, but only when running the UF)
 - due to this hourly task of the Splunk Universal Forwarder (quick CPU peaks up to 1.7% without DS, up to 1.6% with DS connection), we can observe quick CPU peaks with UF + TA-nmon up to 2.8% CPU
 
-*Average physical memory % usage over period for each scenario:*
+*Average physical memory % usage over periods for each scenario:*
 
 .. image:: img/compare/mem_average.png
    :alt: img/compare/mem_average.png
@@ -96,7 +96,7 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 - as well, we can observe a supplementary approximately 6% of memory costs running the UF + TA-nmon (TA-nmon processing costs, Splunk UF ingestion costs)
 - caution: these memory utilisation statistics are what the system really uses, not necessary what the Splunk Universal Forwarder or the TA-nmon will use
 
-*Average I/O per second (IOPS) over period for each scenario:*
+*Average I/O per second (IOPS) over periods for each scenario:*
 
 .. image:: img/compare/iops_average.png
    :alt: img/compare/iops_average.png
@@ -115,7 +115,8 @@ Finally, after having a run of 2 hours minimum for each scenario, we ingest the 
 
 Notes:
 
-For this exercise, we use the nmon binary in unlimited processes capture mode (option -I -1), this mode allows capturing the full processes table.
+For this exercise, we use the nmon binary in unlimited processes capture mode (option -I -1), this mode allows capturing the full processes table even such that capture low consuming processes.
+
 See: :ref:`manage_nmon_config`
 
 *splunkd CPU logical core usage:*
@@ -137,7 +138,7 @@ See: :ref:`manage_nmon_config`
 *Observations:*
 
 - we can clearly observe the hourly peak of CPU due to the Splunk Universal Forwarder
-- CPU utilisation with or without deployment server connection is almost identical, the cost of calling home to the DS is almost null
+- CPU utilisation with or without deployment server connection is almost identical, the cost of calling home from the UF to the DS is almost null
 
 **Conclusions:**
 
