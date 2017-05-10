@@ -5,9 +5,9 @@ Deployment Matrix
 What goes where ?
 -----------------
 
-* The TA-nmon is provided within the resources directory of the core application
+* The TA-nmon is available for download as an independent application in Splunk base: https://splunkbase.splunk.com/app/3248
 
-* The TA-nmon is also available for download as an independent application in Splunk base: https://splunkbase.splunk.com/app/3248
+* The TA-nmon is also available for download in its Git repository: https://github.com/guilhemmarchand/TA-nmon
 
 **Standalone deployment: A single Splunk instance does all**
 
