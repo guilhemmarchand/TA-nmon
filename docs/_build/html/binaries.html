@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Scripts and Binaries &mdash; TA-nmon 1.3.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="TA-nmon 1.3.0 documentation" href="index.html"/>
+        <link rel="next" title="Pre-requisites" href="requirements.html"/>
+        <link rel="prev" title="Benchmarks &amp; TA-nmon foot print" href="footprint.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> TA-nmon
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About the TA-nmon, technical addon for Nmon Performance app for Splunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releasenotes.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="openissue.html">Issues and enhancement requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="os_compatibility.html">Operating Systems compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="processing_overview.html">Introduction to Nmon processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="footprint.html">Benchmarks &amp; TA-nmon foot print</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Scripts and Binaries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#embedded-scripts-in-the-ta-nmon">Embedded Scripts in the TA-nmon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#embedded-binaries-in-the-ta-nmon">Embedded Binaries in the TA-nmon</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Pre-requisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment_matrix.html">Deployment Matrix</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_processing.html">Processing workflow in action</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external.html">Extend Nmon with external data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nmon_config.html">Configure your options with nmon.conf</a></li>
+<li class="toctree-l1"><a class="reference internal" href="json_indexing.html">JSON indexing versus legacy CSV</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshoot</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">TA-nmon</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Scripts and Binaries</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/binaries.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="scripts-and-binaries">
+<h1>Scripts and Binaries<a class="headerlink" href="#scripts-and-binaries" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="embedded-scripts-in-the-ta-nmon">
+<h2>Embedded Scripts in the TA-nmon<a class="headerlink" href="#embedded-scripts-in-the-ta-nmon" title="Permalink to this headline">¶</a></h2>
+<p><strong>nmon_helper:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>bin/nmon_helper.sh:</li>
+</ul>
+</div></blockquote>
+<p>This shell script is being used by the application to launch Nmon binaries whenever it is detected as required.</p>
+<p>It is as well responsible in launching the fifo_reader scripts. (introduced in version 1.3.x)</p>
+<p><strong>fifo_reader:</strong></p>
+<ul class="simple">
+<li>bin/fifo_reader.pl</li>
+<li>bin/fifo_reader.py</li>
+<li>bin/fifo_reader.sh</li>
+</ul>
+<p>These scripts are continuously running as back ground processes on server running the technical addons.
+Their purpose is to read the fifo files (named pipe) nmon processes are writing to, and extract the different typologies of data from them nmon data</p>
+<p><strong>fifo_consumer:</strong></p>
+<ul class="simple">
+<li>bin/fifo_consumer.sh</li>
+</ul>
+<p>This script is scheduled by default to run every 60 seconds.
+Its purpose to recompose the nmon flaw of data to be parsed by the nmon parser scripts. (see bellow)</p>
+<p><strong>nmon_parser:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>bin/nmon2csv.sh | bin/nmon2csv.py | bin/nmon2csv.pl:</li>
+</ul>
+</div></blockquote>
+<p>Shell / Python / Perl scripts used to manage and process Nmon raw data into multiple csv files being indexed by Splunk</p>
+<p>The Shell script is a wrapper script to Python / Perl scripts. (decision is made on local interpreter avaibility with Python as the default choice)</p>
+<p><strong>nmon_cleaner:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>bin/nmon_cleaner.sh / bin/nmon_cleaner.py / nmon_cleaner.pl</li>
+</ul>
+</div></blockquote>
+<p>Shell / Python / Perl scripts used to manage retention and purge of old nmon data.</p>
+<p>Alternatively, it will also ensure that no outdated csv data is being left by Splunk in Performance and Configuration repositories</p>
+<p>The Shell script is a wrapper script to Python / Perl scripts. (decision is made on local interpreter avaibility with Python as the default choice)</p>
+</div>
+<div class="section" id="embedded-binaries-in-the-ta-nmon">
+<h2>Embedded Binaries in the TA-nmon<a class="headerlink" href="#embedded-binaries-in-the-ta-nmon" title="Permalink to this headline">¶</a></h2>
+<p>The TA-nmon embeds Nmon binaries for Linux vendors and Solaris OS.
+AIX embeds by default its own version of Nmon, known as &#8220;topas-nmon&#8221;.</p>
+<p><strong>For Linux OS:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li>bin/linux: Main directory for Linux specific Nmon binaries</li>
+<li>bin/linux/amzn: 64 bits binaries for Amazon Linux (AMI)</li>
+<li>bin/linux/centos: 32/64 bits binaries for Centos</li>
+<li>bin/linux/debian: 32/64 bits binaries for Debian GNU/Linux</li>
+<li>bin/linux/fedora: 32/64 bits binaries for Fedora project</li>
+<li>bin/linux/generic: 32/64/ia64/power/mainframe binaries compiled for generic Linux</li>
+<li>bin/linux/mint: 32/64 bits binaries for Linux Mint</li>
+<li>bin/linux/opensuse: 32/64 bits binaries for Linux Opensuse</li>
+<li>bin/linux/ol: 32/64 bits binaries for Oracle Linux</li>
+<li>bin/linux/rhel: 32/64/ia64/mainframe/power binaries for Redhat Entreprise Server</li>
+<li>bin/linux/sles: 32/64/ia64/mainframe/power binaries for Suse Linux Entreprise Server</li>
+<li>bin/linux/ubuntu: 32/64/power/arm binaries for Ubuntu Linux</li>
+<li>bin/linux/arch: 32/64 bits binaries for Archlinux</li>
+<li>bin/raspbian: arms binaries for Raspbian Linux</li>
+</ul>
+</div></blockquote>
+<p>Most of these binaries comes from the official Nmon Linux project site.
+On x86 processor and for Centos / Debian / Ubuntu / Oracle Linux these binaries are being compiled by myself using Vagrant and Ansible automation. (See <a class="reference external" href="https://github.com/guilhemmarchand/nmon-binaries">https://github.com/guilhemmarchand/nmon-binaries</a>)</p>
+<p>Associated scripts resource (nmon_helper.sh) will try to use the better version of Nmon available, it will fall back to generic or system embedded if none of specially compiled versions can fit the system.</p>
+<p><strong>For Solaris OS:</strong></p>
+<p><em>sarmon binaries for Oracle Solaris x86 and Sparc:</em></p>
+<blockquote>
+<div><ul class="simple">
+<li>bin/sarmon_bin_i386: sarmon binaries for Solaris running on x86 arch</li>
+<li>bin/sarmon_bin_sparc: sarmon binaris for Solaris running on sparc arch</li>
+</ul>
+</div></blockquote>
+<p>sarmon binaries comes from the official sarmon site project.</p>
+<p><strong>For AIX</strong>:</p>
+<p>Nmon is shipped within AIX by default with topas-nmon binary.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="requirements.html" class="btn btn-neutral float-right" title="Pre-requisites" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="footprint.html" class="btn btn-neutral" title="Benchmarks &amp; TA-nmon foot print" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Guilhem Marchand.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

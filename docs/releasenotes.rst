@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.16:
+========
+
+- Fix: minor correction of syslog stanza to prevent error messages when using new splunk partitioning tool
+
+========
 V1.3.15:
 ========
 

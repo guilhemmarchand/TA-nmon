@@ -1,18 +1,19 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 # local
-local
+*/local
 
 # Pycharm
 .idea
 
 # metadata/local.meta
-metadata/local.meta
+*/metadata/local.meta
 
 # Ignore the bin/linux which can be extracted
-bin/linux
+*/bin/linux
 
 # Read the doc & Sphinx
-docs/_build
-docs/_static
-docs/_templates
+*/docs/_build
+*/docs/_static
+*/docs/_templates
+

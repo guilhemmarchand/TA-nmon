@@ -1,0 +1,289 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>JSON indexing versus legacy CSV &mdash; TA-nmon 1.3.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="author" title="About these documents"
+              href="about.html"/>
+    <link rel="top" title="TA-nmon 1.3.0 documentation" href="index.html"/>
+        <link rel="next" title="Troubleshoot" href="troubleshoot.html"/>
+        <link rel="prev" title="Configure your options with nmon.conf" href="nmon_config.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> TA-nmon
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About the TA-nmon, technical addon for Nmon Performance app for Splunk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releasenotes.html">Release notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knownissues.html">Known Issues</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="openissue.html">Issues and enhancement requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="os_compatibility.html">Operating Systems compatibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="processing_overview.html">Introduction to Nmon processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="footprint.html">Benchmarks &amp; TA-nmon foot print</a></li>
+<li class="toctree-l1"><a class="reference internal" href="binaries.html">Scripts and Binaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Pre-requisites</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment_matrix.html">Deployment Matrix</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data_processing.html">Processing workflow in action</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external.html">Extend Nmon with external data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nmon_config.html">Configure your options with nmon.conf</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">JSON indexing versus legacy CSV</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#comparison-of-csv-indexing-versus-json-indexing">Comparison of CSV indexing versus JSON indexing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ok-how-to-use-json-then">Ok, how to use JSON then ?</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshoot.html">Troubleshoot</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">TA-nmon</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>JSON indexing versus legacy CSV</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/json_indexing.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="json-indexing-versus-legacy-csv">
+<h1>JSON indexing versus legacy CSV<a class="headerlink" href="#json-indexing-versus-legacy-csv" title="Permalink to this headline">¶</a></h1>
+<p>Nmon data is basically generating CSV data (Comma Separated Value), and this is as well the case for the files generated by the TA-nmon</p>
+<p><strong>By default, the TA-nmon generates several files to be indexed in the following directories:</strong></p>
+<ul class="simple">
+<li>$SPLUNK_HOME/var/log/nmon/var/csv_repository</li>
+<li>$SPLUNK_HOME/var/log/nmon/var/config_repository</li>
+</ul>
+<p>In the case of the nmon performance data (the &#8220;csv_repository&#8221; 0, we generate one csv data file by nmon section. (basically per performance monitor)</p>
+<p>Then, Splunk indexes the data using the CSV &#8220;INDEXED_EXTRACTIONS&#8221; mode, these parameters are visible in &#8220;default/props.conf&#8221; under the &#8220;nmon_data&#8221; sourcetype:</p>
+<div class="highlight-python"><div class="highlight"><pre>[nmon_data]
+
+FIELD_DELIMITER=,
+FIELD_QUOTE=&quot;
+HEADER_FIELD_LINE_NUMBER=1
+
+# your settings
+INDEXED_EXTRACTIONS=csv
+</pre></div>
+</div>
+<p>In this mode, Splunk identifies the fields name using the CSV header, then each field is indexed as an &#8220;indexed fields&#8221;, to be opposed to fields extraction at search time. (like Key Value data for instance)</p>
+<p>The indexed CSV mode provides great performances at search time, and CSV data generates a low level of data volume which saves Splunk licensing costs.</p>
+<p>However, the disadvantage of this is an higher cost in storage requirements due to the volume of tsidx (indexes files) versus raw data, in comparison indexing other kind of data that can be fully extracted at search time. (like key value or json extracted data)</p>
+<p>This is why we have introduced in the release 1.3.x a new optional mode that allows to generate the performance data (99.99% of the data volume) in JSON mode instead of legacy CSV data.</p>
+<p><strong>LIMITATION:</strong></p>
+<p>Currently, the JSON mode indexing is only available to the Python parser, if your hosts user Perl parser, this parameter will have no impact and CSV data will be generated.</p>
+<div class="section" id="comparison-of-csv-indexing-versus-json-indexing">
+<h2>Comparison of CSV indexing versus JSON indexing<a class="headerlink" href="#comparison-of-csv-indexing-versus-json-indexing" title="Permalink to this headline">¶</a></h2>
+<p>There are advantages and disadvantages in both solutions, this is basically low licensing cost versus storage costs.</p>
+<p>The following benchmark has been made on a set of nmon cold data, 3 months of data for 6 servers with an interval of 4 minutes between performance measures. (2 x AIX, 2 x Linux, 2 x Solaris)</p>
+<img alt="img/csv_vs_json.png" class="align-center" src="_images/csv_vs_json.png" />
+<p>Notes: This is a benchmark that operated on a Splunk standalone server, using cold data. This not necessary fully representative of what to expect in term of results depending on various factors.
+It provides however a good vision, and results in real life should be closed enough.</p>
+<p>As a conclusion, in JSON data we generate much more data (approximately x 2 volume), licensing costs are then significantly highers due to this factor.</p>
+<p>But the lower volume of tsdix a better data compression ratio generates approximately 20% less of final storage costs.</p>
+<p>There is a well a lower performance level, which could be even more significant at scale.</p>
+</div>
+<div class="section" id="ok-how-to-use-json-then">
+<h2>Ok, how to use JSON then ?<a class="headerlink" href="#ok-how-to-use-json-then" title="Permalink to this headline">¶</a></h2>
+<p>Activating JSON mode is very easy, all you need is activating the &#8220;&#8211;json_output&#8221; option in your own &#8220;local/nmon.conf&#8221;:</p>
+<p><strong>Create a &#8220;local/nmon.conf&#8221; and activate json mode:</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers</span>
+<span class="c1"># the following option allows specifying the options sent to the nmon2csv parsers</span>
+
+<span class="c1"># consult the documentation to get the full list of available options</span>
+
+<span class="c1"># --mode realtime --&gt; explicitly manage realtime data (default)</span>
+<span class="c1"># --use_fqdn --&gt; use the host fully qualified domain name</span>
+<span class="c1"># --json_output --&gt; generate the performance data in json format instead of regular csv data</span>
+
+<span class="n">nmon2csv_options</span><span class="o">=</span><span class="s2">&quot;--mode realtime --json_output&quot;</span>
+</pre></div>
+</div>
+<p>And deploy your new configuration.</p>
+<p>At next parsing cycle, the data will be generate in JSON mode and transparently rewritten to the nmon_data sourcetype.</p>
+<p>Et voila!</p>
+<img alt="img/csv_vs_json_result.png" class="align-center" src="_images/csv_vs_json_result.png" />
+<p><strong>Additional notes:</strong></p>
+<p>For more coherence, and best index performances, I would recommend to store the JSON nmon data into a separated and dedicated index.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="troubleshoot.html" class="btn btn-neutral float-right" title="Troubleshoot" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nmon_config.html" class="btn btn-neutral" title="Configure your options with nmon.conf" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Guilhem Marchand.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
