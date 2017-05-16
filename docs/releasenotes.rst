@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.17:
+========
+
+- Feature: Allow deactivating nmon external generation through nmon.conf #25
+
+========
 V1.3.16:
 ========
 
