@@ -2,14 +2,6 @@
 Extend Nmon with external data
 ##############################
 
-**Nmon external compatibility:**
-
-* AIX 7.2
-* Linux
-* Solaris
-
-*for some unknown reasons, the nmon external feature does not properly work in AIX 6.1/7.1, the collection stops after an arbitrary amount of time, this issue is under investigation**
-
 Since the release 1.3.x of the TA-nmon, you can extend very easily the context of the nmon data using the nmon external scripts.
 
 Integrating external data is an integrated feature in nmon binaries (for AIX, Linux and Solaris), and it has been integrated within the TA-nmon such that it is
