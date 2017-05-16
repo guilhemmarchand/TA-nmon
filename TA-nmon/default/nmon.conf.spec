@@ -225,6 +225,13 @@ AIX_options=<string>
 
 override_sys_hostname=<string>
 
+# nmon external generation management
+
+# This option will manage the activation or deactivation of the nmon external data generation at the lower level, before it comes to parsers
+# default is activated (value=1), set to "0" to deactivate
+
+nmon_external_generation=<string>
+
 # Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
 # the following option allows specifying the options sent to the nmon2csv parsers
 

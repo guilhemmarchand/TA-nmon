@@ -80,8 +80,10 @@
 # 2017/04/16, Guilhem Marchand:         - Fix nmon.conf formatting issue when deployed on search heads in SHC
 # 2017/04/29, Guilhem Marchand:
 #                                       - Fix AIX compatibility issue with old topas-nmon not accepting the -y option
+# 2017/05/16, Guilhem Marchand:
+#                                       - Allows activating / deactivating nmon external generation within nmon.conf
 
-# Version 1.3.45
+# Version 1.3.46
 
 # For AIX / Linux / Solaris
 
@@ -255,6 +257,9 @@ Linux_disk_dg_enable="1"
 
 # Name of the DG group file
 Linux_disk_dg_group="auto"
+
+# nmon external generation, default is activated
+nmon_external_generation="1"
 
 # source default nmon.conf
 
@@ -985,8 +990,8 @@ case $UNAME in
         unset LIBPATH
 
         # global nmon_external
-	    NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
-	    export NMON_EXTERNAL_DIR
+        NMON_EXTERNAL_DIR="${APP_VAR}/var/nmon_repository/${fifo_started}"
+        export NMON_EXTERNAL_DIR
         NMON_EXTERNAL_FIFO="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
         export NMON_EXTERNAL_FIFO
         TIMESTAMP=0
@@ -998,21 +1003,29 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
-            # nmon_external
-            create_nmon_external
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                # nmon_external
+                create_nmon_external
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+                export NMON_SNAP
+            ;;
+            esac
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo1} > ${PIDFILE} ;;
         "fifo2")
-            # nmon_external
-            create_nmon_external
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                # nmon_external
+                create_nmon_external
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+                export NMON_SNAP
+            ;;
+            esac
             echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command_fifo2} > ${PIDFILE} ;;
         esac
@@ -1034,20 +1047,28 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
-	        # nmon_external
-            create_nmon_external
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                # nmon_external
+                create_nmon_external
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+                export NMON_SNAP
+            ;;
+            esac
             nmon_command=${nmon_command_fifo1} ;;
         "fifo2")
-	        # nmon_external
-            create_nmon_external
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                # nmon_external
+                create_nmon_external
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+                export NMON_SNAP
+            ;;
+            esac
             nmon_command=${nmon_command_fifo2} ;;
         esac
 
@@ -1128,18 +1149,26 @@ case $UNAME in
         # fifo_started variable is exported by the function start_fifo_reader
         case $fifo_started in
         "fifo1")
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+                export NMON_SNAP
+            ;;
+            esac
             NMONOUTPUTFILE="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
             export NMONOUTPUTFILE
             ;;
         "fifo2")
-            NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-            export NMON_START
-            NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
-            export NMON_SNAP
+            case $nmon_external_generation in
+            1)
+                NMON_START="${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
+                export NMON_START
+                NMON_SNAP="${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+                export NMON_SNAP
+            ;;
+            esac
             NMONOUTPUTFILE="${APP_VAR}/var/nmon_repository/${fifo_started}/nmon.fifo"
             export NMONOUTPUTFILE
             ;;
