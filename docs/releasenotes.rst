@@ -19,6 +19,7 @@ V1.3.17:
 ========
 
 - Feature: Allow deactivating nmon external generation through nmon.conf #25
+- fix: CIM compliance improvements and corrections
 
 ========
 V1.3.16:
