@@ -232,6 +232,15 @@ override_sys_hostname=<string>
 
 nmon_external_generation=<string>
 
+# Fifo options
+
+# This option will deactivate the auto switch to fifo mode, in other words the TA-nmon will use the file mode and the old mechanism
+# unless you encounter unexpected issues, you should not switch to the old mechanism as the foot print is much higher
+
+# Default is "1" which means write to fifo
+
+mode_fifo=<string>
+
 # Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
 # the following option allows specifying the options sent to the nmon2csv parsers
 

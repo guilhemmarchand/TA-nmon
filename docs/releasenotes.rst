@@ -18,8 +18,9 @@ What has been fixed by release
 V1.3.17:
 ========
 
-- Feature: Allow deactivating nmon external generation through nmon.conf #25
+- feature: Allows deactivating nmon external generation via nmon.conf #25
 - fix: CIM compliance improvements and corrections
+- feature: Allows deactivating fifo mode and switch to old mechanism via nmon.conf #26
 
 ========
 V1.3.16:
