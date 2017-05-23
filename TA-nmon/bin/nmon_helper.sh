@@ -1553,11 +1553,11 @@ AIX )
 
     # Manage NFS
     if [ ${AIX_NFS23} -eq 1 ]; then
-        nmon_command="-N -s ${fifo_interval} -c ${fifo_snapshot}"
+        nmon_command="-N -s ${aix_interval} -c ${aix_snapshot}"
     elif [ ${AIX_NFS4} -eq 1 ]; then
-        nmon_command="-NN -s ${fifo_interval} -c ${fifo_snapshot}"
+        nmon_command="-NN -s ${aix_interval} -c ${aix_snapshot}"
     else
-        nmon_command="-s ${fifo_interval} -c ${fifo_snapshot}"
+        nmon_command="-s ${aix_interval} -c ${aix_snapshot}"
     fi
 
     # Set the nmon command for AIX
