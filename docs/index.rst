@@ -67,3 +67,10 @@ Troubleshoot:
 
    troubleshoot
 
+Various:
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   FAQ
