@@ -29,8 +29,10 @@
 #                                         - Manage the TA-nmon_selfmode
 # - 01/04/2017: V1.0.10: Guilhem Marchand:
 #                                         - Update path discovery
+# - 23/05/2017: V1.0.11: Guilhem Marchand:
+#                                         - Missing userargs call in condition
 
-# Version 1.0.10
+# Version 1.0.11
 
 # For AIX / Linux / Solaris
 
@@ -102,7 +104,7 @@ if [ $? -eq 0 ]; then
 
 else
 
-	cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.pl
+	cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.pl ${userargs}
 
 fi
 

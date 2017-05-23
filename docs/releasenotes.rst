@@ -18,9 +18,10 @@ What has been fixed by release
 V1.3.17:
 ========
 
-- feature: Allows deactivating nmon external generation via nmon.conf #25
+- fix: fifo mode implementation in parsers and several corrections #27
 - fix: CIM compliance improvements and corrections
 - feature: Allows deactivating fifo mode and switch to old mechanism via nmon.conf #26
+- feature: Allows deactivating nmon external generation via nmon.conf #25
 
 ========
 V1.3.16:

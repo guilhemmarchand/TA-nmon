@@ -106,16 +106,17 @@
 #                                         - Accounting lines is incorrect (header is accounted)
 # - 01/25/2017: V1.2.28: Guilhem Marchand by participation of Thomas Rasmussen: Fix when multiple host in inputs.conf
 #                                         - https://github.com/guilhemmarchand/TA-nmon/pull/16
-# - 02/13/2017: V1.1.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
-# - 03/19/2017: V1.1.30: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
-# - 03/24/2017: V1.1.31: Guilhem Marchand: PowerLinux ID correction, HOSTNAME and SN have been inversed in CONFIG header
-# - 03/25/2017: V1.1.32: Guilhem Marchand: PowerLinux ID correction, prevent empty serial number
-# - 03/27/2017: V1.1.33: Guilhem Marchand:
+# - 02/13/2017: V1.2.29: Guilhem Marchand: inconsistent header is retrograded to WARN log level
+# - 03/19/2017: V1.2.30: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
+# - 03/24/2017: V1.2.31: Guilhem Marchand: PowerLinux ID correction, HOSTNAME and SN have been inversed in CONFIG header
+# - 03/25/2017: V1.2.32: Guilhem Marchand: PowerLinux ID correction, prevent empty serial number
+# - 03/27/2017: V1.2.33: Guilhem Marchand:
 #                                         - PowerLinux ID correction, prevent empty serial number in nmon_config
 #                                         - Remove empty line in nmon_config
-# - 04/01/2017: V1.1.34: Guilhem Marchand: Update path discovery
+# - 04/01/2017: V1.2.34: Guilhem Marchand: Update path discovery
+# - 05/23/2017: V1.2.35: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
 
-$version = "1.2.34";
+$version = "1.2.35";
 
 use Time::Local;
 use Time::HiRes;
@@ -161,7 +162,7 @@ Please visit: http://nmonsplunk.wikidot.com/documentation:userguide:troubleshoot
        	
 Available options are:
 	
---mode <realtime | colddata> :Force the script to consider the data as cold data (nmon process has over) or real time data (nmon is running)
+--mode <realtime | colddata | fifo> :Force the script to consider the data as cold data (nmon process has over) , real time data (nmon is running) or fifo.
 --use_fqdn :Use the host fully qualified domain name (fqdn) as the hostname value instead of the value returned by nmon.
 **CAUTION:** This option must not be used when managing nmon data generated out of Splunk (eg. central repositories)
 --debug :Activate debugging mode for testing purposes
@@ -237,6 +238,7 @@ my $t_start = [Time::HiRes::gettimeofday];
 # Initial states for Analysis
 my $realtime = "False";
 my $colddata = "False";
+my $fifo = "False";
 
 # Local time
 my $time = strftime "%d-%m-%Y %H:%M:%S", localtime;
@@ -917,6 +919,13 @@ foreach $FILENAME (@nmon_files) {
 
     }
 
+    elsif ( $OPMODE eq "fifo" ) {
+
+        $realtime = True;
+        print("ANALYSIS: Enforcing fifo mode using --mode option \n");
+
+    }
+
     elsif ( ( ($time_epoch) - ( 4 * $INTERVAL ) ) > $ending_epochtime ) {
 
         $colddata = True;
@@ -943,6 +952,8 @@ foreach $FILENAME (@nmon_files) {
     $partial_idnmon = "$idnmon,$starting_epochtime";
 
     # Open ID_REF file
+
+    # Notes: fifo mode will always proceed data
 
     if ( -e $ID_REF ) {
 
@@ -1123,7 +1134,7 @@ foreach $FILENAME (@nmon_files) {
             if ( $config_run eq "0" ) {
 
 # Real time restricts configuration extraction once per hour, with the exception of the BBB extraction failure
-                if ( $realtime eq "True" ) {
+                if ( $realtime eq "True" || $realtime eq "True" ) {
 
                     $limit = ( ($starting_epochtime) + ( 4 * $INTERVAL ) );
 
@@ -1471,7 +1482,7 @@ foreach $FILENAME (@nmon_files) {
                         }
 
                     }
-                    elsif ( $colddata eq "True" ) {
+                    elsif ( $colddata eq "True" || $fifo eq "True" ) {
                         print( INSERT $write . "\n" );
                         $count++;
                     }
@@ -1827,7 +1838,7 @@ m/^UARG\,T\d+\,\s*([0-9]*)\s*\,\s*([0-9]*)\s*\,\s*([a-zA-Z\-\/\_\:\.0-9]*)\s*\,\
 
                                 }
                             }
-                            elsif ( $colddata eq "True" ) {
+                            elsif ( $colddata eq "True" || $fifo eq "True" ) {
                                 print( INSERT $write . "\n" );
                                 $count++;
                             }
@@ -1882,7 +1893,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
                                     $count++;
                                 }
                             }
-                            elsif ( $colddata eq "True" ) {
+                            elsif ( $colddata eq "True" || $fifo eq "True" ) {
                                 print( INSERT $write . "\n" );
                                 $count++;
                             }
@@ -2561,7 +2572,7 @@ qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus"
 
             }
 
-            elsif ( $colddata eq "True" ) {
+            elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                 print INSERT (
 qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus","$DATETIME{@cols[1]}","$INTERVAL","$SNAPSHOTS",$x|
@@ -2789,7 +2800,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
 
         }
 
-        elsif ( $colddata eq "True" ) {
+        elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
             print INSERT (
 qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
@@ -2854,7 +2865,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
 
                 }
 
-                elsif ( $colddata eq "True" ) {
+                elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                     print INSERT (
 qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|
@@ -3080,7 +3091,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
 
         }
 
-        elsif ( $colddata eq "True" ) {
+        elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
             print INSERT (
 qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
@@ -3145,7 +3156,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
 
                 }
 
-                elsif ( $colddata eq "True" ) {
+                elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                     print INSERT (
 qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|

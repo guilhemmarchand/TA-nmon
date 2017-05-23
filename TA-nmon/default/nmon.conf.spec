@@ -246,8 +246,11 @@ mode_fifo=<string>
 
 # consult the documentation to get the full list of available options
 
-# --mode realtime --> explicitly manage realtime data (default)
+# --mode realtime|colddata|fifo --> explicitly manage realtime data
 # --use_fqdn --> use the host fully qualified domain name
 # --json_output --> generate the performance data in json format instead of regular csv data
+
+# In fifo mode, options are sent by the fifo_consumer.sh
+# In file mode, options are sent by Splunk via the nmon_processing stanza in props.conf
 
 nmon2csv_options=<string>

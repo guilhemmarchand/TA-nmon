@@ -13,8 +13,9 @@
 # Guilhem Marchand 2017/04/02, Solaris is now fifo compatible
 # Guilhem Marchand 2017/04/15, Fix SHC deployer re-formatting default/nmon.conf
 # Guilhem Marchand 2017/04/24, Use the nmon var directory in Splunk dir for temp creation
+# Guilhem Marchand 2017/05/23, Integrate new fifo mode from parsers, fixed hard coded arguments
 
-# Version 1.0.04
+# Version 1.0.05
 
 # For AIX / Linux / Solaris
 
@@ -74,7 +75,7 @@ else
 fi
 
 # default values relevant for our context
-nmon2csv_options="--mode realtime"
+nmon2csv_options="--mode fifo"
 
 # source default nmon.conf
 if [ -f $APP/default/nmon.conf ]; then
@@ -146,10 +147,10 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
         # and the parser will raise an error
         if [ -f $nmon_timestamp_rotated ]; then
             tail -1 $nmon_timestamp_rotated >$temp_file
-            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
         fi
     else
-        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh --mode realtime
+        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # remove rotated

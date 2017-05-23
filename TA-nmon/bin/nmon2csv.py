@@ -154,6 +154,7 @@
 # - 03/19/2017: V1.1.31: Guilhem Marchand: load list of nmon sections to be proceeded within external json config file
 # - 03/22/2017: V1.1.32: Guilhem Marchand: Power Linux serial number identification correction
 # - 04/01/2017: V1.1.33: Guilhem Marchand: Update path discovery
+# - 05/23/2017: V1.1.34: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
 
 # Load libs
 
@@ -174,7 +175,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.33'
+nmon2csv_version = '1.1.34'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -258,6 +259,7 @@ logging.root.addHandler(handler)
 # Initial states for Analysis
 realtime = False
 colddata = False
+fifo = False
 
 # Starting time of process
 start_time = time.time()
@@ -456,7 +458,7 @@ parser.set_defaults(mode='auto', datadir=DATA_DIR, configdir=CONFIG_DIR, dumparg
 
 parser.add_option('-d', '--datadir', action='store', type='string', dest='datadir',
                   help='sets the output directory for data CSV files (Default: %default)')
-opmodes = ['auto', 'realtime', 'colddata']
+opmodes = ['auto', 'realtime', 'colddata', 'fifo']
 parser.add_option('-m', '--mode', action='store', type='choice', dest='mode', choices=opmodes,
                   help='sets the operation mode (Default: %default); supported modes: ' + ', '.join(opmodes))
 parser.add_option('--use_fqdn', action='store_true', dest='use_fqdn', help='Use the host fully qualified '
@@ -1098,12 +1100,14 @@ except:
     sys.exit(1)
 
 # Evaluate if we are dealing with real time data or cold data
-# This feature can be overriden by the --mode option
+# This feature can be overridden by the --mode option
 # Windows guest is not concerned
 if options.mode == 'colddata':
     colddata = True
 elif options.mode == 'realtime':
     realtime = True
+elif options.mode == 'fifo':
+    fifo = True
 elif is_windows:
     colddata = True
 else:
@@ -1158,6 +1162,12 @@ elif colddata:
     else:
         msg = 'ANALYSIS: Assuming Nmon cold data'
     print(msg)
+elif fifo:
+    if options.mode == 'fifo':
+        msg = "ANALYSIS: Enforcing fifo mode using --mode option"
+    else:
+        msg = 'ANALYSIS: fifo mode activated'
+    print(msg)
 
 # Open reference file for reading, if exists already
 if os.path.isfile(ID_REF):
@@ -1165,6 +1175,8 @@ if os.path.isfile(ID_REF):
     with open(ID_REF, "r") as ref:
 
         for line in ref:
+
+            # Notes: fifo mode will always proceed data
 
             if realtime:
 
@@ -1261,8 +1273,8 @@ config_output = CONFIG_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '
 config_run = 0
 
 # configuration data will always be extracted for cold data
-# Only enter this section when data is realtime
-if realtime:
+# Only enter this section when data is realtime or fifo
+if realtime or fifo:
 
     # Search in ID_REF for a last matching execution
     if os.path.isfile(CONFIG_REF):
@@ -1295,7 +1307,7 @@ if realtime:
 
 if config_run == 0:
 
-    if realtime:
+    if realtime or fifo:
 
         # Only allow one extraction of the config section per nmon file
         limit = (int(starting_epochtime) + (4 * int(INTERVAL)))
@@ -1746,7 +1758,7 @@ def standard_section_fn(section):
                                     " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
                                                                   "this section " + str(last_epoch_filter) + " )")
 
-                        elif colddata:
+                        elif colddata or fifo:
 
                             # increment
                             count += 1
@@ -2070,7 +2082,7 @@ def top_section_fn(section):
                                       " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
                                                                     "this section " + str(last_epoch_filter) + " )")
 
-                    elif colddata:
+                    elif colddata or fifo:
 
                         # increment
                         count += 1
@@ -2333,7 +2345,7 @@ def uarg_section_fn(section):
                                 virtual_cpus + ',' + ZZZZ_timestamp + ',' + INTERVAL + ',' + SNAPSHOTS + ',' +
                                 perfdata + '\n'),
 
-                    elif colddata:
+                    elif colddata or fifo:
 
                         # increment
                         count += 1
@@ -2386,7 +2398,7 @@ def uarg_section_fn(section):
                                       " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
                                                                     "this section " + str(last_epoch_filter) + " )")
 
-                    elif colddata:
+                    elif colddata or fifo:
 
                         # increment
                         count += 1
@@ -2671,7 +2683,7 @@ def dynamic_section_fn(section):
                                       " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
                                                                     "this section " + str(last_epoch_filter) + " )")
 
-                    elif colddata:
+                    elif colddata or fifo:
 
                         # increment
                         count += 1
@@ -3112,7 +3124,7 @@ def solaris_wlm_section_fn(section):
                                       " ( " + str(ZZZZ_epochtime) + " is lower than last known epoch time for "
                                                                     "this section " + str(last_epoch_filter) + " )")
 
-                    elif colddata:
+                    elif colddata or fifo:
 
                         # increment
                         count += 1
