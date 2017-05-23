@@ -16,3 +16,14 @@ You might need the TA-unix for specific tasks that are out of the scope of the N
 Running both addons in same servers is not a problem at all.
 
 The TA-nmon is CIM compatible, for most performance related metrics, the TA-nmon can be transparently used in replacement of the TA-Unix.
+
+**Is the TA-nmon CIM compatible ?**
+
+Yes it is. The TA-nmon is CIM compatible, it will specially deal with the following CIM data models:
+
+- Application State
+- Inventory
+- Network Traffic
+- Performance
+
+If you are an Enterprise Security customer for instance, all you need is having the TA-nmon deployed in search heads as well.
