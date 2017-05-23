@@ -295,27 +295,45 @@ Global options
 
 These options are not related to nmon binary options but to the TA-nmon global configuration::
 
-    # This option can be used to force the technical add-on to use the Splunk configured value of the server hostname
-    # If for some reason, you need to use the Splunk host value instead of the system real hostname value, set this value to "1"
+   # This option can be used to force the technical add-on to use the Splunk configured value of the server hostname
+   # If for some reason, you need to use the Splunk host value instead of the system real hostname value, set this value to "1"
 
-    # We will search for the value of host=<value> in $SPLUNK_HOME/etc/system/local/inputs.conf
-    # If no value can be found, or if the file does not exist, we will fallback to the normal behavior
+   # We will search for the value of host=<value> in $SPLUNK_HOME/etc/system/local/inputs.conf
+   # If no value can be found, or if the file does not exist, we will fallback to the normal behavior
 
-    # Default is use system hostname
+   # Default is use system hostname
 
-    # FQDN management in nmon2csv.pl/nmon2csv.py: The --fqdn option is not compatible with the host name override, if the override_sys_hostname
-    # is activated, the --fqdn argument will have no effect
+   # FQDN management in nmon2csv.pl/nmon2csv.py: The --fqdn option is not compatible with the host name override, if the override_sys_hostname
+   # is activated, the --fqdn argument will have no effect
 
-    override_sys_hostname="0"
+   override_sys_hostname="0"
 
-    # Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
-    # the following option allows specifying the options sent to the nmon2csv parsers
+   # nmon external generation management
 
-    # consult the documentation to get the full list of available options
+   # This option will manage the activation or deactivation of the nmon external data generation at the lower level, before it comes to parsers
+   # default is activated (value=1), set to "0" to deactivate
 
-    # --mode realtime --> explicitly manage realtime data (default)
-    # --use_fqdn --> use the host fully qualified domain name
-    # --json_output --> generate the performance data in json format instead of regular csv data
+   nmon_external_generation="1"
 
-    nmon2csv_options="--mode realtime"
+   # Fifo options
 
+   # This option will deactivate the auto switch to fifo mode, in other words the TA-nmon will use the file mode and the old mechanism
+   # unless you encounter unexpected issues, you should not switch to the old mechanism as the foot print is much higher
+
+   # Default is "1" which means write to fifo
+
+   mode_fifo="1"
+
+   # Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
+   # the following option allows specifying the options sent to the nmon2csv parsers
+
+   # consult the documentation to get the full list of available options
+
+   # --mode realtime|colddata|fifo --> explicitly manage realtime data
+   # --use_fqdn --> use the host fully qualified domain name
+   # --json_output --> generate the performance data in json format instead of regular csv data
+
+   # In fifo mode, options are sent by the fifo_consumer.sh
+   # In file mode, options are sent by Splunk via the nmon_processing stanza in props.conf
+
+   nmon2csv_options="--mode fifo"
