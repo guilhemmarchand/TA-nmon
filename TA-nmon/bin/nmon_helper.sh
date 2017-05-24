@@ -84,8 +84,10 @@
 #                                       - Allows activating / deactivating nmon external generation within nmon.conf
 # 2017/05/22, Guilhem Marchand:
 #                                       - Allows activating / deactivating fifo mode
+# 2017/05/24, Guilhem Marchand:
+#                                       - Bad variable name introduced in 1.3.47 changes
 
-# Version 1.3.47
+# Version 1.3.48
 
 # For AIX / Linux / Solaris
 
@@ -1725,7 +1727,7 @@ else
 		# Use expr for portability with sh
 
 		# verify if we use fifo versus regular files
-		case ${nmon_fifo} in
+		case ${mode_fifo} in
 		"1")
 		    endtime=`expr ${fifo_interval} \* ${fifo_snapshot}` ;;
         *)
