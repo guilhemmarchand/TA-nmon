@@ -20,6 +20,7 @@ V1.3.18:
 
 - fix: fifo mode implementation in parsers and several corrections #27
 - fix: CIM compliance improvements and corrections
+- fix: missing oshost tag for ITSI
 - feature: Allows deactivating fifo mode and switch to old mechanism via nmon.conf #26
 - feature: Allows deactivating nmon external generation via nmon.conf #25
 
