@@ -115,8 +115,9 @@
 #                                         - Remove empty line in nmon_config
 # - 04/01/2017: V1.2.34: Guilhem Marchand: Update path discovery
 # - 05/23/2017: V1.2.35: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
+# - 05/29/2017: V1.2.36: Guilhem Marchand: Several fixes in fifo implementation
 
-$version = "1.2.35";
+$version = "1.2.36";
 
 use Time::Local;
 use Time::HiRes;
@@ -921,7 +922,7 @@ foreach $FILENAME (@nmon_files) {
 
     elsif ( $OPMODE eq "fifo" ) {
 
-        $realtime = True;
+        $fifo = True;
         print("ANALYSIS: Enforcing fifo mode using --mode option \n");
 
     }
@@ -1134,7 +1135,7 @@ foreach $FILENAME (@nmon_files) {
             if ( $config_run eq "0" ) {
 
 # Real time restricts configuration extraction once per hour, with the exception of the BBB extraction failure
-                if ( $realtime eq "True" || $realtime eq "True" ) {
+                if ( $realtime eq "True" || $fifo eq "True" ) {
 
                     $limit = ( ($starting_epochtime) + ( 4 * $INTERVAL ) );
 
