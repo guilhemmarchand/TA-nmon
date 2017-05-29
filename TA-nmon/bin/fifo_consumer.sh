@@ -14,8 +14,9 @@
 # Guilhem Marchand 2017/04/15, Fix SHC deployer re-formatting default/nmon.conf
 # Guilhem Marchand 2017/04/24, Use the nmon var directory in Splunk dir for temp creation
 # Guilhem Marchand 2017/05/23, Integrate new fifo mode from parsers, fixed hard coded arguments
+# Guilhem Marchand 2017/05/29, error in rotated files naming for purge rm command
 
-# Version 1.0.05
+# Version 1.0.06
 
 # For AIX / Linux / Solaris
 
@@ -154,7 +155,7 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
     fi
 
     # remove rotated
-    rm -f $SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/*.dat_rotated
+    rm -f $SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/*.dat.rotated
 
 fi
 
