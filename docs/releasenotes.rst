@@ -22,6 +22,7 @@ V1.3.19:
 - fix: CIM compliance improvements and corrections
 - fix: missing oshost tag for ITSI
 - fix: fifo_consumer.sh error in file naming for rotated files purge
+- fix: fifo_consumer.sh issue generates gaps in data #28
 - feature: Allows deactivating fifo mode and switch to old mechanism via nmon.conf #26
 - feature: Allows deactivating nmon external generation via nmon.conf #25
 

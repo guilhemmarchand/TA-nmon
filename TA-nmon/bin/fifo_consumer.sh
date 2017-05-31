@@ -15,8 +15,9 @@
 # Guilhem Marchand 2017/04/24, Use the nmon var directory in Splunk dir for temp creation
 # Guilhem Marchand 2017/05/23, Integrate new fifo mode from parsers, fixed hard coded arguments
 # Guilhem Marchand 2017/05/29, error in rotated files naming for purge rm command
+# Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
 
-# Version 1.0.06
+# Version 1.0.07
 
 # For AIX / Linux / Solaris
 
@@ -128,6 +129,7 @@ nmon_config=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat
 nmon_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat
 nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat
 nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
+nmon_data_tmp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data_tmp.dat
 
 # rotated
 nmon_config_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat.rotated
@@ -200,17 +202,23 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
 
     done
 
-    # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
-    head -1 $nmon_data | grep 'ZZZZ,T' >/dev/null
-    if [ $? -ne 0 ]; then
-        tail -1 $nmon_timestamp >$temp_file
-        cat $nmon_config $nmon_header $temp_file $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
-    else
-        cat $nmon_config $nmon_header $nmon_data | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
-    fi
+    # copy content
+    cat $nmon_data > $nmon_data_tmp
 
     # empty the nmon_data file
     > $nmon_data
+
+    # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
+    head -1 $nmon_data_tmp | grep 'ZZZZ,T' >/dev/null
+    if [ $? -ne 0 ]; then
+        tail -1 $nmon_timestamp >$temp_file
+        cat $nmon_config $nmon_header $temp_file $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+    else
+        cat $nmon_config $nmon_header $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+    fi
+
+    # remove the copy
+    rm -f $nmon_data_tmp
 
 fi
 
