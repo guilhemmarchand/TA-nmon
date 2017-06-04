@@ -116,8 +116,10 @@
 # - 04/01/2017: V1.2.34: Guilhem Marchand: Update path discovery
 # - 05/23/2017: V1.2.35: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
 # - 05/29/2017: V1.2.36: Guilhem Marchand: Several fixes in fifo implementation
+# - 06/03/2017: V1.2.37: Guilhem Marchand: Manage time stamp identification failure, produce error message and affect
+#                                           current timestmap in case of failure
 
-$version = "1.2.36";
+$version = "1.2.37";
 
 use Time::Local;
 use Time::HiRes;
@@ -2774,6 +2776,15 @@ sub variable_sections_insert {
 
      # Convert timestamp string to epoch time (from format: YYYY-MM-DD hh:mm:ss)
         my ( $year, $month, $day, $hour, $min, $sec ) = split /\W+/, $timestamp;
+
+        if ($month == 0) {
+            print "ERROR, section $key has failed to identify the timestamp of these data, affecting current
+            timestamp which may be inaccurate";
+            my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+            $month = $mon;
+            $day = $mday;
+        }
+
         my $ZZZZ_epochtime =
           timelocal( $sec, $min, $hour, $day, $month - 1, $year );
 
