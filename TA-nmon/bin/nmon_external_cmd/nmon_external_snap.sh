@@ -8,8 +8,9 @@
 # Guilhem Marchand 2017/03/18, initial version
 
 # 2017/04/29, Guilhem Marchand:         - AIX compatibility issues, detach the commands in background
+# 2017/06/04, Guilhem Marchand:         - Manage nmon external data in a dedicated file
 
-# Version 1.0.1
+# Version 1.0.2
 
 # For AIX / Linux / Solaris
 
@@ -24,21 +25,13 @@
 # - nmon_external: manage any number of fields without transposition
 # - nmon_external_transposed: manage any number of fields with a notion of device / value
 
-# Do no try to do anything unless the NMON_FIFO_PATH exists
-# we exit without any error code, the situation is not expected but we do not want to generate bad data in nmon data
-
 # note: the NMON_FIFO_PATH is a pattern that will be replaced by the nmon_helper.sh script in a copy of this script
 # that lives for the time to live of the nmon process started
-
-if [ ! -p NMON_FIFO_PATH ]
-then
-   exit 0
-fi
 
 # CAUTION: ensure your custom command does not output any comma within the field name and value
 
 # Number of running processes
-echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>NMON_FIFO_PATH &
+echo "PROCCOUNT,$1,`ps -ef | wc -l`" >>NMON_FIFO_PATH/nmon_external.dat &
 
 # Uptime information (uptime command output)
-echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>NMON_FIFO_PATH &
+echo "UPTIME,$1,\"`uptime | sed 's/^\s//g' | sed 's/,/;/g'`\"" >>NMON_FIFO_PATH/nmon_external.dat &

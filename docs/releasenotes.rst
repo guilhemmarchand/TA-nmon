@@ -19,6 +19,7 @@ V1.3.20:
 ========
 
 - fix: AIX issue - fifo_reader regex match some monitors into header #29
+- fix: Nmon external issue - manage metrics collection into a dedicated file #30
 
 ========
 V1.3.19:

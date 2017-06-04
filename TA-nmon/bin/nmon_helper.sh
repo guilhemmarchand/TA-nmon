@@ -86,8 +86,10 @@
 #                                       - Allows activating / deactivating fifo mode
 # 2017/05/24, Guilhem Marchand:
 #                                       - Bad variable name introduced in 1.3.47 changes
+# 2017/06/04, Guilhem Marchand:
+#                                       - Manage nmon external data in a dedicated file
 
-# Version 1.3.48
+# Version 1.3.49
 
 # For AIX / Linux / Solaris
 
@@ -969,13 +971,13 @@ case $fifo_started in
 "fifo1")
     cat ${APP}/bin/nmon_external_cmd/nmon_external_start.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
     chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo1.sh"
-    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_DIR|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
     chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo1.sh"
     ;;
 "fifo2")
     cat ${APP}/bin/nmon_external_cmd/nmon_external_start.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
     chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_start_fifo2.sh"
-    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_FIFO|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
+    cat ${APP}/bin/nmon_external_cmd/nmon_external_snap.sh | sed "s|NMON_FIFO_PATH|$NMON_EXTERNAL_DIR|g" > "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
     chmod +x "${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_fifo2.sh"
     ;;
 esac

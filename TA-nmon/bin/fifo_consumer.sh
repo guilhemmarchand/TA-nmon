@@ -16,8 +16,9 @@
 # Guilhem Marchand 2017/05/23, Integrate new fifo mode from parsers, fixed hard coded arguments
 # Guilhem Marchand 2017/05/29, error in rotated files naming for purge rm command
 # Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
+# Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
 
-# Version 1.0.07
+# Version 1.0.8
 
 # For AIX / Linux / Solaris
 
@@ -130,12 +131,14 @@ nmon_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat
 nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat
 nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
 nmon_data_tmp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data_tmp.dat
+nmon_external=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat
 
 # rotated
 nmon_config_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat.rotated
 nmon_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_header.dat.rotated
 nmon_timestamp_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat.rotated
 nmon_data_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat.rotated
+nmon_external_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat.rotated
 
 # manage rotated data if existing, prevent any data loss
 
@@ -150,10 +153,10 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
         # and the parser will raise an error
         if [ -f $nmon_timestamp_rotated ]; then
             tail -1 $nmon_timestamp_rotated >$temp_file
-            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
         fi
     else
-        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # remove rotated
@@ -204,9 +207,11 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
 
     # copy content
     cat $nmon_data > $nmon_data_tmp
+    cat $nmon_external >> $nmon_data_tmp
 
-    # empty the nmon_data file
+    # empty the nmon_data file & external
     > $nmon_data
+    > $nmon_external
 
     # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
     head -1 $nmon_data_tmp | grep 'ZZZZ,T' >/dev/null
