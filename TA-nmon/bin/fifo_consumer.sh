@@ -207,7 +207,11 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
 
     # copy content
     cat $nmon_data > $nmon_data_tmp
-    cat $nmon_external >> $nmon_data_tmp
+
+    # nmon external data
+    if [ -f $nmon_external ]; then
+        cat $nmon_external >> $nmon_data_tmp
+    fi
 
     # empty the nmon_data file & external
     > $nmon_data
