@@ -2778,8 +2778,7 @@ sub variable_sections_insert {
         my ( $year, $month, $day, $hour, $min, $sec ) = split /\W+/, $timestamp;
 
         if ($month == 0) {
-            print "ERROR, section $key has failed to identify the timestamp of these data, affecting current
-            timestamp which may be inaccurate";
+            print "ERROR, section $key has failed to identify the timestamp of these data, affecting current timestamp which may be inaccurate\n";
             my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
             $month = $mon;
             $day = $mday;
