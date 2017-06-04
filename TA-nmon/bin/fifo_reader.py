@@ -146,7 +146,7 @@ else:
 
         # Manage nmon config
         nmon_config_match = re.match(r'^[AAA|BBB].+', line)
-        nmon_header_match = re.match(r'^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,})[^,]*,(?!T\d{3,})[^,]*,.*', line)
+        nmon_header_match = re.match(r'^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,})[^,]*,(?!T\d{3,})[^,]*.*', line)
         nmon_header_TOP_match = re.match(r'^TOP,(?!\d*,)', line)
         nmon_timestamp_match = re.match(r'^ZZZZ,T\d*', line)
 

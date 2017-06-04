@@ -186,7 +186,7 @@ else {
             chomp($_);
 
             $nmon_config_match     = '^[AAA|BBB].+';
-            $nmon_header_match     = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,})[^,]*,(?!T\d{3,})[^,]*,.*';
+            $nmon_header_match     = '^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,})[^,]*,(?!T\d{3,})[^,]*.*';
             $nmon_header_TOP_match = '^TOP,(?!\d*,)';
             $nmon_timestamp_match  = '^ZZZZ,T\d*';
 
