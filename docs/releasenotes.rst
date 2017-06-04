@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.20:
+========
+
+- fix: AIX issue - fifo_reader regex match some monitors into header #29
+
+========
 V1.3.19:
 ========
 
