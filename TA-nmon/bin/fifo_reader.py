@@ -10,10 +10,11 @@ import subprocess
 # Releases Notes:
 
 # - March 2017, V1.0.0: Guilhem Marchand, Initial version
-# - 2017/04/01, V1.0.01: Guilhem Marchand, Update path discovery
+# - 2017/04/01, V1.0.1: Guilhem Marchand, Update path discovery
+# - 2017/06/03, V1.0.2: Guilhem Marchand, Update regular expr for headers extraction
 
 # script version
-version = '1.0.01'
+version = '1.0.2'
 
 #################################################
 #      Variables
@@ -145,7 +146,7 @@ else:
 
         # Manage nmon config
         nmon_config_match = re.match(r'^[AAA|BBB].+', line)
-        nmon_header_match = re.match(r'^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,}).*', line)
+        nmon_header_match = re.match(r'^(?!AAA|BBB|TOP)[a-zA-Z0-9\-\_]*,(?!T\d{3,})[^,]*,(?!T\d{3,})[^,]*,.*', line)
         nmon_header_TOP_match = re.match(r'^TOP,(?!\d*,)', line)
         nmon_timestamp_match = re.match(r'^ZZZZ,T\d*', line)
 
