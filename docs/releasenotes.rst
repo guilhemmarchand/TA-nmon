@@ -20,6 +20,7 @@ V1.3.22:
 
 - fix: nmon from syslog - missing indexed time creation for OStype and type fields #31
 - fix: nmon from syslog - uptime extraction failure #32
+- fix: nmon external - manager header in a dedicated file #33
 
 ========
 V1.3.21:
