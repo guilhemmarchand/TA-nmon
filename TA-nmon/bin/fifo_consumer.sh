@@ -149,6 +149,8 @@ nmon_external_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO
 # all files must be existing to be managed
 if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data_rotated ]; then
 
+    # Manager headers
+    unset nmon_header_files
     if [ -f $nmon_external_header_rotated ]; then
         nmon_header_files="$nmon_header_rotated $nmon_external_header_rotated"
     else
@@ -171,6 +173,9 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
 
     # remove rotated
     rm -f $SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/*.dat.rotated
+
+    # header var
+    unset nmon_header_files
 
 fi
 
@@ -227,6 +232,8 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
     > $nmon_data
     > $nmon_external
 
+    # Manager headers
+    unset nmon_header_files
     if [ -f $nmon_external_header ]; then
         nmon_header_files="$nmon_header $nmon_external_header"
     else
@@ -244,6 +251,9 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
 
     # remove the copy
     rm -f $nmon_data_tmp
+
+    # header var
+    unset nmon_header_files
 
 fi
 
