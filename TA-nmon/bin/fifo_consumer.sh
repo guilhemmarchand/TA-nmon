@@ -17,8 +17,9 @@
 # Guilhem Marchand 2017/05/29, error in rotated files naming for purge rm command
 # Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
+# Guilhem Marchand 2017/06/04, manage nmon external header in dedicated file
 
-# Version 1.0.8
+# Version 1.0.9
 
 # For AIX / Linux / Solaris
 
@@ -132,6 +133,8 @@ nmon_timestamp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestam
 nmon_data=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat
 nmon_data_tmp=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data_tmp.dat
 nmon_external=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat
+nmon_external_header=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external_header.dat
+
 
 # rotated
 nmon_config_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_config.dat.rotated
@@ -139,11 +142,18 @@ nmon_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_hea
 nmon_timestamp_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_timestamp.dat.rotated
 nmon_data_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_data.dat.rotated
 nmon_external_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external.dat.rotated
+nmon_external_header_rotated=$SPLUNK_HOME/var/log/nmon/var/nmon_repository/$FIFO/nmon_external_header.dat.rotated
 
 # manage rotated data if existing, prevent any data loss
 
 # all files must be existing to be managed
 if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data_rotated ]; then
+
+    if [ -f $nmon_external_header_rotated ]; then
+        nmon_header_files="$nmon_header_rotated $nmon_external_header_rotated"
+    else
+        nmon_header_files="$nmon_header_rotated"
+    fi
 
     # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
     head -1 $nmon_data_rotated | grep 'ZZZZ,T' >/dev/null
@@ -153,10 +163,10 @@ if [ -s $nmon_config_rotated ] && [ -s $nmon_header_rotated ] && [ -s $nmon_data
         # and the parser will raise an error
         if [ -f $nmon_timestamp_rotated ]; then
             tail -1 $nmon_timestamp_rotated >$temp_file
-            cat $nmon_config_rotated $nmon_header_rotated $temp_file $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+            cat $nmon_config_rotated $nmon_header_files $temp_file $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
         fi
     else
-        cat $nmon_config_rotated $nmon_header_rotated $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config_rotated $nmon_header_files $nmon_data_rotated $nmon_external_rotated | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # remove rotated
@@ -217,13 +227,19 @@ if [ -s $nmon_config ] && [ -s $nmon_header ] && [ -s $nmon_data ]; then
     > $nmon_data
     > $nmon_external
 
+    if [ -f $nmon_external_header ]; then
+        nmon_header_files="$nmon_header $nmon_external_header"
+    else
+        nmon_header_files="$nmon_header"
+    fi
+
     # Ensure the first line of nmon_data starts by the relevant timestamp, if not add it
     head -1 $nmon_data_tmp | grep 'ZZZZ,T' >/dev/null
     if [ $? -ne 0 ]; then
         tail -1 $nmon_timestamp >$temp_file
-        cat $nmon_config $nmon_header $temp_file $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config $nmon_header_files $temp_file $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     else
-        cat $nmon_config $nmon_header $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
+        cat $nmon_config $nmon_header_files $nmon_data_tmp | $SPLUNK_HOME/bin/splunk cmd $APP/bin/nmon2csv.sh $nmon2csv_options
     fi
 
     # remove the copy
