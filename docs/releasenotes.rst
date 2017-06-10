@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.22:
+========
+
+- fix: nmon from syslog - missing indexed time creation for OStype and type fields #31
+
+========
 V1.3.21:
 ========
 
