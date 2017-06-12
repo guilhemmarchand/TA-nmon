@@ -155,6 +155,7 @@
 # - 03/22/2017: V1.1.32: Guilhem Marchand: Power Linux serial number identification correction
 # - 04/01/2017: V1.1.33: Guilhem Marchand: Update path discovery
 # - 05/23/2017: V1.1.34: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
+# - 06/12/2017: V1.1.35: Guilhem Marchand: improve the "wrote xx line(s)" message
 
 # Load libs
 
@@ -175,7 +176,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.34'
+nmon2csv_version = '1.1.35'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1838,7 +1839,7 @@ def standard_section_fn(section):
                 os.remove(currsection_output)
         else:
             # Show number of lines extracted
-            result = section + " section: Wrote" + " " + str(count) + " lines"
+            result = section + " section: Wrote" + " " + str(count) + " line(s)"
             print(result)
             ref.write(result + "\n")
 
@@ -2119,7 +2120,7 @@ def top_section_fn(section):
                 os.remove(currsection_output)
         else:
             # Show number of lines extracted
-            result = section + " section: Wrote" + " " + str(count) + " lines"
+            result = section + " section: Wrote" + " " + str(count) + " line(s)"
             print(result)
             ref.write(result + "\n")
 
@@ -2413,7 +2414,7 @@ def uarg_section_fn(section):
         # In any case, don't allow empty files to kept in repository
         if count >= 1:
             # Show number of lines extracted
-            result = section + " section: Wrote" + " " + str(count) + " lines"
+            result = section + " section: Wrote" + " " + str(count) + " line(s)"
             print(result)
             ref.write(result + "\n")
 
@@ -2804,7 +2805,7 @@ def dynamic_section_fn(section):
                     os.remove(currsection_output)
             else:
                 # Show number of lines extracted
-                result = section + " section: Wrote" + " " + str(count) + " lines"
+                result = section + " section: Wrote" + " " + str(count) + " line(s)"
                 print(result)
                 ref.write(result + "\n")
 
@@ -3243,7 +3244,7 @@ def solaris_wlm_section_fn(section):
                     os.remove(currsection_output)
             else:
                 # Show number of lines extracted
-                result = section + " section: Wrote" + " " + str(count) + " lines"
+                result = section + " section: Wrote" + " " + str(count) + " line(s)"
                 print(result)
                 ref.write(result + "\n")
 
