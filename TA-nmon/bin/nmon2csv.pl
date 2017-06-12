@@ -118,8 +118,11 @@
 # - 05/29/2017: V1.2.36: Guilhem Marchand: Several fixes in fifo implementation
 # - 06/03/2017: V1.2.37: Guilhem Marchand: Manage time stamp identification failure, produce error message and affect
 #                                           current timestmap in case of failure
+# - 06/12/2017: V1.2.38: Guilhem Marchand:
+#                                           - Ignore the --json_output mode (not currently available in Perl parser)
+#                                           - improve "wrote xx line(s)" output
 
-$version = "1.2.37";
+$version = "1.2.38";
 
 use Time::Local;
 use Time::HiRes;
@@ -135,12 +138,16 @@ use File::Copy;
 
 my $OPMODE = "";
 
+# Notes: --json_output is not available in Perl, the use of this argument will only output an informational message
+# the --json_output mode is currently available only with the Python parser
+
 $result = GetOptions(
     "mode=s"   => \$OPMODE,      # string
     "version"  => \$VERSION,     # flag
     "use_fqdn" => \$USE_FQDN,    # flag
     "help"     => \$help,        # flag
     "debug"    => \$DEBUG,       # flag
+    "json_output"    => \$JSON_OUTPUT,       # flag
 );
 
 # Show version
@@ -689,6 +696,11 @@ foreach $FILENAME (@nmon_files) {
 
     # Show perl version
     print "Perl version: $] \n";
+
+    # print informational message if --json_output is set (not available currently)
+    if ($JSON_OUTPUT) {
+        print "INFO: --json_output option is set, however this option is currently not available with the Perl parser and will have no effect \n";
+    }
 
     # Show Nmon version
     print "NMON VERSION: $VERSION \n";
@@ -1499,8 +1511,8 @@ foreach $FILENAME (@nmon_files) {
 
                 if ( $sanity_check == 0 ) {
 
-                    print "$key section: Wrote $count lines\n";
-                    print ID_REF "$key section: Wrote $count lines\n";
+                    print "$key section: Wrote $count line(s)\n";
+                    print ID_REF "$key section: Wrote $count line(s)\n";
 
                     if ( $realtime eq "True" ) {
 
@@ -1912,8 +1924,8 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
                     if ( $sanity_check == 0 ) {
 
-                        print "$key section: Wrote $count lines\n";
-                        print ID_REF "$key section: Wrote $count lines\n";
+                        print "$key section: Wrote $count line(s)\n";
+                        print ID_REF "$key section: Wrote $count line(s)\n";
 
                         if ( $realtime eq "True" ) {
 
@@ -2337,8 +2349,8 @@ sub config_extract {
 
     }
 
-    print "$key section: Wrote $count lines\n";
-    print ID_REF "$key section: Wrote $count lines\n";
+    print "$key section: Wrote $count line(s)\n";
+    print ID_REF "$key section: Wrote $count line(s)\n";
 
     # Open CONFIG_REF for writing in create mode
     open( CONFIG_REF, ">$CONFIG_REF" );
@@ -2610,8 +2622,8 @@ qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus"
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count lines\n";
-            print ID_REF "$key section: Wrote $count lines\n";
+            print "$key section: Wrote $count line(s)\n";
+            print ID_REF "$key section: Wrote $count line(s)\n";
 
             if ( $realtime eq "True" ) {
 
@@ -2910,8 +2922,8 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count lines\n";
-            print ID_REF "$key section: Wrote $count lines\n";
+            print "$key section: Wrote $count line(s)\n";
+            print ID_REF "$key section: Wrote $count line(s)\n";
 
             if ( $realtime eq "True" ) {
 
@@ -3201,8 +3213,8 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count lines\n";
-            print ID_REF "$key section: Wrote $count lines\n";
+            print "$key section: Wrote $count line(s)\n";
+            print ID_REF "$key section: Wrote $count line(s)\n";
 
             if ( $realtime eq "True" ) {
 
