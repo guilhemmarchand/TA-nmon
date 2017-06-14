@@ -23,6 +23,7 @@ V1.3.22:
 - fix: nmon external - manager header in a dedicated file #33
 - fix: Perl parser - prevent error message when --json_output option is set #34
 - feature: Linux nmon binaries upgrade to nmon 16g #35
+- fix: AIX - multiplication of nmon external snap instances on some systems #36
 
 ========
 V1.3.21:
