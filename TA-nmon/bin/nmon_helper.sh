@@ -93,8 +93,10 @@
 # 2017/06/14, Guilhem Marchand:
 #                                       - Prevents spawning multiple nmon external instances in case of unexpected issue
 #                                         this issue has been reported in some weired cases on AIX
+# 2017/06/14, Guilhem Marchand:
+#                                       - specify explicit date format to prevent time zone issues
 
-# Version 1.3.51
+# Version 1.3.52
 
 # For AIX / Linux / Solaris
 
@@ -105,8 +107,13 @@
 # hostname
 HOST=`hostname`
 
+# format date output to strftime dd/mm/YYYY HH:MM:SS
+log_date () {
+    date "+%d-%m-%Y %H:%M:%S"
+}
+
 if [ -z "${SPLUNK_HOME}" ]; then
-	echo "`date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
+	echo "`log_date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
 fi
 
@@ -116,7 +123,7 @@ SPL_HOME=${SPLUNK_HOME}
 
 # Check SPL_HOME variable is defined, this should be the case when launched by Splunk scheduler
 if [ -z "${SPL_HOME}" ]; then
-	echo "`date`, ${HOST} ERROR, SPL_HOME (SPLUNK_HOME) variable is not defined"
+	echo "`log_date`, ${HOST} ERROR, SPL_HOME (SPLUNK_HOME) variable is not defined"
 	exit 1
 fi
 
@@ -128,7 +135,7 @@ elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
         APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
+        echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
 fi
 
@@ -333,7 +340,7 @@ else
 	NMON=`which nmon 2>&1`
 
 	if [ ! -x "$NMON" ]; then
-		echo "`date`, ${HOST} ERROR, Nmon could not be found, cannot continue."
+		echo "`log_date`, ${HOST} ERROR, Nmon could not be found, cannot continue."
 		exit 1
 	fi
 	AIX_topas_nmon="false"	
@@ -869,7 +876,7 @@ if [ ! -x "$NMON" ];then
 
 		else
 			
-			echo "`date`, ${HOST} ERROR, could not find an nmon binary suitable for this system, please install nmon manually and set it available in the user PATH"
+			echo "`log_date`, ${HOST} ERROR, could not find an nmon binary suitable for this system, please install nmon manually and set it available in the user PATH"
 			exit 1
 			
 		fi	
@@ -911,7 +918,7 @@ fi
 
 * )
 
-	echo "`date`, ${HOST} ERROR, Unsupported system ! Nmon is available only for AIX / Linux / Solaris systems, please check and deactivate nmon data collect"
+	echo "`log_date`, ${HOST} ERROR, Unsupported system ! Nmon is available only for AIX / Linux / Solaris systems, please check and deactivate nmon data collect"
 	exit 2
 
 ;;
@@ -1004,7 +1011,7 @@ check_duplicated_external_snap () {
 
             if [ $nb_instances -gt 2 ]; then
 
-                echo "`date`, ${HOST} ERROR: detected duplicated instances of $instance nmon external snap script, to prevent infinite spawn of processes, the $instance snap script will be removed until those processes will have been terminated and a new nmon process started."
+                echo "`log_date`, ${HOST} ERROR: detected duplicated instances of $instance nmon external snap script, to prevent infinite spawn of processes, the $instance snap script will be removed until those processes will have been terminated and a new nmon process started."
 
                 rm -f ${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_${instance}.sh
 
@@ -1055,7 +1062,7 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
-                echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
+                echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
                 ${nmon_command_fifo1} > ${PIDFILE} ;;
             "fifo2")
                 case $nmon_external_generation in
@@ -1068,7 +1075,7 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
-                echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
+                echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
                 ${nmon_command_fifo2} > ${PIDFILE} ;;
             esac
 
@@ -1149,11 +1156,11 @@ case $UNAME in
             # We don't want this as we need to retrieve the pid from nmon output
             # However, we also want to analyse the return code, so we can't filter out in only one operation
 
-            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
+            echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command} > ${APP_VAR}/nmon_output.txt
 
             if [ $? -ne 0 ]; then
-                echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+                echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
             fi
 
             # Store the PID file (very last line of nmon output)
@@ -1165,14 +1172,14 @@ case $UNAME in
             # In such a case, echo a WARN, remove the option and last chance start
             if grep 'opening disk group file' ${APP_VAR}/nmon_output.txt >/dev/null; then
 
-                echo "`date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
+                echo "`log_date`, ${HOST} WARN, nmon disks extended statistics cannot be collected, either this nmon version is not compatible or the disk group file does not exist, see ${APP_VAR}/nmon_output.txt"
 
                 nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
-                echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
+                echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
                 ${nmon_command} &> ${PIDFILE}
 
                 if [ $? -ne 0 ]; then
-                    echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+                    echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
                 fi
 
             fi
@@ -1181,11 +1188,11 @@ case $UNAME in
 
             # This version is not compatible with the auto group disk
             nmon_command=`echo ${nmon_command} | sed "s/-g ${Linux_disk_dg_group} -D//g"`
-            echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
+            echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_EXTERNAL_DIR}"
             ${nmon_command} > ${PIDFILE}
 
             if [ $? -ne 0 ]; then
-                echo "`date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
+                echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log (missing shared libraries?)"
             fi
 
         fi
@@ -1265,7 +1272,7 @@ case $UNAME in
 			
 		fi
 
-        echo "`date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
+        echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command} in ${NMON_REPOSITORY}"
 		${nmon_command} >/dev/null 2>&1 &
 	;;
 
@@ -1422,12 +1429,12 @@ case ${mode_fifo} in
     echo $running_fifo | grep 'fifo1' >/dev/null
 
     if [ $? -eq 0 ]; then
-        echo "`date`, ${HOST} INFO: The fifo_reader fifo1 is running"
+        echo "`log_date`, ${HOST} INFO: The fifo_reader fifo1 is running"
         echo $running_fifo | grep 'fifo2' >/dev/null
         if [ $? -eq 0 ]; then
-            echo "`date`, ${HOST} INFO: The fifo_reader fifo2 is running"
+            echo "`log_date`, ${HOST} INFO: The fifo_reader fifo2 is running"
         else
-            echo "`date`, ${HOST} INFO: starting the fifo_reader fifo2"
+            echo "`log_date`, ${HOST} INFO: starting the fifo_reader fifo2"
             case $INTERPRETER in
             "perl")
                 nohup $APP/bin/fifo_reader.pl --fifo fifo2 </dev/null >/dev/null 2>&1 & ;;
@@ -1439,7 +1446,7 @@ case ${mode_fifo} in
             export fifo_started
         fi
     else
-        echo "`date`, ${HOST} INFO: starting the fifo_reader fifo1"
+        echo "`log_date`, ${HOST} INFO: starting the fifo_reader fifo1"
         case $INTERPRETER in
         "perl")
             nohup $APP/bin/fifo_reader.pl --fifo fifo1 </dev/null >/dev/null 2>&1 & ;;
@@ -1646,7 +1653,7 @@ Linux )
         if [ `echo "${Linux_unlimited_capture}" | grep -E "^[0-9]+(\.[0-9]+)?$"` ]; then
             Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
         else
-            echo "`date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
+            echo "`log_date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
             exit 2
         fi
         ;;
@@ -1681,7 +1688,7 @@ nmon_isstarted=0
 # Check nmon binary exists and is executable
 if [ ! -x ${NMON} ]; then
 	
-	echo "`date`, ${HOST} ERROR, could not find Nmon binary (${NMON}) or execution is unauthorized"
+	echo "`log_date`, ${HOST} ERROR, could not find Nmon binary (${NMON}) or execution is unauthorized"
 	exit 2
 fi	
 
@@ -1693,7 +1700,7 @@ if [ ! -f ${PIDFILE} ]; then
 
 	# PID file not found
 
-	echo "`date`, ${HOST} INFO: Removing stale pid file"
+	echo "`log_date`, ${HOST} INFO: Removing stale pid file"
 	rm -f ${PIDFILE}
 	
 	# search for any App related instances
@@ -1712,7 +1719,7 @@ if [ ! -f ${PIDFILE} ]; then
 	
 	*)
 
-		echo "`date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
+		echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
 		# Retry to write pid file
 		write_pid
 		exit 0
@@ -1752,7 +1759,7 @@ else
 
         case $PIDAGE in
         "")
-                echo "`date`, ${HOST} WARN: failed to eval the age of the current pid file, gaps may occur between nmon processes run."
+                echo "`log_date`, ${HOST} WARN: failed to eval the age of the current pid file, gaps may occur between nmon processes run."
                 PIDAGE=0
                 ;;
         esac
@@ -1777,7 +1784,7 @@ else
 	# PID file is empty
 	"")
 
-		echo "`date`, ${HOST} INFO: Removing stale pid file"
+		echo "`log_date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
 
 		# search for any App related instances
@@ -1798,7 +1805,7 @@ else
 	
 		*)
 
-			echo "`date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
+			echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
 			# Relevant for Solaris Only
 			write_pid
 			exit 0
@@ -1853,17 +1860,17 @@ else
 		
 			# Prevent any failure in determining nmon process age
 			if [ $PIDAGE -gt $EPOCHTEST ]; then
-				echo "`date`, ${HOST} ERROR: Failed to determine age in seconds of current Nmon process, gaps may occur between Nmon collections"
+				echo "`log_date`, ${HOST} ERROR: Failed to determine age in seconds of current Nmon process, gaps may occur between Nmon collections"
 		
 			else		
 				case $PIDAGE in
 			
 				"")
-					echo "`date`, ${HOST} ERROR: Failed to determine age in seconds of current Nmon process, gaps may occur between Nmon collections"
+					echo "`log_date`, ${HOST} ERROR: Failed to determine age in seconds of current Nmon process, gaps may occur between Nmon collections"
 				;;
 				*)
 					if [ $PIDAGE -gt $endtime ]; then
-						echo "`date`, ${HOST} INFO: To prevent data gaps between 2 Nmon collections, a new process will be started, its PID will be available on next execution"
+						echo "`log_date`, ${HOST} INFO: To prevent data gaps between 2 Nmon collections, a new process will be started, its PID will be available on next execution"
 
                         start_fifo_reader
                         sleep 1
@@ -1878,21 +1885,21 @@ else
 			fi
 
 			# Process found	
-			echo "`date`, ${HOST} INFO: Nmon process is $PIDAGE sec old, a new process will be spawned when this value will be greater than estimated end in seconds ($endtime sec based on parameters)"
+			echo "`log_date`, ${HOST} INFO: Nmon process is $PIDAGE sec old, a new process will be spawned when this value will be greater than estimated end in seconds ($endtime sec based on parameters)"
 	
 		fi
 
         # Prevent infinite spawn of nmon external snap processes (in case of unexpected issue)
         check_duplicated_external_snap
 
-		echo "`date`, ${HOST} INFO: found Nmon running with PID ${SAVED_PID}"
+		echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${SAVED_PID}"
 		exit 0
 		;;
 		
 	"false")
 	
 		# Process not found, Nmon has terminated or is not yet started		
-		echo "`date`, ${HOST} INFO: Removing stale pid file"
+		echo "`log_date`, ${HOST} INFO: Removing stale pid file"
 		rm -f ${PIDFILE}
 
         start_fifo_reader

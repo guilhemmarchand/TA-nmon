@@ -18,8 +18,11 @@
 # Guilhem Marchand 2016/07/30, the core-app does not contains anymore data collection objects
 # Guilhem Marchand 2016/08/02, Manage the TA-nmon_selfmode
 # Guilhem Marchand 2017/04/02, Update path discovery
+# Guilhem Marchand 2017/06/24,
+#                               - specify explicit date format to prevent time zone issues
+#                               - AIX maintenance task to solve non ending nmon processes issue
 
-# Version 1.0.10
+# Version 1.0.11
 
 # For AIX / Linux / Solaris
 
@@ -27,8 +30,13 @@
 ## 	Your Customizations Go Here            ##
 #################################################
 
+# format date output to strftime dd/mm/YYYY HH:MM:SS
+log_date () {
+    date "+%d-%m-%Y %H:%M:%S"
+}
+
 if [ -z "${SPLUNK_HOME}" ]; then
-	echo "`date`, ERROR, SPLUNK_HOME variable is not defined"
+	echo "`log_date`, ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
 fi
 
@@ -40,7 +48,7 @@ elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
         APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
+        echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
 fi
 
@@ -50,6 +58,31 @@ fi
 
 # Store arguments sent to script
 userargs=$@
+
+###### Maintenance tasks ######
+
+#AIX has a bug where sometimes the nmon processes fail to exit after a period of time
+if [ `uname` = "AIX" ] ; then
+
+  #If we find a process that has gone beyond 24 hours, and an additional 11 minutes grace period just in case
+  res=`ps -eo user,pid,command,etime,args | grep -E "^ *splunk.*nmon" | awk '{ print $4 }' | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | grep -v grep`
+
+  if [ "x$res" != "x" ]; then
+
+        #Unfortunately under some circumstances there can by multiple old nmon processes that are stuck (not just the one)
+        #Therefore will kill all of the splunk nmon processes to ensure things can continue
+
+        oldPidList=`ps -eo user,pid,command,etime,args | grep -E "^ *splunk.*nmon" | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | awk '{ print $2 }' | grep -v grep`
+        for pid in $oldPidList; do
+            echo "`log_date`, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+            kill $pid
+        done
+
+  fi
+
+fi
+
+###### End maintenance tasks ######
 
 # Python is the default choice, if it is not available launch the Perl version
 PYTHON=`which python >/dev/null 2>&1`

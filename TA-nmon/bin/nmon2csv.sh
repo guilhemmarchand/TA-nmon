@@ -31,8 +31,10 @@
 #                                         - Update path discovery
 # - 23/05/2017: V1.0.11: Guilhem Marchand:
 #                                         - Missing userargs call in condition
+# - 24/06/2017: V1.0.12: Guilhem Marchand:
+#                                         - specify explicit date format to prevent time zone issues
 
-# Version 1.0.11
+# Version 1.0.12
 
 # For AIX / Linux / Solaris
 
@@ -40,8 +42,13 @@
 ## 	Your Customizations Go Here            ##
 #################################################
 
+# format date output to strftime dd/mm/YYYY HH:MM:SS
+log_date () {
+    date "+%d-%m-%Y %H:%M:%S"
+}
+
 if [ -z "${SPLUNK_HOME}" ]; then
-	echo "`date`, ERROR, SPLUNK_HOME variable is not defined"
+	echo "`log_date`, ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
 fi
 
@@ -68,7 +75,7 @@ elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
         APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
+        echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
 fi
 

@@ -24,6 +24,7 @@
 #                                         - Increasing default value for csv cleaning to 14320 seconds
 #                                         - Include json cleaning
 # - 04/01/2017: V1.1.18: Guilhem Marchand: Update path discovery
+# - 24/06/2017: V1.1.19: Guilhem Marchand: time output format update
 
 # Load libs
 
@@ -39,7 +40,7 @@ import re
 import argparse
 
 # Converter version
-version = '1.1.18'
+version = '1.1.19'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -114,7 +115,7 @@ handler.setFormatter(formatter)
 logging.root.addHandler(handler)
 
 # Current date
-now = time.strftime("%c")
+now = time.strftime("%d-%m-%Y %H:%M:%S")
 
 # Set maxseconds
 maxseconds_csv = args.MAXSECONDS_CSV
