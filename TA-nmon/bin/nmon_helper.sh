@@ -95,8 +95,10 @@
 #                                         this issue has been reported in some weired cases on AIX
 # 2017/06/14, Guilhem Marchand:
 #                                       - specify explicit date format to prevent time zone issues
+# 2017/06/24, Guilhem Marchand:
+#                                       - better management for nmon external snap instances multiplication
 
-# Version 1.3.52
+# Version 1.3.53
 
 # For AIX / Linux / Solaris
 
@@ -998,28 +1000,29 @@ esac
 
 # Verify that we don't spawn multiple instances of nmon external snap script
 # this issue is unexpected and has been reported on some cases in AIX
-# If this occurs, we will remove nmon_external_snap scripts and warn
+# If this occurs, don't let processes multiplication happening
+
+# Any process running more than 2 minutes will be killed
 
 check_duplicated_external_snap () {
 
-    for instance in fifo1 fifo2; do
+        # get the list of occurrences
+        res=`ps -ef | grep splunk | grep nmon | grep nmon_external_snap | awk '{print $2}' | grep -v grep`
 
-        if [ -f ${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_${instance}.sh ]; then
-
-            nb_instances=0
-            nb_instances=`ps -ef | grep nmon_external_snap | grep $instance | wc -l`
-
-            if [ $nb_instances -gt 2 ]; then
-
-                echo "`log_date`, ${HOST} ERROR: detected duplicated instances of $instance nmon external snap script, to prevent infinite spawn of processes, the $instance snap script will be removed until those processes will have been terminated and a new nmon process started."
-
-                rm -f ${APP_VAR}/bin/nmon_external_cmd/nmon_external_snap_${instance}.sh
-
-            fi
-
+        if [ "x$res" != "x" ]; then
+                oldPidList=`ps -ef | grep nmon_external_snap | awk '{print $2}' | grep -v grep`
+                for pid in $oldPidList; do
+                    # only run the process is running
+                    if [ -d /proc/${pid} ]; then
+                        # get the process runtime in seconds
+                        pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
+                        if [ ${pid_runtime} -gt 120 ]; then
+                            echo "`log_date`, ${HOST} WARN: fifo nmon external snap script took long and will be killed: `ps -p ${pid} -ouser,pid,command,etime,args | grep -v PID`"
+                            kill $pid
+                        fi
+                    fi
+                done
         fi
-
-    done
 
 }
 
