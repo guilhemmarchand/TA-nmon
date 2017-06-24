@@ -35,8 +35,11 @@ log_date () {
     date "+%d-%m-%Y %H:%M:%S"
 }
 
+# hostname
+HOST=`hostname`
+
 if [ -z "${SPLUNK_HOME}" ]; then
-	echo "`log_date`, ERROR, SPLUNK_HOME variable is not defined"
+	echo "`log_date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
 fi
 
@@ -65,16 +68,16 @@ userargs=$@
 if [ `uname` = "AIX" ] ; then
 
   #If we find a process that has gone beyond 24 hours, and an additional 11 minutes grace period just in case
-  res=`ps -eo user,pid,command,etime,args | grep -E "^ *splunk.*nmon" | awk '{ print $4 }' | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | grep -v grep`
+  res=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "fifo" | awk '{ print $4 }' | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | grep -v grep`
 
   if [ "x$res" != "x" ]; then
 
         #Unfortunately under some circumstances there can by multiple old nmon processes that are stuck (not just the one)
         #Therefore will kill all of the splunk nmon processes to ensure things can continue
 
-        oldPidList=`ps -eo user,pid,command,etime,args | grep -E "^ *splunk.*nmon" | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | awk '{ print $2 }' | grep -v grep`
+        oldPidList=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "fifo" | grep "\-[0-9][0-9]:" | grep -v "\-00:1[01]" | awk '{ print $2 }' | grep -v grep`
         for pid in $oldPidList; do
-            echo "`log_date`, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+            echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
             kill $pid
         done
 
