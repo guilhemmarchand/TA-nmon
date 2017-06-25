@@ -1007,11 +1007,12 @@ esac
 check_duplicated_external_snap () {
 
         # get the list of occurrences
-        res=`ps -ef | grep splunk | grep nmon | grep nmon_external_snap | awk '{print $2}' | grep -v grep`
+        ps -ef | grep splunk | grep nmon | grep nmon_external_snap | grep -v grep | awk '{print $2}' >/dev/null
 
-        if [ "x$res" != "x" ]; then
-                oldPidList=`ps -ef | grep nmon_external_snap | awk '{print $2}' | grep -v grep`
+        if [ $? -eq 0 ]; then
+                oldPidList=`ps -ef | grep nmon_external_snap | grep -v grep | awk '{print $2}'`
                 for pid in $oldPidList; do
+                    pid_runtime=0
                     # only run the process is running
                     if [ -d /proc/${pid} ]; then
                         # get the process runtime in seconds
