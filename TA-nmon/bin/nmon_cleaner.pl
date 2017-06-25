@@ -22,12 +22,14 @@
 #                                         - Increasing default value for csv cleaning to 14320 seconds
 #                                         - Include json cleaning
 # - 04/01/2017: V1.1.7: Guilhem Marchand: Update path discovery
+# - 24/06/2017: V1.1.8: Guilhem Marchand: time output format update
 
-$version = "1.1.7";
+$version = "1.1.8";
 
 use Time::Local;
 use Time::HiRes;
 use Getopt::Long;
+use POSIX 'strftime';
 use File::stat;    # use the object-oriented interface to stat
 
 # LOGGING INFORMATION:
@@ -119,7 +121,7 @@ my $MAXSECONDS_NMON_DEFAULT = 86400;
 my $t_start = [Time::HiRes::gettimeofday];
 
 # Local time
-my $time = localtime;
+my $time = strftime "%d-%m-%Y %H:%M:%S", localtime;
 
 # Default Environment Variable SPLUNK_HOME, this shall be automatically defined if as the script shall be launched by Splunk
 my $SPLUNK_HOME = $ENV{SPLUNK_HOME};

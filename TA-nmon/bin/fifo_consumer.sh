@@ -17,9 +17,9 @@
 # Guilhem Marchand 2017/05/29, error in rotated files naming for purge rm command
 # Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
-# Guilhem Marchand 2017/06/04, manage nmon external header in dedicated file
+# Guilhem Marchand 2017/06/04, specify explicit date format to prevent time zone issues
 
-# Version 1.0.9
+# Version 1.0.10
 
 # For AIX / Linux / Solaris
 
@@ -33,8 +33,13 @@ HOST=`hostname`
 # Which type of OS are we running
 UNAME=`uname`
 
+# format date output to strftime dd/mm/YYYY HH:MM:SS
+log_date () {
+    date "+%d-%m-%Y %H:%M:%S"
+}
+
 if [ -z "${SPLUNK_HOME}" ]; then
-	echo "`date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
+	echo "`log_date`, ${HOST} ERROR, SPLUNK_HOME variable is not defined"
 	exit 1
 fi
 
@@ -53,7 +58,7 @@ SPL_HOME=${SPLUNK_HOME}
 
 # Check SPL_HOME variable is defined, this should be the case when launched by Splunk scheduler
 if [ -z "${SPL_HOME}" ]; then
-	echo "`date`, ${HOST} ERROR, SPL_HOME (SPLUNK_HOME) variable is not defined"
+	echo "`log_date`, ${HOST} ERROR, SPL_HOME (SPLUNK_HOME) variable is not defined"
 	exit 1
 fi
 
@@ -65,7 +70,7 @@ elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
         APP=$SPLUNK_HOME/etc/slave-apps/TA-nmon
 
 else
-        echo "`date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
+        echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
 fi
 
