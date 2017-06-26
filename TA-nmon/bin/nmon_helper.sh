@@ -1080,8 +1080,20 @@ check_duplicated_external_snap () {
                         # get the process runtime in seconds
                         pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
                         if [ ${pid_runtime} -gt 120 ]; then
-                            echo "`log_date`, ${HOST} WARN: fifo nmon external snap script took long and will be killed: `ps -p ${pid} -ouser,pid,command,etime,args | grep -v PID`"
+                            echo "`log_date`, ${HOST} WARN: fifo nmon external snap script took long and will be killed (SIGTERM): `ps -p ${pid} -ouser,pid,command,etime,args | grep -v PID`"
                             kill $pid
+
+                            # Allow some time for the process to end
+                            sleep 1
+
+                            # re-check the status
+                            ps -p ${pid} -oetime= >/dev/null
+
+                            if [ $? -eq 0 ]; then
+                            echo "`log_date`, ${HOST} WARN, fifo nmon external snap due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                                kill -9 $pid
+                            fi
+
                         fi
                     fi
                 done

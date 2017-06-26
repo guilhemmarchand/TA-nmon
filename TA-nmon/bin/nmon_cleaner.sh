@@ -198,8 +198,20 @@ if [ $? -eq 0 ]; then
             # get the process runtime in seconds
             pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
             if [ ${pid_runtime} -gt ${endtime} ]; then
-                echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+                echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
                 kill $pid
+
+                # Allow some time for the process to end
+                sleep 5
+
+                # re-check the status
+                ps -p ${pid} -oetime= >/dev/null
+
+                if [ $? -eq 0 ]; then
+                    echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                    kill -9 $pid
+                fi
+
             fi
         fi
 
@@ -232,8 +244,20 @@ if [ $? -eq 0 ]; then
 
         # no process found, kill the reader processes
         for pid in $oldPidList; do
-                echo "`log_date`, ${HOST} WARN, orphan reader processes found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+                echo "`log_date`, ${HOST} WARN, orphan reader process found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
                 kill $pid
+
+                # Allow some time for the process to end
+                sleep 5
+
+                # re-check the status
+                ps -p ${pid} -oetime= >/dev/null
+
+                if [ $? -eq 0 ]; then
+                echo "`log_date`, ${HOST} WARN, orphan reader process (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                    kill -9 $pid
+                fi
+
         done
 
     fi
