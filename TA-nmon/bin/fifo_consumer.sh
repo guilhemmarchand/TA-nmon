@@ -18,8 +18,9 @@
 # Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
 # Guilhem Marchand 2017/06/04, specify explicit date format to prevent time zone issues
+# Guilhem Marchand 2017/06/26, interpreter choice update
 
-# Version 1.0.10
+# Version 1.0.11
 
 # For AIX / Linux / Solaris
 
@@ -74,14 +75,65 @@ else
         exit 1
 fi
 
-# Verify Perl availability (Perl will be more commonly available than Python)
-PERL=`which perl >/dev/null 2>&1`
+#
+# Interpreter choice
+#
 
-if [ $? -eq 0 ]; then
-    INTERPRETER="perl"
-else
-    INTERPRETER="python"
-fi
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
 
 # default values relevant for our context
 nmon2csv_options="--mode fifo"

@@ -97,8 +97,10 @@
 #                                       - specify explicit date format to prevent time zone issues
 # 2017/06/24, Guilhem Marchand:
 #                                       - better management for nmon external snap instances multiplication
+# 2017/06/26, Guilhem Marchand:
+#                                       - review interpreter choice for the fifo start (AIX default to Perl)
 
-# Version 1.3.53
+# Version 1.3.55
 
 # For AIX / Linux / Solaris
 
@@ -972,6 +974,66 @@ fi
 # csv_repository
 [ -d ${APP_VAR}/var/csv_repository ] || { mkdir -p ${APP_VAR}/var/csv_repository; }
 
+#
+# Interpreter choice
+#
+
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
+
 ############################################
 # functions
 ############################################
@@ -1409,25 +1471,6 @@ case ${mode_fifo} in
     # Check fifo readers, start if either fifo1 or fifo2 is free
     fifo_started="none"
 
-    # Verify Perl availability (Perl will be more commonly available than Python)
-    PYTHON=`which python >/dev/null 2>&1`
-
-    if [ $? -eq 0 ]; then
-
-        # Check Python version, nmon2csv.py compatibility starts with Python version 2.6.6
-        python_subversion=`python --version 2>&1`
-
-        case $python_subversion in
-        *" 2.7"*)
-            INTERPRETER="python" ;;
-        *)
-            INTERPRETER="perl" ;;
-        esac
-
-    else
-        INTERPRETER="perl"
-    fi
-
     # be portable
     running_fifo=`ps -ef | awk '/fifo_reader.py --fifo fifo1/ || /fifo_reader.py --fifo fifo2/ || /fifo_reader.pl --fifo fifo1/ || /fifo_reader.pl --fifo fifo2/' | grep -v awk`
     echo $running_fifo | grep 'fifo1' >/dev/null
@@ -1743,20 +1786,21 @@ else
 		EPOCHTEST="946684800"
 		PIDAGE=$EPOCHTEST
 
-        # Verify Perl availability (Perl will be more commonly available than Python)
-        PERL=`which perl >/dev/null 2>&1`
+        case ${INTERPRETER} in
 
-        if [ $? -eq 0 ]; then
+        "perl")
 
             # Use Perl to get PID file age in seconds
             perl -e "\$mtime=(stat(\"$PIDFILE\"))[9]; \$cur_time=time();  print \$cur_time - \$mtime;" > ${APP_VAR}/nmon_helper.sh.tmp.$$
+            ;;
 
-        else
+        "python")
 
             # Use Python to get PID file age in seconds
             python -c "import os; import time; now = time.strftime(\"%s\"); print(int(int(now)-(os.path.getmtime('$PIDFILE'))))" > ${APP_VAR}/nmon_helper.sh.tmp.$$
+            ;;
 
-        fi
+        esac
 
 		PIDAGE=`cat ${APP_VAR}/nmon_helper.sh.tmp.$$`
 		rm ${APP_VAR}/nmon_helper.sh.tmp.$$

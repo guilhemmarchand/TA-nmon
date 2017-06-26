@@ -21,8 +21,10 @@
 # Guilhem Marchand 2017/06/24,
 #                               - specify explicit date format to prevent time zone issues
 #                               - AIX maintenance task to solve non ending nmon processes issue
+# Guilhem Marchand 2017/06/26,
+#                               - Interpreter choice update
 
-# Version 1.0.11
+# Version 1.0.13
 
 # For AIX / Linux / Solaris
 
@@ -87,6 +89,66 @@ fi
 if [ -f /etc/nmon.conf ]; then
 	. /etc/nmon.conf
 fi
+
+#
+# Interpreter choice
+#
+
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
 
 ####################################################################
 #############		Main Program 			############
@@ -182,26 +244,16 @@ done
 
 ###### End maintenance tasks ######
 
-# Python is the default choice, if it is not available launch the Perl version
-PYTHON=`which python >/dev/null 2>&1`
+###### Start cleaner ######
 
-if [ $? -eq 0 ]; then
+case ${INTERPRETER} in
 
-	# Supplementary check: Ensure Python is at least 2.7 version
-	python_subversion=`python --version 2>&1`
+"python")
+		$APP/bin/nmon_cleaner.py ${userargs} ;;
 
-	echo $python_subversion | grep '2.7' >/dev/null
+"perl")
+		$APP/bin/nmon_cleaner.pl ${userargs} ;;
 
-	if [ $? -eq 0 ]; then
-		$APP/bin/nmon_cleaner.py ${userargs}
-	else
-		$APP/bin/nmon_cleaner.pl ${userargs}
-	fi
-	
-else
-
-	$APP/bin/nmon_cleaner.pl ${userargs}
-
-fi
+esac
 
 exit 0

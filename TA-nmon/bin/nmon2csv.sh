@@ -33,8 +33,10 @@
 #                                         - Missing userargs call in condition
 # - 24/06/2017: V1.0.12: Guilhem Marchand:
 #                                         - specify explicit date format to prevent time zone issues
+# - 26/06/2017: V1.0.13: Guilhem Marchand:
+#                                         - Interpreter choice update
 
-# Version 1.0.12
+# Version 1.0.13
 
 # For AIX / Linux / Solaris
 
@@ -79,6 +81,66 @@ else
         exit 1
 fi
 
+#
+# Interpreter choice
+#
+
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
+
 ####################################################################
 #############		Main Program 			############
 ####################################################################
@@ -91,29 +153,16 @@ while read line ; do
 	echo "$line" >> ${nmon_temp}
 done
 
-# Python is the default choice, if it is not available launch the Perl version
-PYTHON=`which python >/dev/null 2>&1`
+# Start the parser
+case ${INTERPRETER} in
 
-if [ $? -eq 0 ]; then
+"python")
+    cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.py ${userargs} ;;
 
-	# Check Python version, nmon2csv.py compatibility starts with Python version 2.6.6
-	python_subversion=`python --version 2>&1`
+"perl")
+	cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.pl ${userargs} ;;
 
-	case $python_subversion in
-	
-	*" 2.7"*)
-		cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.py ${userargs} ;;
-		
-	*)
-		cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.pl ${userargs} ;;
-	
-	esac
-
-else
-
-	cat ${nmon_temp} | ${SPLUNK_HOME}/bin/splunk cmd ${APP}/bin/nmon2csv.pl ${userargs}
-
-fi
+esac
 
 # Remove temp
 rm -f ${nmon_temp}
