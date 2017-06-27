@@ -140,23 +140,7 @@ nmon2csv_options="--mode fifo"
 
 # source default nmon.conf
 if [ -f $APP/default/nmon.conf ]; then
-    case $UNAME in
-    Linux)
-        # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-        grep '[default]' $APP/default/nmon.conf >/dev/null
-        if [ $? -eq 0 ]; then
-            sed -i 's/ = /=/g' ${APP}/default/nmon.conf
-            sed -i 's/\[default\]//g' ${APP}/default/nmon.conf
-            . $APP/default/nmon.conf
-        else
-            . $APP/default/nmon.conf
-        fi
-        ;;
-    *)
-        . $APP/default/nmon.conf
-        ;;
-
-    esac
+    . $APP/default/nmon.conf
 fi
 
 # source local nmon.conf, if any
