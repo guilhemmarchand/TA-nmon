@@ -21,8 +21,10 @@
 # Guilhem Marchand 2017/06/24,
 #                               - specify explicit date format to prevent time zone issues
 #                               - AIX maintenance task to solve non ending nmon processes issue
+# Guilhem Marchand 2017/06/26,
+#                               - Interpreter choice update
 
-# Version 1.0.11
+# Version 1.0.13
 
 # For AIX / Linux / Solaris
 
@@ -57,23 +59,7 @@ fi
 
 # source default nmon.conf
 if [ -f $APP/default/nmon.conf ]; then
-    case $UNAME in
-    Linux)
-        # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-        grep '[default]' $APP/default/nmon.conf >/dev/null
-        if [ $? -eq 0 ]; then
-            sed -i 's/ = /=/g' ${APP}/default/nmon.conf
-            sed -i 's/\[default\]//g' ${APP}/default/nmon.conf
-            . $APP/default/nmon.conf
-        else
-            . $APP/default/nmon.conf
-        fi
-        ;;
-    *)
-        . $APP/default/nmon.conf
-        ;;
-
-    esac
+    . $APP/default/nmon.conf
 fi
 
 # source local nmon.conf, if any
@@ -87,6 +73,66 @@ fi
 if [ -f /etc/nmon.conf ]; then
 	. /etc/nmon.conf
 fi
+
+#
+# Interpreter choice
+#
+
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
 
 ####################################################################
 #############		Main Program 			############
@@ -136,8 +182,20 @@ if [ $? -eq 0 ]; then
             # get the process runtime in seconds
             pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
             if [ ${pid_runtime} -gt ${endtime} ]; then
-                echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+                echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
                 kill $pid
+
+                # Allow some time for the process to end
+                sleep 5
+
+                # re-check the status
+                ps -p ${pid} -oetime= >/dev/null
+
+                if [ $? -eq 0 ]; then
+                    echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                    kill -9 $pid
+                fi
+
             fi
         fi
 
@@ -170,8 +228,20 @@ if [ $? -eq 0 ]; then
 
         # no process found, kill the reader processes
         for pid in $oldPidList; do
-                echo "`log_date`, ${HOST} WARN, orphan reader processes found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing process $pid"
+                echo "`log_date`, ${HOST} WARN, orphan reader process found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
                 kill $pid
+
+                # Allow some time for the process to end
+                sleep 5
+
+                # re-check the status
+                ps -p ${pid} -oetime= >/dev/null
+
+                if [ $? -eq 0 ]; then
+                echo "`log_date`, ${HOST} WARN, orphan reader process (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                    kill -9 $pid
+                fi
+
         done
 
     fi
@@ -182,26 +252,16 @@ done
 
 ###### End maintenance tasks ######
 
-# Python is the default choice, if it is not available launch the Perl version
-PYTHON=`which python >/dev/null 2>&1`
+###### Start cleaner ######
 
-if [ $? -eq 0 ]; then
+case ${INTERPRETER} in
 
-	# Supplementary check: Ensure Python is at least 2.7 version
-	python_subversion=`python --version 2>&1`
+"python")
+		$APP/bin/nmon_cleaner.py ${userargs} ;;
 
-	echo $python_subversion | grep '2.7' >/dev/null
+"perl")
+		$APP/bin/nmon_cleaner.pl ${userargs} ;;
 
-	if [ $? -eq 0 ]; then
-		$APP/bin/nmon_cleaner.py ${userargs}
-	else
-		$APP/bin/nmon_cleaner.pl ${userargs}
-	fi
-	
-else
-
-	$APP/bin/nmon_cleaner.pl ${userargs}
-
-fi
+esac
 
 exit 0

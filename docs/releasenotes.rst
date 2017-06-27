@@ -15,11 +15,18 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
-V1.3.23:
+V1.3.24:
 ========
 
 - fix: AIX issue - non terminating processes will result in collecting stop #38
 - fix: time zone issue - additional sourcetypes (collect, clean) use a date format that includes TZ and can lead to confusion #39
+- fix: Review interpreter (python/perl) choice in all shell scripts, specially to fix some AIX issues #40
+
+========
+V1.3.23:
+========
+
+- unpublished intermediate release
 
 ========
 V1.3.22:

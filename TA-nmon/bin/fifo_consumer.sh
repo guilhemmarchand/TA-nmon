@@ -18,8 +18,9 @@
 # Guilhem Marchand 2017/05/30, improvements to prevent gaps in data
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
 # Guilhem Marchand 2017/06/04, specify explicit date format to prevent time zone issues
+# Guilhem Marchand 2017/06/26, interpreter choice update
 
-# Version 1.0.10
+# Version 1.0.11
 
 # For AIX / Linux / Solaris
 
@@ -74,37 +75,72 @@ else
         exit 1
 fi
 
-# Verify Perl availability (Perl will be more commonly available than Python)
-PERL=`which perl >/dev/null 2>&1`
+#
+# Interpreter choice
+#
 
-if [ $? -eq 0 ]; then
-    INTERPRETER="perl"
-else
-    INTERPRETER="python"
-fi
+PYTHON=0
+PERL=0
+# Set the default interpreter
+INTERPRETER="python"
+
+# Get the version for both worlds
+PYTHON=`which python >/dev/null 2>&1`
+PERL=`which python >/dev/null 2>&1`
+
+case $PYTHON in
+*)
+   python_subversion=`python --version 2>&1`
+   case $python_subversion in
+   *" 2.7"*)
+    PYTHON_available="true" ;;
+   *)
+    PYTHON_available="false"
+   esac
+   ;;
+0)
+   PYTHON_available="false"
+   ;;
+esac
+
+case $PERL in
+*)
+   PERL_available="true"
+   ;;
+0)
+   PERL_available="false"
+   ;;
+esac
+
+case `uname` in
+
+# AIX priority is Perl
+"AIX")
+     case $PERL_available in
+     "true")
+           INTERPRETER="perl" ;;
+     "false")
+           INTERPRETER="python" ;;
+ esac
+;;
+
+# Other OS, priority is Python
+*)
+     case $PYTHON_available in
+     "true")
+           INTERPRETER="python" ;;
+     "false")
+           INTERPRETER="perl" ;;
+     esac
+;;
+esac
 
 # default values relevant for our context
 nmon2csv_options="--mode fifo"
 
 # source default nmon.conf
 if [ -f $APP/default/nmon.conf ]; then
-    case $UNAME in
-    Linux)
-        # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-        grep '[default]' $APP/default/nmon.conf >/dev/null
-        if [ $? -eq 0 ]; then
-            sed -i 's/ = /=/g' ${APP}/default/nmon.conf
-            sed -i 's/\[default\]//g' ${APP}/default/nmon.conf
-            . $APP/default/nmon.conf
-        else
-            . $APP/default/nmon.conf
-        fi
-        ;;
-    *)
-        . $APP/default/nmon.conf
-        ;;
-
-    esac
+    . $APP/default/nmon.conf
 fi
 
 # source local nmon.conf, if any
