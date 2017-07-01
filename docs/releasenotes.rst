@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.25:
+========
+
+- feature: Optimize nmon_processing output and reduce volume of data to be generated #37
+
+========
 V1.3.24:
 ========
 
