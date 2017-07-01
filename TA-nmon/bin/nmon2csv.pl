@@ -121,8 +121,9 @@
 # - 06/12/2017: V1.2.38: Guilhem Marchand:
 #                                           - Ignore the --json_output mode (not currently available in Perl parser)
 #                                           - improve "wrote xx line(s)" output
+# - 06/30/2017: V1.2.39: Guilhem Marchand: Optimize nmon_processing output and reduce volume of data to be generated #37
 
-$version = "1.2.38";
+$version = "1.2.39";
 
 use Time::Local;
 use Time::HiRes;
@@ -148,6 +149,7 @@ $result = GetOptions(
     "help"     => \$help,        # flag
     "debug"    => \$DEBUG,       # flag
     "json_output"    => \$JSON_OUTPUT,       # flag
+    "silent"    => \$SILENT,       # flag
 );
 
 # Show version
@@ -176,7 +178,8 @@ Available options are:
 --use_fqdn :Use the host fully qualified domain name (fqdn) as the hostname value instead of the value returned by nmon.
 **CAUTION:** This option must not be used when managing nmon data generated out of Splunk (eg. central repositories)
 --debug :Activate debugging mode for testing purposes
---version :Show current program version \n
+--version :Show current program version
+--silent: Do not output the per section detail logging to save data volume \n
 "
     );
 
@@ -1511,8 +1514,10 @@ foreach $FILENAME (@nmon_files) {
 
                 if ( $sanity_check == 0 ) {
 
-                    print "$key section: Wrote $count line(s)\n";
-                    print ID_REF "$key section: Wrote $count line(s)\n";
+                    if (not $SILENT) {
+                        print "$key section: Wrote $count line(s)\n";
+                        print ID_REF "$key section: Wrote $count line(s)\n";
+                    }
 
                     if ( $realtime eq "True" ) {
 
@@ -1924,8 +1929,10 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
                     if ( $sanity_check == 0 ) {
 
-                        print "$key section: Wrote $count line(s)\n";
-                        print ID_REF "$key section: Wrote $count line(s)\n";
+                        if (not $SILENT) {
+                            print "$key section: Wrote $count line(s)\n";
+                            print ID_REF "$key section: Wrote $count line(s)\n";
+                        }
 
                         if ( $realtime eq "True" ) {
 
@@ -2154,6 +2161,9 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
     # Delete temp nmon file
     unlink("$FILENAME");
+
+    # Print an informational message if running in silent mode
+    print "Output mode is configured to run in minimal mode using the --silent option \n";
 
     # Show elapsed time
     my $t_end = [Time::HiRes::gettimeofday];
@@ -2622,8 +2632,11 @@ qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus"
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count line(s)\n";
-            print ID_REF "$key section: Wrote $count line(s)\n";
+
+            if (not $SILENT) {
+                print "$key section: Wrote $count line(s)\n";
+                print ID_REF "$key section: Wrote $count line(s)\n";
+            }
 
             if ( $realtime eq "True" ) {
 
@@ -2922,8 +2935,11 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count line(s)\n";
-            print ID_REF "$key section: Wrote $count line(s)\n";
+
+            if (not $SILENT) {
+                print "$key section: Wrote $count line(s)\n";
+                print ID_REF "$key section: Wrote $count line(s)\n";
+            }
 
             if ( $realtime eq "True" ) {
 
@@ -3213,8 +3229,11 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
 
     else {
         if ( $count >= 1 ) {
-            print "$key section: Wrote $count line(s)\n";
-            print ID_REF "$key section: Wrote $count line(s)\n";
+
+            if (not $SILENT) {
+                print "$key section: Wrote $count line(s)\n";
+                print ID_REF "$key section: Wrote $count line(s)\n";
+            }
 
             if ( $realtime eq "True" ) {
 

@@ -156,6 +156,7 @@
 # - 04/01/2017: V1.1.33: Guilhem Marchand: Update path discovery
 # - 05/23/2017: V1.1.34: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
 # - 06/12/2017: V1.1.35: Guilhem Marchand: improve the "wrote xx line(s)" message
+# - 06/30/2017: V1.1.36: Guilhem Marchand: Optimize nmon_processing output and reduce volume of data to be generated #37
 
 # Load libs
 
@@ -176,7 +177,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.35'
+nmon2csv_version = '1.1.36'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -475,6 +476,8 @@ parser.add_option('--dumpargs', action='store_true', dest='dumpargs',
 parser.add_option('--json_output', action='store_true', dest='json_output',
                   help='generate nmon performance data in json format instead of legacy csv')
 parser.add_option('--debug', action='store_true', dest='debug', help='Activate debug for testing purposes')
+parser.add_option('-s', '--silent', action='store_true', dest='silent', help='Do not output the per section detail'
+                                                                              'logging to save data volume')
 
 (options, args) = parser.parse_args()
 
@@ -488,6 +491,12 @@ if options.debug:
     debug = True
 else:
     debug = False
+
+# Set processing output verbosity
+if options.silent:
+    silent = True
+else:
+    silent = False
 
 # Generate json data
 if options.json_output:
@@ -955,34 +964,6 @@ if not os.path.isdir(HOSTNAME_VAR):
         msg = 'Error encountered during directory creation has failed due to:'
         msg = (msg, '%s' % e.__class__)
         logging.error(msg)
-
-#####################
-    # Migration from 1.1.11 #
-#####################
-
-def migrate():
-
-
-    for src in glob.glob('*.txt'):
-        if is_windows:
-            dst = HOSTNAME_VAR + '\\' + HOSTNAME + '.' + src
-        else:
-            dst = HOSTNAME_VAR + '/' + HOSTNAME + '.' + src
-        os.rename(src, dst)
-    for src in glob.glob('*.flag'):
-        if is_windows:
-            dst = HOSTNAME_VAR + '\\' + HOSTNAME + '.' + src
-        else:
-            dst = HOSTNAME_VAR + '/' + HOSTNAME + '.' + src
-        os.rename(src, dst)
-
-# Migrate the location and file names if we detected a version prior to V1.1.11
-current_dir = os.getcwd()
-os.chdir(APP_VAR)
-if os.path.isfile('id_reference.txt') or os.path.isfile('id_reference_realtime.txt'):
-        print('INFO: Detected migration from V1.1.11 or previous, migrating status store file')
-        migrate()
-os.chdir(current_dir)
 
 ###############
 # ID Check #
@@ -1840,8 +1821,10 @@ def standard_section_fn(section):
         else:
             # Show number of lines extracted
             result = section + " section: Wrote" + " " + str(count) + " line(s)"
-            print(result)
-            ref.write(result + "\n")
+
+            if not silent:
+                print(result)
+                ref.write(result + "\n")
 
         # In realtime, Store last epoch time for this section
         if realtime:
@@ -2121,8 +2104,10 @@ def top_section_fn(section):
         else:
             # Show number of lines extracted
             result = section + " section: Wrote" + " " + str(count) + " line(s)"
-            print(result)
-            ref.write(result + "\n")
+
+            if not silent:
+                print(result)
+                ref.write(result + "\n")
 
             # In realtime, Store last epoch time for this section
             if realtime:
@@ -2415,8 +2400,10 @@ def uarg_section_fn(section):
         if count >= 1:
             # Show number of lines extracted
             result = section + " section: Wrote" + " " + str(count) + " line(s)"
-            print(result)
-            ref.write(result + "\n")
+
+            if not silent:
+                print(result)
+                ref.write(result + "\n")
 
             # In realtime, Store last epoch time for this section
             if realtime:
@@ -2806,8 +2793,10 @@ def dynamic_section_fn(section):
             else:
                 # Show number of lines extracted
                 result = section + " section: Wrote" + " " + str(count) + " line(s)"
-                print(result)
-                ref.write(result + "\n")
+
+                if not silent:
+                    print(result)
+                    ref.write(result + "\n")
 
             # In realtime, Store last epoch time for this section
             if realtime:
@@ -3245,8 +3234,10 @@ def solaris_wlm_section_fn(section):
             else:
                 # Show number of lines extracted
                 result = section + " section: Wrote" + " " + str(count) + " line(s)"
-                print(result)
-                ref.write(result + "\n")
+
+                if not silent:
+                    print(result)
+                    ref.write(result + "\n")
 
             # In realtime, Store last epoch time for this section
             if realtime:
@@ -3296,6 +3287,9 @@ if json_output:
 ###################
 # End
 ###################
+
+# Print an informational message if running in silent mode
+print("Output mode is configured to run in minimal mode using the --silent option")
 
 # Time required to process
 end_time = time.time()
