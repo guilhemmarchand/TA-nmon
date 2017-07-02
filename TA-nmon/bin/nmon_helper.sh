@@ -99,8 +99,10 @@
 #                                       - better management for nmon external snap instances multiplication
 # 2017/06/26, Guilhem Marchand:
 #                                       - review interpreter choice for the fifo start (AIX default to Perl)
+# 2017/07/02, Guilhem Marchand:
+#                                       - Linux issue: detection of default/nmon.conf rewrite required is incorrect
 
-# Version 1.3.55
+# Version 1.3.56
 
 # For AIX / Linux / Solaris
 
@@ -298,7 +300,7 @@ if [ -f $APP/default/nmon.conf ]; then
     case $UNAME in
     Linux)
         # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-        grep '[default]' $APP/default/nmon.conf >/dev/null
+        grep '\[default\]' $APP/default/nmon.conf >/dev/null
         if [ $? -eq 0 ]; then
             reformat_default_nmon_conf
             . $APP/default/nmon.conf
