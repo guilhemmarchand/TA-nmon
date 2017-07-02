@@ -19,6 +19,7 @@ V1.3.25:
 ========
 
 - feature: Optimize nmon_processing output and reduce volume of data to be generated #37
+- fix: Linux issue: detection of default/nmon.conf rewrite required is incorrect #41
 
 ========
 V1.3.24:
