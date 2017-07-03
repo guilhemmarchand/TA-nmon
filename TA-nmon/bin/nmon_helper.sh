@@ -1071,9 +1071,10 @@ esac
 check_duplicated_external_snap () {
 
         # get the list of occurrences
-        ps -ef | grep splunk | grep nmon | grep nmon_external_snap | grep -v grep | awk '{print $2}' >/dev/null
+        count="0"
+        count=`ps -ef | grep splunk | grep nmon | grep nmon_external_snap | grep -v grep | wc -l`
 
-        if [ $? -eq 0 ]; then
+        if [ $count -gt 0 ]; then
                 oldPidList=`ps -ef | grep nmon_external_snap | grep -v grep | awk '{print $2}'`
                 for pid in $oldPidList; do
                     pid_runtime=0
