@@ -101,8 +101,10 @@
 #                                       - review interpreter choice for the fifo start (AIX default to Perl)
 # 2017/07/02, Guilhem Marchand:
 #                                       - Linux issue: detection of default/nmon.conf rewrite required is incorrect
+# 2017/07/06, Guilhem Marchand:
+#                                       - AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
 
-# Version 1.3.56
+# Version 1.3.57
 
 # For AIX / Linux / Solaris
 
@@ -1143,8 +1145,15 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
+
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo1} > ${PIDFILE} ;;
+                ${nmon_command_fifo1} > ${PIDFILE}
+
+                if [ $? -ne 0 ]; then
+                    echo "`log_date`, ${HOST}, ERROR nmon exited with a non-zero code `cat ${PIDFILE}`"
+                fi
+            ;;
+
             "fifo2")
                 case $nmon_external_generation in
                 1)
@@ -1156,8 +1165,16 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
+
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo2} > ${PIDFILE} ;;
+                ${nmon_command_fifo2} > ${PIDFILE}
+
+                if [ $? -ne 0 ]; then
+                    echo "`log_date`, ${HOST}, ERROR nmon exited with a non-zero code `cat ${PIDFILE}`"
+                fi
+
+            ;;
+
             esac
 
         ;;
@@ -1637,11 +1654,6 @@ AIX )
         if [ $? -ne 0 ]; then
                 AIX_options="${AIX_options} -yoverwrite=1"
         fi
-    fi
-
-    echo ${AIX_options} | grep 'yoverwrite' >/dev/null
-    if [ $? -ne 0 ]; then
-            AIX_options="${AIX_options} -yoverwrite=1"
     fi
 
     # Set interval and snapshot for AIX
