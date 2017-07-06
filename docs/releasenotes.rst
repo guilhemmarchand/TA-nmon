@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.26:
+========
+
+- fix: AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
+
+========
 V1.3.25:
 ========
 
