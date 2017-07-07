@@ -1147,11 +1147,17 @@ case $UNAME in
                 esac
 
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo1} > ${PIDFILE}
+                ${nmon_command_fifo1} > ${APP_VAR}/nmon_output.txt
 
                 if [ $? -ne 0 ]; then
-                    echo "`log_date`, ${HOST}, ERROR nmon exited with a non-zero code `cat ${PIDFILE}`"
+                    echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
                 fi
+
+                # Store the PID file (very last line of nmon output)
+                if [ -f ${APP_VAR}/nmon_output.txt ]; then
+                    awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+                fi
+
             ;;
 
             "fifo2")
@@ -1167,10 +1173,15 @@ case $UNAME in
                 esac
 
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo2} > ${PIDFILE}
+                ${nmon_command_fifo2} > ${APP_VAR}/nmon_output.txt
 
                 if [ $? -ne 0 ]; then
-                    echo "`log_date`, ${HOST}, ERROR nmon exited with a non-zero code `cat ${PIDFILE}`"
+                    echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
+                fi
+
+                # Store the PID file (very last line of nmon output)
+                if [ -f ${APP_VAR}/nmon_output.txt ]; then
+                    awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
                 fi
 
             ;;
@@ -1644,14 +1655,16 @@ AIX )
     fi
 
     # old topas-nmon version might not be compatible with the -y option, let's manage this
-    ${NMON} -y 2>&1| grep 'option requires an argument -- y' >/dev/null
-    if [ $? -ne 0 ]; then
+    ${NMON} -y 2>&1 | grep -i -E 'invalid\soption[^y]*y' >/dev/null
+    if [ $? -eq 0 ]; then
         # option -y is not compatible and not mandatory
-        AIX_options=`echo ${AIX_options} | sed 's/\-yoverwrite=1 //g'`
+        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you night need to conside updating topas-nmon"
+        AIX_options_new=`echo ${AIX_options} | sed 's/\-yoverwrite=1//g'`
     else
         # option -y is compatible and mandatory, ensure it has been set
         echo ${AIX_options} | grep 'yoverwrite' >/dev/null
         if [ $? -ne 0 ]; then
+                echo "`log_date`, ${HOST}, WARN, the -yoverwrite=1 option was not used while loading local settings (please review nmon.conf), option is mandatory and will be forced"
                 AIX_options="${AIX_options} -yoverwrite=1"
         fi
     fi
