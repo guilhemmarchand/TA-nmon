@@ -1655,10 +1655,10 @@ AIX )
     fi
 
     # old topas-nmon version might not be compatible with the -y option, let's manage this
-    ${NMON} -y 2>&1 | grep -i -E 'invalid\soption[^y]*y' >/dev/null
+    ${NMON} ${AIX_options} 2>&1 | grep -i 'invalid option[^y]*y' >/dev/null
     if [ $? -eq 0 ]; then
         # option -y is not compatible and not mandatory
-        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you night need to conside updating topas-nmon"
+        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you might need to conside updating topas-nmon"
         AIX_options_new=`echo ${AIX_options} | sed 's/\-yoverwrite=1//g'`
     else
         # option -y is compatible and mandatory, ensure it has been set
