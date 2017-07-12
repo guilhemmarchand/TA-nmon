@@ -1658,8 +1658,8 @@ AIX )
     ${NMON} ${AIX_options} 2>&1 | grep -i 'invalid option[^y]*y' >/dev/null
     if [ $? -eq 0 ]; then
         # option -y is not compatible and not mandatory
-        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you might need to conside updating topas-nmon"
-        AIX_options_new=`echo ${AIX_options} | sed 's/\-yoverwrite=1//g'`
+        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `cat ${APP_VAR}/nmon_output.txt`"
+        AIX_options=`echo ${AIX_options} | sed 's/\-yoverwrite=1//g'`
     else
         # option -y is compatible and mandatory, ensure it has been set
         echo ${AIX_options} | grep 'yoverwrite' >/dev/null
