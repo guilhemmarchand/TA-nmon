@@ -19,6 +19,8 @@ V1.3.26:
 ========
 
 - fix: AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
+- fix: AIX - fix repeated and not justified pid file removal message #44
+- fix: ALL OS - nmon_helper.sh code improvements #45
 
 ========
 V1.3.25:
