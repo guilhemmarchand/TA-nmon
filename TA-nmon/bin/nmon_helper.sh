@@ -1170,21 +1170,6 @@ AIX )
             AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
     fi
 
-    # old topas-nmon version might not be compatible with the -y option, let's manage this
-    ${NMON} -yoverwrite=1 2>&1 | grep -i 'invalid option[^y]*y' >/dev/null
-    if [ $? -eq 0 ]; then
-        # option -y is not compatible and not mandatory
-        echo "`log_date`, ${HOST}, WARN, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `${NMON} -yoverwrite=1`"
-        AIX_options=`echo ${AIX_options} | sed 's/\-yoverwrite=1//g'`
-    else
-        # option -y is compatible and mandatory, ensure it has been set
-        echo ${AIX_options} | grep 'yoverwrite' >/dev/null
-        if [ $? -ne 0 ]; then
-                echo "`log_date`, ${HOST}, WARN, the -yoverwrite=1 option was not used while loading local settings (please review nmon.conf), option is mandatory and will be forced"
-                AIX_options="${AIX_options} -yoverwrite=1"
-        fi
-    fi
-
     # Set interval and snapshot for AIX
     case ${mode_fifo} in
     1)
@@ -1196,6 +1181,13 @@ AIX )
         aix_snapshot=${snapshot}
     ;;
     esac
+
+    # option -y is compatible and mandatory, ensure it has been set
+    echo ${AIX_options} | grep 'yoverwrite' >/dev/null
+    if [ $? -ne 0 ]; then
+            echo "`log_date`, ${HOST}, WARN, the -yoverwrite=1 option was not used while loading local settings (please review nmon.conf), option is mandatory and will be forced"
+            AIX_options="${AIX_options} -yoverwrite=1"
+    fi
 
     # Manage NFS
     if [ ${AIX_NFS23} -eq 1 ]; then
@@ -1323,10 +1315,19 @@ case $UNAME in
                 esac
 
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo1} > ${APP_VAR}/nmon_output.txt
+                ${nmon_command_fifo1} 2>&1 > ${APP_VAR}/nmon_output.txt
 
                 if [ $? -ne 0 ]; then
                     echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
+                fi
+
+                # old topas-nmon version might not be compatible with the -y option, let's manage this
+                cat ${APP_VAR}/nmon_output.txt | grep -i 'invalid option[^y]*y' >/dev/null
+                if [ $? -eq 0 ]; then
+                    # option -y is not compatible and not mandatory
+                    echo "`log_date`, ${HOST}, ERROR, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `cat ${APP_VAR}/nmon_output.txt`"
+                    nmon_command_fifo1=`echo ${nmon_command_fifo1} | sed 's/\-yoverwrite=1//g'`
+                    ${nmon_command_fifo1} 2>&1 > ${APP_VAR}/nmon_output.txt
                 fi
 
                 # Store the PID file (very last line of nmon output)
@@ -1349,15 +1350,24 @@ case $UNAME in
                 esac
 
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo2} > ${APP_VAR}/nmon_output.txt
+                ${nmon_command_fifo2} 2>&1 > ${APP_VAR}/nmon_output.txt
 
                 if [ $? -ne 0 ]; then
                     echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
                 fi
 
+                # old topas-nmon version might not be compatible with the -y option, let's manage this
+                cat ${APP_VAR}/nmon_output.txt | grep -i 'invalid option[^y]*y' >/dev/null
+                if [ $? -eq 0 ]; then
+                    # option -y is not compatible and not mandatory
+                    echo "`log_date`, ${HOST}, ERROR, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `cat ${APP_VAR}/nmon_output.txt`"
+                    nmon_command_fifo2=`echo ${nmon_command_fifo2} | sed 's/\-yoverwrite=1//g'`
+                    ${nmon_command_fifo2} 2>&1 > ${APP_VAR}/nmon_output.txt
+                fi
+
                 # Store the PID file (very last line of nmon output)
                 if [ -f ${APP_VAR}/nmon_output.txt ]; then
-                    awk 'END{print}' ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+                    tail -1 ${APP_VAR}/nmon_output.txt > ${PIDFILE}
                 fi
 
             ;;
