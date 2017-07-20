@@ -23,8 +23,10 @@
 #                               - AIX maintenance task to solve non ending nmon processes issue
 # Guilhem Marchand 2017/06/26,
 #                               - Interpreter choice update
+# Guilhem Marchand 2017/07/11,
+#                               - Avoid maintenance tasks in Solaris
 
-# Version 1.0.13
+# Version 1.0.14
 
 # For AIX / Linux / Solaris
 
@@ -155,100 +157,109 @@ userargs=$@
 # get the allowed runtime in seconds for an nmon process according to the configuration
 # and add a 10 minute grace period
 
-echo "`log_date`, ${HOST} INFO, starting maintenance task 1: verify nmon processes running over expected time period"
+case `uname` in
 
-endtime=0
+"AIX"|"Linux")
 
-case ${mode_fifo} in
-"1")
-    endtime=`expr ${fifo_interval} \* ${fifo_snapshot}` ;;
-*)
-    endtime=`expr ${interval} \* ${snapshot}` ;;
-esac
+    echo "`log_date`, ${HOST} INFO, starting maintenance task 1: verify nmon processes running over expected time period"
 
-endtime=`expr ${endtime} + 600`
+    endtime=0
 
-# get the list of running processes
-ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep -v grep >/dev/null
+    case ${mode_fifo} in
+    "1")
+        endtime=`expr ${fifo_interval} \* ${fifo_snapshot}` ;;
+    *)
+        endtime=`expr ${interval} \* ${snapshot}` ;;
+    esac
 
-if [ $? -eq 0 ]; then
+    endtime=`expr ${endtime} + 600`
 
-    oldPidList=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep -v grep | awk '{ print $2 }'`
-    for pid in $oldPidList; do
+    # get the list of running processes
+    ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep -v grep >/dev/null
 
-        pid_runtime=0
-        # only run the process is running
-        if [ -d /proc/${pid} ]; then
-            # get the process runtime in seconds
-            pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
-            if [ ${pid_runtime} -gt ${endtime} ]; then
-                echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
-                kill $pid
+    if [ $? -eq 0 ]; then
 
-                # Allow some time for the process to end
-                sleep 5
-
-                # re-check the status
-                ps -p ${pid} -oetime= >/dev/null
-
-                if [ $? -eq 0 ]; then
-                    echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
-                    kill -9 $pid
-                fi
-
-            fi
-        fi
-
-    done
-
-fi
-
-#
-# Maintenance task2
-#
-#set -x
-# Maintenance task 2: An other case of issue we could have would be having the fifo_reader processing running without associated nmon processes
-# In such a case, no new nmon processes would be launched and the collection would stop
-
-echo "`log_date`, ${HOST} INFO, starting maintenance task 2: verify orphan fifo_reader processes"
-
-for instance in fifo1 fifo2; do
-
-# get the list of running processes
-ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep fifo_reader | grep ${instance} >/dev/null
-
-if [ $? -eq 0 ]; then
-
-    oldPidList=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep fifo_reader | grep ${instance} | grep -v grep | awk '{ print $2 }'`
-
-    # search for associated nmon process
-    ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep ${instance} >/dev/null
-
-    if [ $? -ne 0 ]; then
-
-        # no process found, kill the reader processes
+        oldPidList=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep -v grep | awk '{ print $2 }'`
         for pid in $oldPidList; do
-                echo "`log_date`, ${HOST} WARN, orphan reader process found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
-                kill $pid
 
-                # Allow some time for the process to end
-                sleep 5
+            pid_runtime=0
+            # only run the process is running
+            if [ -d /proc/${pid} ]; then
+                # get the process runtime in seconds
+                pid_runtime=`ps -p ${pid} -oetime= | tr '-' ':' | awk -F: '{ total=0; m=1; } { for (i=0; i < NF; i++) {total += $(NF-i)*m; m *= i >= 2 ? 24 : 60 }} {print total}'`
+                if [ ${pid_runtime} -gt ${endtime} ]; then
+                    echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
+                    kill $pid
 
-                # re-check the status
-                ps -p ${pid} -oetime= >/dev/null
+                    # Allow some time for the process to end
+                    sleep 5
 
-                if [ $? -eq 0 ]; then
-                echo "`log_date`, ${HOST} WARN, orphan reader process (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
-                    kill -9 $pid
+                    # re-check the status
+                    ps -p ${pid} -oetime= >/dev/null
+
+                    if [ $? -eq 0 ]; then
+                        echo "`log_date`, ${HOST} WARN, old nmon process found due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                        kill -9 $pid
+                    fi
+
                 fi
+            fi
 
         done
 
     fi
 
-fi
+    #
+    # Maintenance task2
+    #
+    #set -x
+    # Maintenance task 2: An other case of issue we could have would be having the fifo_reader processing running without associated nmon processes
+    # In such a case, no new nmon processes would be launched and the collection would stop
 
-done
+    echo "`log_date`, ${HOST} INFO, starting maintenance task 2: verify orphan fifo_reader processes"
+
+    for instance in fifo1 fifo2; do
+
+    # get the list of running processes
+    ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep fifo_reader | grep ${instance} >/dev/null
+
+    if [ $? -eq 0 ]; then
+
+        oldPidList=`ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep fifo_reader | grep ${instance} | grep -v grep | awk '{ print $2 }'`
+
+        # search for associated nmon process
+        ps -eo user,pid,command,etime,args | grep "nmon" | grep "splunk" | grep "var/log/nmon" | grep -v fifo_reader | grep ${instance} >/dev/null
+
+        if [ $? -ne 0 ]; then
+
+            # no process found, kill the reader processes
+            for pid in $oldPidList; do
+                    echo "`log_date`, ${HOST} WARN, orphan reader process found (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` killing (SIGTERM) process $pid"
+                    kill $pid
+
+                    # Allow some time for the process to end
+                    sleep 5
+
+                    # re-check the status
+                    ps -p ${pid} -oetime= >/dev/null
+
+                    if [ $? -eq 0 ]; then
+                    echo "`log_date`, ${HOST} WARN, orphan reader process (no associated nmon process) due to `ps -eo user,pid,command,etime,args | grep $pid | grep -v grep` failed to stop, killing (-9) process $pid"
+                        kill -9 $pid
+                    fi
+
+            done
+
+        fi
+
+    fi
+
+    done
+
+;;
+
+# End of per OS case
+esac
 
 ###### End maintenance tasks ######
 

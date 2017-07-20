@@ -99,8 +99,17 @@
 #                                       - better management for nmon external snap instances multiplication
 # 2017/06/26, Guilhem Marchand:
 #                                       - review interpreter choice for the fifo start (AIX default to Perl)
+# 2017/07/02, Guilhem Marchand:
+#                                       - Linux issue: detection of default/nmon.conf rewrite required is incorrect
+# 2017/07/06, Guilhem Marchand:
+#                                       - AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
+# 2017/07/13, Guilhem Marchand:
+#                                       - AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
+#                                       - AIX - fix repeated and not justified pid file removal message
+#                                       - ALL OS - nmon_helper.sh code improvements
 
-# Version 1.3.55
+
+# Version 1.3.58
 
 # For AIX / Linux / Solaris
 
@@ -298,7 +307,7 @@ if [ -f $APP/default/nmon.conf ]; then
     case $UNAME in
     Linux)
         # If this pattern is found, then the file needs to be corrected because it has been changed by the SHC deployer
-        grep '[default]' $APP/default/nmon.conf >/dev/null
+        grep '\[default\]' $APP/default/nmon.conf >/dev/null
         if [ $? -eq 0 ]; then
             reformat_default_nmon_conf
             . $APP/default/nmon.conf
@@ -1069,9 +1078,10 @@ esac
 check_duplicated_external_snap () {
 
         # get the list of occurrences
-        ps -ef | grep splunk | grep nmon | grep nmon_external_snap | grep -v grep | awk '{print $2}' >/dev/null
+        count="0"
+        count=`ps -ef | grep splunk | grep nmon | grep nmon_external_snap | grep -v grep | wc -l`
 
-        if [ $? -eq 0 ]; then
+        if [ $count -gt 0 ]; then
                 oldPidList=`ps -ef | grep nmon_external_snap | grep -v grep | awk '{print $2}'`
                 for pid in $oldPidList; do
                     pid_runtime=0
@@ -1104,6 +1114,169 @@ check_duplicated_external_snap () {
 # For AIX / Linux, the -p option when launching nmon will output the instance pid in stdout
 
 start_nmon () {
+
+#
+# Set Nmon command line
+#
+
+# NOTE:
+
+# Collecting NFS Statistics:
+
+# --> Since Nmon App Version 1.5.0, NFS activation can be controlled by the nmon.conf file in default/local directories
+
+# - Linux: Add the "-N" option if you want to extract NFS Statistics (NFS V2/V3/V4)
+# - AIX: Add the "-N" option for NFS V2/V3, "-NN" for NFS V4
+
+# For AIX, the default command options line "-f -T -A -d -K -L -M -P -O -W -S -^" includes: (see http://www-01.ibm.com/support/knowledgecenter/ssw_aix_61/com.ibm.aix.cmds4/nmon.htm)
+
+# AIX options can be managed using local/nmon.conf, do not modify options here
+
+# -A	Includes the Asynchronous I/O section in the view.
+# -d	Includes the Disk Service Time section in the view.
+# -K	Includes the RAW Kernel section and the LPAR section in the recording file. The -K flag dumps the raw numbers
+# of the corresponding data structure. The memory dump is readable and can be used when the command is recording the data.
+# -L	Includes the large page analysis section.
+# -M	Includes the MEMPAGES section in the recording file. The MEMPAGES section displays detailed memory statistics per page size.
+# -O    Includes the Shared Ethernet adapter (SEA) VIOS sections in the recording file.
+# -W    Includes the WLM sections into the recording file.
+# -S	Includes WLM sections with subclasses in the recording file.
+# -P	Includes the Paging Space section in the recording file.
+# -T	Includes the top processes in the output and saves the command-line arguments into the UARG section. You cannot specify the -t, -T, or -Y flags with each other.
+# -^	Includes the Fiber Channel (FC) sections.
+# -p  print pid in stdout
+
+# For Linux, the default command options line "-f -T -d 1500" includes:
+
+# -t	include top processes in the output
+# -T	as -t plus saves command line arguments in UARG section
+# -d <disks>    to increase the number of disks [default 256]
+# -p  print pid in stdout
+
+case $UNAME in
+
+AIX )
+
+	# -p option is mandatory to get the pid of the launched instances, ensure it has been set
+
+	echo ${AIX_options} | grep '\-p' >/dev/null
+	if [ $? -ne 0 ]; then
+		AIX_options="${AIX_options} -p"
+	fi
+
+	# Since release 1.3.0, we use fifo files, -f option is prohibited
+    echo ${AIX_options} | grep '\-f' >/dev/null
+    if [ $? -eq 0 ]; then
+            AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
+    fi
+
+    # Set interval and snapshot for AIX
+    case ${mode_fifo} in
+    1)
+        aix_interval=${fifo_interval}
+        aix_snapshot=${fifo_snapshot}
+    ;;
+    *)
+        aix_interval=${interval}
+        aix_snapshot=${snapshot}
+    ;;
+    esac
+
+    # option -y is compatible and mandatory, ensure it has been set
+    echo ${AIX_options} | grep 'yoverwrite' >/dev/null
+    if [ $? -ne 0 ]; then
+            echo "`log_date`, ${HOST}, WARN, the -yoverwrite=1 option was not used while loading local settings (please review nmon.conf), option is mandatory and will be forced"
+            AIX_options="${AIX_options} -yoverwrite=1"
+    fi
+
+    # Manage NFS
+    if [ ${AIX_NFS23} -eq 1 ]; then
+        nmon_command="-N -s ${aix_interval} -c ${aix_snapshot}"
+    elif [ ${AIX_NFS4} -eq 1 ]; then
+        nmon_command="-NN -s ${aix_interval} -c ${aix_snapshot}"
+    else
+        nmon_command="-s ${aix_interval} -c ${aix_snapshot}"
+    fi
+
+    # Set the nmon command for AIX
+    case ${mode_fifo} in
+    1)
+        nmon_command_fifo1="${NMON} -F ${FIFO1} ${AIX_options} ${nmon_command}"
+        nmon_command_fifo2="${NMON} -F ${FIFO2} ${AIX_options} ${nmon_command}"
+        ;;
+    *)
+
+        nmon_command="${NMON} -f ${AIX_options} ${nmon_command}"
+        ;;
+    esac
+
+;;
+
+SunOS )
+
+	nmon_command="${NMON} ${interval} ${snapshot}"
+;;
+
+Linux )
+
+    # Since 1.2.47, Linux_unlimited_capture feature has changed
+    # For historical reason, and in case the old activation value (1) has been set in local/nmon.conf, manage it.
+    case ${Linux_unlimited_capture} in
+    "1")
+        Linux_unlimited_capture="-1" ;;
+    esac
+
+    # Set the default Linux minimal args list
+    case ${mode_fifo} in
+    1)
+        Linux_nmon_args="-T -s ${fifo_interval} -c ${fifo_snapshot} -d ${Linux_devices}" ;;
+    *)
+        Linux_nmon_args="-T -s ${interval} -c ${snapshot} -d ${Linux_devices}" ;;
+    esac
+
+    case ${Linux_NFS} in
+    "1" )
+        Linux_nmon_args="$Linux_nmon_args -N" ;;
+    esac
+
+    case ${Linux_unlimited_capture} in
+    "0" )
+        Linux_nmon_args="$Linux_nmon_args" ;;
+    "-1" )
+        Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}" ;;
+    * )
+        if [ `echo "${Linux_unlimited_capture}" | grep -E "^[0-9]+(\.[0-9]+)?$"` ]; then
+            Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
+        else
+            echo "`log_date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
+            exit 2
+        fi
+        ;;
+    esac
+
+    case ${Linux_disk_dg_enable} in
+    "1" )
+        Linux_nmon_args="$Linux_nmon_args -g auto -D" ;;
+    esac
+
+    # Set the nmon command for Linux
+    case ${mode_fifo} in
+    "1")
+        nmon_command_fifo1="${NMON} -F ${FIFO1} $Linux_nmon_args -p"
+        nmon_command_fifo2="${NMON} -F ${FIFO2} $Linux_nmon_args -p"
+        ;;
+    *)
+        nmon_command="${NMON} -f $Linux_nmon_args -p"
+        ;;
+    esac
+
+;;
+
+esac
+
+#
+# Starting Nmon
+#
 
 case $UNAME in
 
@@ -1140,8 +1313,30 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
+
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo1} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo1} > ${PIDFILE} ;;
+                ${nmon_command_fifo1} 2>&1 > ${APP_VAR}/nmon_output.txt
+
+                if [ $? -ne 0 ]; then
+                    echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
+                fi
+
+                # old topas-nmon version might not be compatible with the -y option, let's manage this
+                cat ${APP_VAR}/nmon_output.txt | grep -i 'invalid option[^y]*y' >/dev/null
+                if [ $? -eq 0 ]; then
+                    # option -y is not compatible and not mandatory
+                    echo "`log_date`, ${HOST}, ERROR, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `cat ${APP_VAR}/nmon_output.txt`"
+                    nmon_command_fifo1=`echo ${nmon_command_fifo1} | sed 's/\-yoverwrite=1//g'`
+                    ${nmon_command_fifo1} 2>&1 > ${APP_VAR}/nmon_output.txt
+                fi
+
+                # Store the PID file (very last line of nmon output)
+                if [ -f ${APP_VAR}/nmon_output.txt ]; then
+                    tail -1 ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+                fi
+
+            ;;
+
             "fifo2")
                 case $nmon_external_generation in
                 1)
@@ -1153,8 +1348,30 @@ case $UNAME in
                     export NMON_SNAP
                 ;;
                 esac
+
                 echo "`log_date`, ${HOST} INFO: starting nmon : ${nmon_command_fifo2} in ${NMON_EXTERNAL_DIR}"
-                ${nmon_command_fifo2} > ${PIDFILE} ;;
+                ${nmon_command_fifo2} 2>&1 > ${APP_VAR}/nmon_output.txt
+
+                if [ $? -ne 0 ]; then
+                    echo "`log_date`, ${HOST} ERROR, nmon binary returned a non 0 code while trying to start, please verify error traces in splunkd log"
+                fi
+
+                # old topas-nmon version might not be compatible with the -y option, let's manage this
+                cat ${APP_VAR}/nmon_output.txt | grep -i 'invalid option[^y]*y' >/dev/null
+                if [ $? -eq 0 ]; then
+                    # option -y is not compatible and not mandatory
+                    echo "`log_date`, ${HOST}, ERROR, This system is running a topas-nmon version that does not support the -y option, you might need to consider an AIX upgrade: `cat ${APP_VAR}/nmon_output.txt`"
+                    nmon_command_fifo2=`echo ${nmon_command_fifo2} | sed 's/\-yoverwrite=1//g'`
+                    ${nmon_command_fifo2} 2>&1 > ${APP_VAR}/nmon_output.txt
+                fi
+
+                # Store the PID file (very last line of nmon output)
+                if [ -f ${APP_VAR}/nmon_output.txt ]; then
+                    tail -1 ${APP_VAR}/nmon_output.txt > ${PIDFILE}
+                fi
+
+            ;;
+
             esac
 
         ;;
@@ -1571,173 +1788,6 @@ esac
 #############		Main Program 			############
 ####################################################################
 
-# Set Nmon command line
-# NOTE: 
-
-# Collecting NFS Statistics:
-
-# --> Since Nmon App Version 1.5.0, NFS activation can be controlled by the nmon.conf file in default/local directories
-
-# - Linux: Add the "-N" option if you want to extract NFS Statistics (NFS V2/V3/V4)
-# - AIX: Add the "-N" option for NFS V2/V3, "-NN" for NFS V4
-
-# For AIX, the default command options line "-f -T -A -d -K -L -M -P -O -W -S -^" includes: (see http://www-01.ibm.com/support/knowledgecenter/ssw_aix_61/com.ibm.aix.cmds4/nmon.htm)
-
-# AIX options can be managed using local/nmon.conf, do not modify options here
-
-# -A	Includes the Asynchronous I/O section in the view.
-# -d	Includes the Disk Service Time section in the view.
-# -K	Includes the RAW Kernel section and the LPAR section in the recording file. The -K flag dumps the raw numbers
-# of the corresponding data structure. The memory dump is readable and can be used when the command is recording the data.
-# -L	Includes the large page analysis section.
-# -M	Includes the MEMPAGES section in the recording file. The MEMPAGES section displays detailed memory statistics per page size.
-# -O    Includes the Shared Ethernet adapter (SEA) VIOS sections in the recording file.
-# -W    Includes the WLM sections into the recording file.
-# -S	Includes WLM sections with subclasses in the recording file.
-# -P	Includes the Paging Space section in the recording file.
-# -T	Includes the top processes in the output and saves the command-line arguments into the UARG section. You cannot specify the -t, -T, or -Y flags with each other.
-# -^	Includes the Fiber Channel (FC) sections.
-# -p  print pid in stdout
-
-# For Linux, the default command options line "-f -T -d 1500" includes:
-
-# -t	include top processes in the output
-# -T	as -t plus saves command line arguments in UARG section
-# -d <disks>    to increase the number of disks [default 256]
-# -p  print pid in stdout
-
-case $UNAME in
-
-AIX )
-
-	# -p option is mandatory to get the pid of the launched instances, ensure it has been set
-	
-	echo ${AIX_options} | grep '\-p' >/dev/null
-	if [ $? -ne 0 ]; then
-		AIX_options="${AIX_options} -p"
-	fi
-
-	# Since release 1.3.0, we use fifo files, -f option is prohibited
-    echo ${AIX_options} | grep '\-f' >/dev/null
-    if [ $? -eq 0 ]; then
-            AIX_options=`echo ${AIX_options} | sed 's/\-f //g'`
-    fi
-
-    # old topas-nmon version might not be compatible with the -y option, let's manage this
-    ${NMON} -y 2>&1| grep 'option requires an argument -- y' >/dev/null
-    if [ $? -ne 0 ]; then
-        # option -y is not compatible and not mandatory
-        AIX_options=`echo ${AIX_options} | sed 's/\-yoverwrite=1 //g'`
-    else
-        # option -y is compatible and mandatory, ensure it has been set
-        echo ${AIX_options} | grep 'yoverwrite' >/dev/null
-        if [ $? -ne 0 ]; then
-                AIX_options="${AIX_options} -yoverwrite=1"
-        fi
-    fi
-
-    echo ${AIX_options} | grep 'yoverwrite' >/dev/null
-    if [ $? -ne 0 ]; then
-            AIX_options="${AIX_options} -yoverwrite=1"
-    fi
-
-    # Set interval and snapshot for AIX
-    case ${mode_fifo} in
-    1)
-        aix_interval=${fifo_interval}
-        aix_snapshot=${fifo_snapshot}
-    ;;
-    *)
-        aix_interval=${interval}
-        aix_snapshot=${snapshot}
-    ;;
-    esac
-
-    # Manage NFS
-    if [ ${AIX_NFS23} -eq 1 ]; then
-        nmon_command="-N -s ${aix_interval} -c ${aix_snapshot}"
-    elif [ ${AIX_NFS4} -eq 1 ]; then
-        nmon_command="-NN -s ${aix_interval} -c ${aix_snapshot}"
-    else
-        nmon_command="-s ${aix_interval} -c ${aix_snapshot}"
-    fi
-
-    # Set the nmon command for AIX
-    case ${mode_fifo} in
-    1)
-        nmon_command_fifo1="${NMON} -F ${FIFO1} ${AIX_options} ${nmon_command}"
-        nmon_command_fifo2="${NMON} -F ${FIFO2} ${AIX_options} ${nmon_command}"
-        ;;
-    *)
-
-        nmon_command="${NMON} -f ${AIX_options} ${nmon_command}"
-        ;;
-    esac
-
-;;
-
-SunOS )
-
-	nmon_command="${NMON} ${interval} ${snapshot}"
-;;
-
-Linux )
-
-    # Since 1.2.47, Linux_unlimited_capture feature has changed
-    # For historical reason, and in case the old activation value (1) has been set in local/nmon.conf, manage it.
-    case ${Linux_unlimited_capture} in
-    "1")
-        Linux_unlimited_capture="-1" ;;
-    esac
-
-    # Set the default Linux minimal args list
-    case ${mode_fifo} in
-    1)
-        Linux_nmon_args="-T -s ${fifo_interval} -c ${fifo_snapshot} -d ${Linux_devices}" ;;
-    *)
-        Linux_nmon_args="-T -s ${interval} -c ${snapshot} -d ${Linux_devices}" ;;
-    esac
-
-    case ${Linux_NFS} in
-    "1" )
-        Linux_nmon_args="$Linux_nmon_args -N" ;;
-    esac
-
-    case ${Linux_unlimited_capture} in
-    "0" )
-        Linux_nmon_args="$Linux_nmon_args" ;;
-    "-1" )
-        Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}" ;;
-    * )
-        if [ `echo "${Linux_unlimited_capture}" | grep -E "^[0-9]+(\.[0-9]+)?$"` ]; then
-            Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
-        else
-            echo "`log_date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
-            exit 2
-        fi
-        ;;
-    esac
-
-    case ${Linux_disk_dg_enable} in
-    "1" )
-        Linux_nmon_args="$Linux_nmon_args -g auto -D" ;;
-    esac
-
-    # Set the nmon command for Linux
-    case ${mode_fifo} in
-    "1")
-        nmon_command_fifo1="${NMON} -F ${FIFO1} $Linux_nmon_args -p"
-        nmon_command_fifo2="${NMON} -F ${FIFO2} $Linux_nmon_args -p"
-        ;;
-    *)
-        nmon_command="${NMON} -f $Linux_nmon_args -p"
-        ;;
-    esac
-
-;;
-
-esac
-
 # Initialize PID variable
 PIDs="" 
 
@@ -1757,11 +1807,6 @@ cd ${NMON_REPOSITORY}
 # Check PID file, if no PID file is found, start nmon
 if [ ! -f ${PIDFILE} ]; then
 
-	# PID file not found
-
-	echo "`log_date`, ${HOST} INFO: Removing stale pid file"
-	rm -f ${PIDFILE}
-	
 	# search for any App related instances
 	search_nmon_instances
 
@@ -1844,7 +1889,7 @@ else
 	# PID file is empty
 	"")
 
-		echo "`log_date`, ${HOST} INFO: Removing stale pid file"
+		echo "`log_date`, ${HOST} INFO: Removing stale pid file (empty file)"
 		rm -f ${PIDFILE}
 
 		# search for any App related instances
@@ -1959,7 +2004,7 @@ else
 	"false")
 	
 		# Process not found, Nmon has terminated or is not yet started		
-		echo "`log_date`, ${HOST} INFO: Removing stale pid file"
+		echo "`log_date`, ${HOST} INFO: Removing stale pid file (process not found)"
 		rm -f ${PIDFILE}
 
         start_fifo_reader
