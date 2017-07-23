@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.27:
+========
+
+- feature: parsing configuration for nmon-logger with Splunk HEC
+
+========
 V1.3.26:
 ========
 
