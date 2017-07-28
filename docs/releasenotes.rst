@@ -18,7 +18,7 @@ What has been fixed by release
 V1.3.27:
 ========
 
-- feature: parsing configuration for nmon-logger with Splunk HEC
+- feature: index and search time parsing configuration for the nmon-logger-splunk-hec package (agent less package for Splunk http input)
 
 ========
 V1.3.26:
