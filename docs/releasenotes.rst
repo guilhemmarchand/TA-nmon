@@ -19,6 +19,7 @@ V1.3.27:
 ========
 
 - feature: index and search time parsing configuration for the nmon-logger-splunk-hec package (agent less package for Splunk http input)
+- fix: Fully Qualified Domain Name improvements #46
 
 ========
 V1.3.26:
