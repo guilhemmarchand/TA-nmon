@@ -107,9 +107,10 @@
 #                                       - AIX - Better management of compatibility issue with topas-nmon not supporting the -y option #43
 #                                       - AIX - fix repeated and not justified pid file removal message
 #                                       - ALL OS - nmon_helper.sh code improvements
+# 2017/07/30, Guilhem Marchand:
+#                                       - Fully Qualified Domain Name improvements #46
 
-
-# Version 1.3.58
+# Version 1.3.59
 
 # For AIX / Linux / Solaris
 
@@ -332,6 +333,14 @@ fi
 # On a per server basis, you can also set in /etc/nmon.conf
 if [ -f /etc/nmon.conf ]; then
 	. /etc/nmon.conf
+fi
+
+# Manage FQDN option
+echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
+if [ $? -eq 0 ]; then
+    HOST=`hostname -f`
+else
+    HOST=`hostname`
 fi
 
 # Nmon Binary

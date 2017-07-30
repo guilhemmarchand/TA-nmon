@@ -122,8 +122,11 @@
 #                                           - Ignore the --json_output mode (not currently available in Perl parser)
 #                                           - improve "wrote xx line(s)" output
 # - 06/30/2017: V1.2.39: Guilhem Marchand: Optimize nmon_processing output and reduce volume of data to be generated #37
+# - 07/30/2017: V1.2.40: Guilhem Marchand:
+#                                           - fix missing double quotes values
+#                                           - Fully Qualified Domain Name improvements #46
 
-$version = "1.2.39";
+$version = "1.2.40";
 
 use Time::Local;
 use Time::HiRes;
@@ -531,6 +534,11 @@ my $SNAPSHOT = "-1";
 
 my $OStype = "Unknown";
 
+# Set HOSTNAME
+if ($USE_FQDN) {
+    chomp( $HOSTNAME = `hostname -f` );
+}
+
 while ( defined( my $l = <FILE> ) ) {
     chomp $l;
 
@@ -539,10 +547,7 @@ while ( defined( my $l = <FILE> ) ) {
 # The value will be equivalent to the stdout of the os "hostname -f" command
 # CAUTION: This option must not be used to manage nmon data out of Splunk ! (eg. central repositories)
 
-    if ($USE_FQDN) {
-        chomp( $HOSTNAME = `hostname -f` );
-    }
-    else {
+    if (not $USE_FQDN) {
         if ( ( rindex $l, "AAA,host," ) > -1 ) {
             ( my $t1, my $t2, $HOSTNAME ) = split( ",", $l );
         }
@@ -2538,6 +2543,11 @@ qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapsh
 
         my @c              = $x =~ /,/g;
         my $fieldsrawcount = @c;
+
+        # Double quotes all CSV values
+        $x =~ s/,/\",\"/g;
+        $x =~ s/($)/\"/g;
+        $x =~ s/(^)/\"/g;
 
         # section dynamic name
         $datatype = @cols[0];

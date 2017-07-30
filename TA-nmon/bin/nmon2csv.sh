@@ -35,8 +35,10 @@
 #                                         - specify explicit date format to prevent time zone issues
 # - 26/06/2017: V1.0.13: Guilhem Marchand:
 #                                         - Interpreter choice update
+# - 30/07/2017: V1.0.14: Guilhem Marchand:
+#                                         - HOST variable is unset
 
-# Version 1.0.13
+# Version 1.0.14
 
 # For AIX / Linux / Solaris
 
@@ -48,6 +50,9 @@
 log_date () {
     date "+%d-%m-%Y %H:%M:%S"
 }
+
+# Set host
+HOST=`hostname`
 
 if [ -z "${SPLUNK_HOME}" ]; then
 	echo "`log_date`, ERROR, SPLUNK_HOME variable is not defined"

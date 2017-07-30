@@ -25,8 +25,10 @@
 #                               - Interpreter choice update
 # Guilhem Marchand 2017/07/11,
 #                               - Avoid maintenance tasks in Solaris
+# Guilhem Marchand 2017/07/30,
+#                               - Fully Qualified Domain Name improvements #46
 
-# Version 1.0.14
+# Version 1.0.15
 
 # For AIX / Linux / Solaris
 
@@ -74,6 +76,14 @@ fi
 # On a per server basis, you can also set in /etc/nmon.conf
 if [ -f /etc/nmon.conf ]; then
 	. /etc/nmon.conf
+fi
+
+# Manage FQDN option
+echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
+if [ $? -eq 0 ]; then
+    HOST=`hostname -f`
+else
+    HOST=`hostname`
 fi
 
 #
