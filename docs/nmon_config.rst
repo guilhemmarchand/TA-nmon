@@ -106,7 +106,7 @@ NFS Statistics
 
 **NFS options for AIX and Linux: Activate NFS statistics:**
 
-NFS statistics generation is deactivated by default for AIX and Linux (NFS statistics are not applicable for Solaris)
+Out of the box, NFS statistics generation is disabled. You may enable this feature but note it is only applicable to Linux and AIX - not Solaris.
 
 To activate NFS statistics generation, you must activate this in a local/nmon.conf, as shown bellow:
 
