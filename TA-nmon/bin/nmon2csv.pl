@@ -125,8 +125,10 @@
 # - 07/30/2017: V1.2.40: Guilhem Marchand:
 #                                           - fix missing double quotes values
 #                                           - Fully Qualified Domain Name improvements #46
+# - 08/03/2017: V1.2.41: Guilhem Marchand:
+#                                           - fix double quotes versus no quotes - in csv dynamic and static with no quotes!
 
-$version = "1.2.40";
+$version = "1.2.41";
 
 use Time::Local;
 use Time::HiRes;
@@ -2544,11 +2546,6 @@ qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapsh
         my @c              = $x =~ /,/g;
         my $fieldsrawcount = @c;
 
-        # Double quotes all CSV values
-        $x =~ s/,/\",\"/g;
-        $x =~ s/($)/\"/g;
-        $x =~ s/(^)/\"/g;
-
         # section dynamic name
         $datatype = @cols[0];
 
@@ -2589,7 +2586,7 @@ qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapsh
                 if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                     print INSERT (
-qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus","$DATETIME{@cols[1]}","$INTERVAL","$SNAPSHOTS",$x|
+qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x|
                     );
                     $count++;
 
@@ -2610,7 +2607,7 @@ qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus"
             elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                 print INSERT (
-qq|$comma"$datatype","$SN","$HOSTNAME","$OStype","$logical_cpus","$virtual_cpus","$DATETIME{@cols[1]}","$INTERVAL","$SNAPSHOTS",$x|
+qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x|
                 );
                 $count++;
 
