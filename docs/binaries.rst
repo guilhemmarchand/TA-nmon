@@ -36,7 +36,7 @@ Its purpose to recompose the nmon flaw of data to be parsed by the nmon parser s
 
 Shell / Python / Perl scripts used to manage and process Nmon raw data into multiple csv files being indexed by Splunk
 
-The Shell script is a wrapper script to Python / Perl scripts. (decision is made on local interpreter avaibility with Python as the default choice)
+The Shell script is a wrapper script to Python / Perl scripts. (decision is made on local interpreter availability with Python as the default choice)
 
 **nmon_cleaner:**
 
