@@ -33,7 +33,7 @@ Splunk versions
 Index time operations
 ---------------------
 
-The application operates index time operation, the PA-nmon add-on must be installed in indexers in order for the application to operate normally.
+The application operates index time operation, the PA-nmon_light add-on must be installed in indexers in order for the application to operate normally.
 
 If there are any Heavy forwarders acting as intermediate forwarders between indexers and Universal Forwarders, the TA-nmon add-on must deployed on the intermediate forwarders to achieve successfully index time extractions.
 
