@@ -24,7 +24,7 @@ To::
 
 This procedure is useful because:
 
-* A deployment made the Splunk deployment server starts by first completely removing the entire TA-nmon removing, this would let running nmon processes orphan (for Linux and Solaris)
+* The Splunk deployment server starts by first completely removing the entire TA-nmon removing, this would let running nmon processes orphan (for Linux and Solaris)
 * In Search Head Cluster, a constantly running nmon process with the application directory would generate an error during the bundle publication
 
 The cache directory will be updated every time the "app.conf" files in the application directory differs from the version in cache, and is operated by the "bin/nmon_helper.sh" script.
