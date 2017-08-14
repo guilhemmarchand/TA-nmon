@@ -126,9 +126,15 @@
 #                                           - fix missing double quotes values
 #                                           - Fully Qualified Domain Name improvements #46
 # - 08/03/2017: V1.2.41: Guilhem Marchand:
-#                                           - fix double quotes versus no quotes - in csv dynamic and static with no quotes!
+#                                           - fix double quotes versus no quotes - in csv dynamic and static
+#                                           with no quotes!
+# - 08/14/2017: V1.2.42: Guilhem Marchand:
+#                                           - Case #508792 Splunk universal forwarders duplicating data due to File
+#                                             too small to check seekcrc #47
+#                                           - silent mode message is shown unconditionally
+#                                           - remove old migration operation
 
-$version = "1.2.41";
+$version = "1.2.42";
 
 use Time::Local;
 use Time::HiRes;
@@ -148,13 +154,13 @@ my $OPMODE = "";
 # the --json_output mode is currently available only with the Python parser
 
 $result = GetOptions(
-    "mode=s"   => \$OPMODE,      # string
-    "version"  => \$VERSION,     # flag
-    "use_fqdn" => \$USE_FQDN,    # flag
-    "help"     => \$help,        # flag
-    "debug"    => \$DEBUG,       # flag
-    "json_output"    => \$JSON_OUTPUT,       # flag
-    "silent"    => \$SILENT,       # flag
+    "mode=s"      => \$OPMODE,         # string
+    "version"     => \$VERSION,        # flag
+    "use_fqdn"    => \$USE_FQDN,       # flag
+    "help"        => \$help,           # flag
+    "debug"       => \$DEBUG,          # flag
+    "json_output" => \$JSON_OUTPUT,    # flag
+    "silent"      => \$SILENT,         # flag
 );
 
 # Show version
@@ -245,7 +251,6 @@ Available options are:
 # nmon external with transposition of data
 @nmon_external_transposed = "";
 
-
 #################################################
 ## 	Your Customizations Go Here
 #################################################
@@ -256,7 +261,7 @@ my $t_start = [Time::HiRes::gettimeofday];
 # Initial states for Analysis
 my $realtime = "False";
 my $colddata = "False";
-my $fifo = "False";
+my $fifo     = "False";
 
 # Local time
 my $time = strftime "%d-%m-%Y %H:%M:%S", localtime;
@@ -318,88 +323,88 @@ else {
 open( $json, "< $json_config" )
   or die "ERROR: Can't open $json_config : $!";
 
-    while (<$json>) {
-        chomp($_);
+while (<$json>) {
+    chomp($_);
 
-        $_ =~ s/\"//g; #remove quotes
-        $_ =~ s/\,\s/,/g; #remove comma space
+    $_ =~ s/\"//g;       #remove quotes
+    $_ =~ s/\,\s/,/g;    #remove comma space
 
-        # static_section
-        if ($_ =~ /^\s*static_section:\[([\w\,\s]*)\],{0,}$/) {
-            @static_vars = split(',', $1);
-        }
-
-        # Solaris_static_section
-        if ($_ =~ /^\s*Solaris_static_section:\[([\w\,\s]*)\],{0,}$/) {
-            @Solaris_static_section = split(',', $1);
-        }
-
-        # LPAR_static_section
-        if ($_ =~ /^\s*LPAR_static_section:\[([\w\,\s]*)\],{0,}$/) {
-            @LPAR_static_section = split(',', $1);
-        }
-
-        # top_section
-        if ($_ =~ /^\s*top_section:\[([\w\,\s]*)\],{0,}$/) {
-            @top_vars = split(',', $1);
-        }
-
-        # uarg_section
-        if ($_ =~ /^\s*uarg_section:\[([\w\,\s]*)\],{0,}$/) {
-            @uarg_vars = split(',', $1);
-        }
-
-        # dynamic_section1
-        if ($_ =~ /^\s*dynamic_section1:\[([\w\,\s]*)\],{0,}$/) {
-            @dynamic_vars1 = split(',', $1);
-        }
-
-        # dynamic_section2
-        if ($_ =~ /^\s*dynamic_section2:\[([\w\,\s]*)\],{0,}$/) {
-            @dynamic_vars2 = split(',', $1);
-        }
-
-        # disk_extended_section
-        if ($_ =~ /^\s*disk_extended_section:\[([\w\,\s]*)\],{0,}$/) {
-            @disk_extended_section = split(',', $1);
-        }
-
-        # solaris_WLM
-        if ($_ =~ /^\s*solaris_WLM:\[([\w\,\s]*)\],{0,}$/) {
-            @solaris_WLM = split(',', $1);
-        }
-
-        # solaris_VxVM
-        if ($_ =~ /^\s*solaris_VxVM:\[([\w\,\s]*)\],{0,}$/) {
-            @solaris_VxVM = split(',', $1);
-        }
-
-        # solaris_dynamic_various
-        if ($_ =~ /^\s*solaris_dynamic_various:\[([\w\,\s]*)\],{0,}$/) {
-            @solaris_dynamic_various = split(',', $1);
-        }
-
-        # AIX_dynamic_various
-        if ($_ =~ /^\s*AIX_dynamic_various:\[([\w\,\s]*)\],{0,}$/) {
-            @AIX_dynamic_various = split(',', $1);
-        }
-
-        # AIX_WLM
-        if ($_ =~ /^\s*AIX_WLM:\[([\w\,\s]*)\],{0,}$/) {
-            @AIX_WLM = split(',', $1);
-        }
-
-        # nmon_external
-        if ($_ =~ /^\s*nmon_external:\[([\w\,\s]*)\],{0,}$/) {
-            @nmon_external = split(',', $1);
-        }
-
-        # nmon_external
-        if ($_ =~ /^\s*nmon_external_transposed:\[([\w\,\s]*)\],{0,}$/) {
-            @nmon_external_transposed = split(',', $1);
-        }
-
+    # static_section
+    if ( $_ =~ /^\s*static_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @static_vars = split( ',', $1 );
     }
+
+    # Solaris_static_section
+    if ( $_ =~ /^\s*Solaris_static_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @Solaris_static_section = split( ',', $1 );
+    }
+
+    # LPAR_static_section
+    if ( $_ =~ /^\s*LPAR_static_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @LPAR_static_section = split( ',', $1 );
+    }
+
+    # top_section
+    if ( $_ =~ /^\s*top_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @top_vars = split( ',', $1 );
+    }
+
+    # uarg_section
+    if ( $_ =~ /^\s*uarg_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @uarg_vars = split( ',', $1 );
+    }
+
+    # dynamic_section1
+    if ( $_ =~ /^\s*dynamic_section1:\[([\w\,\s]*)\],{0,}$/ ) {
+        @dynamic_vars1 = split( ',', $1 );
+    }
+
+    # dynamic_section2
+    if ( $_ =~ /^\s*dynamic_section2:\[([\w\,\s]*)\],{0,}$/ ) {
+        @dynamic_vars2 = split( ',', $1 );
+    }
+
+    # disk_extended_section
+    if ( $_ =~ /^\s*disk_extended_section:\[([\w\,\s]*)\],{0,}$/ ) {
+        @disk_extended_section = split( ',', $1 );
+    }
+
+    # solaris_WLM
+    if ( $_ =~ /^\s*solaris_WLM:\[([\w\,\s]*)\],{0,}$/ ) {
+        @solaris_WLM = split( ',', $1 );
+    }
+
+    # solaris_VxVM
+    if ( $_ =~ /^\s*solaris_VxVM:\[([\w\,\s]*)\],{0,}$/ ) {
+        @solaris_VxVM = split( ',', $1 );
+    }
+
+    # solaris_dynamic_various
+    if ( $_ =~ /^\s*solaris_dynamic_various:\[([\w\,\s]*)\],{0,}$/ ) {
+        @solaris_dynamic_various = split( ',', $1 );
+    }
+
+    # AIX_dynamic_various
+    if ( $_ =~ /^\s*AIX_dynamic_various:\[([\w\,\s]*)\],{0,}$/ ) {
+        @AIX_dynamic_various = split( ',', $1 );
+    }
+
+    # AIX_WLM
+    if ( $_ =~ /^\s*AIX_WLM:\[([\w\,\s]*)\],{0,}$/ ) {
+        @AIX_WLM = split( ',', $1 );
+    }
+
+    # nmon_external
+    if ( $_ =~ /^\s*nmon_external:\[([\w\,\s]*)\],{0,}$/ ) {
+        @nmon_external = split( ',', $1 );
+    }
+
+    # nmon_external
+    if ( $_ =~ /^\s*nmon_external_transposed:\[([\w\,\s]*)\],{0,}$/ ) {
+        @nmon_external_transposed = split( ',', $1 );
+    }
+
+}
 
 close $json;
 
@@ -549,7 +554,7 @@ while ( defined( my $l = <FILE> ) ) {
 # The value will be equivalent to the stdout of the os "hostname -f" command
 # CAUTION: This option must not be used to manage nmon data out of Splunk ! (eg. central repositories)
 
-    if (not $USE_FQDN) {
+    if ( not $USE_FQDN ) {
         if ( ( rindex $l, "AAA,host," ) > -1 ) {
             ( my $t1, my $t2, $HOSTNAME ) = split( ",", $l );
         }
@@ -707,9 +712,10 @@ foreach $FILENAME (@nmon_files) {
     # Show perl version
     print "Perl version: $] \n";
 
-    # print informational message if --json_output is set (not available currently)
+ # print informational message if --json_output is set (not available currently)
     if ($JSON_OUTPUT) {
-        print "INFO: --json_output option is set, however this option is currently not available with the Perl parser and will have no effect \n";
+        print
+"INFO: --json_output option is set, however this option is currently not available with the Perl parser and will have no effect \n";
     }
 
     # Show Nmon version
@@ -809,41 +815,6 @@ foreach $FILENAME (@nmon_files) {
     $ID_REF     = "$HOSTNAME_VAR/${HOSTNAME}.id_reference.txt";
     $CONFIG_REF = "$HOSTNAME_VAR/${HOSTNAME}.config_reference.txt";
     $BBB_FLAG   = "$HOSTNAME_VAR/${HOSTNAME}.BBB_status.flag";
-
-#####################
-    # Migration from 1.2.10 #
-#####################
-
-# Manage migration of ID_REF, CONFIG_REF and BBB_FLAG from previous version of nmon2csv.pl
-
-    if (   -e "$APP_VAR/id_reference.txt"
-        || -e "$APP_VAR/id_reference_realtime.txt" )
-    {
-
-        print
-"INFO: Detected migration from V1.2.10 or previous, migrating status store file\n";
-
-        # Enter directory
-        chdir $APP_VAR;
-
-        # Items to clean
-        @cleaning = ( "*.txt", "*.flag" );
-
-        # Enter loop
-        foreach $key (@cleaning) {
-
-            @files = glob($key);
-
-            foreach $file (@files) {
-                if ( -f $file ) {
-
-                    move $file, "$HOSTNAME_VAR/${HOSTNAME}_${file}";
-
-                }
-            }
-        }
-
-    }
 
 ###############
     # ID Check #
@@ -1521,7 +1492,7 @@ foreach $FILENAME (@nmon_files) {
 
                 if ( $sanity_check == 0 ) {
 
-                    if (not $SILENT) {
+                    if ( not $SILENT ) {
                         print "$key section: Wrote $count line(s)\n";
                         print ID_REF "$key section: Wrote $count line(s)\n";
                     }
@@ -1936,7 +1907,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
                     if ( $sanity_check == 0 ) {
 
-                        if (not $SILENT) {
+                        if ( not $SILENT ) {
                             print "$key section: Wrote $count line(s)\n";
                             print ID_REF "$key section: Wrote $count line(s)\n";
                         }
@@ -2169,8 +2140,12 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
     # Delete temp nmon file
     unlink("$FILENAME");
 
-    # Print an informational message if running in silent mode
-    print "Output mode is configured to run in minimal mode using the --silent option \n";
+    if ($SILENT) {
+
+        # Print an informational message if running in silent mode
+        print
+"Output mode is configured to run in minimal mode using the --silent option \n";
+    }
 
     # Show elapsed time
     my $t_end = [Time::HiRes::gettimeofday];
@@ -2273,12 +2248,13 @@ sub config_extract {
     # for AIX
     if ( $AIXVER ne "-1" ) {
         $SN = &get_setting( "systemid", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];                # "systemid IBM,SN ..."
+        $SN = ( split( /\s+/, $SN ) )[0];    # "systemid IBM,SN ..."
     }
+
     # for Power Linux
     else {
         $SN = &get_setting( "serial_number", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];                # "serial_number=IBM,SN ..."
+        $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
     }
 
     # undeterminated
@@ -2389,7 +2365,6 @@ sub static_sections_insert {
     my @rawdata;
     my $x;
     my @cols;
-    my $comma;
     my $TS;
     my $n;
     my $sanity_check                  = 0;
@@ -2521,9 +2496,8 @@ qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapsh
         @rawdata = grep( /^CPU\d*,T.+,/, @nmon );
     }
 
-    $comma = "";
-    $n     = @cols;
-    $n     = $n - 1;    # number of columns -1
+    $n = @cols;
+    $n = $n - 1;    # number of columns -1
 
 # Define the starting line to read (exclusion of csv header)
 # For CPUnn, we don't need to filter the header as we already filtered on perf data
@@ -2586,11 +2560,9 @@ qq|type,serialnum,hostname,OStype,logical_cpus,virtual_cpus,ZZZZ,interval,snapsh
                 if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                     print INSERT (
-qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x|
+qq|$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x\n|
                     );
                     $count++;
-
-                    $comma = "\n";
                 }
 
                 else {
@@ -2607,12 +2579,9 @@ qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@
             elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                 print INSERT (
-qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x|
+qq|$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@cols[1]},$INTERVAL,$SNAPSHOTS,$x\n|
                 );
                 $count++;
-
-                $comma = "\n";
-
             }
 
         }
@@ -2640,7 +2609,7 @@ qq|$comma$datatype,$SN,$HOSTNAME,$OStype,$logical_cpus,$virtual_cpus,$DATETIME{@
     else {
         if ( $count >= 1 ) {
 
-            if (not $SILENT) {
+            if ( not $SILENT ) {
                 print "$key section: Wrote $count line(s)\n";
                 print ID_REF "$key section: Wrote $count line(s)\n";
             }
@@ -2683,7 +2652,6 @@ sub variable_sections_insert {
     my $x;
     my $j;
     my @cols;
-    my $comma;
     my $TS;
     my $n;
     my @devices;
@@ -2785,7 +2753,7 @@ sub variable_sections_insert {
     @devices = split( /,/, $rawdata[0] );
 
     print INSERT (
-        qq|type,serialnum,hostname,OStype,interval,snapshots,ZZZZ,device,value|
+qq|type,serialnum,hostname,OStype,interval,snapshots,ZZZZ,device,value\n|
     );
 
     # Count the number fields in header
@@ -2793,8 +2761,6 @@ sub variable_sections_insert {
       "type,serialnum,hostname,OStype,interval,snapshots,ZZZZ,device,value";
     my @c                 = $header =~ /,/g;
     my $fieldsheadercount = @c;
-
-    #print "\n COUNT IS $fieldsheadercount \n";
 
     $n = @rawdata;
     $n--;
@@ -2809,11 +2775,13 @@ sub variable_sections_insert {
      # Convert timestamp string to epoch time (from format: YYYY-MM-DD hh:mm:ss)
         my ( $year, $month, $day, $hour, $min, $sec ) = split /\W+/, $timestamp;
 
-        if ($month == 0) {
-            print "ERROR, section $key has failed to identify the timestamp of these data, affecting current timestamp which may be inaccurate\n";
-            my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+        if ( $month == 0 ) {
+            print
+"ERROR, section $key has failed to identify the timestamp of these data, affecting current timestamp which may be inaccurate\n";
+            my ( $sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst )
+              = localtime(time);
             $month = $mon;
-            $day = $mday;
+            $day   = $mday;
         }
 
         my $ZZZZ_epochtime =
@@ -2826,7 +2794,7 @@ sub variable_sections_insert {
             if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                 print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
+qq|$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]\n|
                 );
 
                 $count++;
@@ -2846,7 +2814,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
         elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
             print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
+qq|$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]\n|
             );
 
             $count++;
@@ -2869,8 +2837,6 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
             # Count the number fields in data
             my @c              = $finaldata =~ /,/g;
             my $fieldsrawcount = @c;
-
-            #print "\n COUNT IS $fieldsrawcount \n";
 
             if ( $fieldsrawcount != $fieldsheadercount ) {
 
@@ -2901,7 +2867,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
                     if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                         print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|
+qq|$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]\n|
                         );
                         $count++;
                     }
@@ -2911,7 +2877,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
                 elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                     print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|
+qq|$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]\n|
                     );
                     $count++;
                 }
@@ -2943,7 +2909,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$device
     else {
         if ( $count >= 1 ) {
 
-            if (not $SILENT) {
+            if ( not $SILENT ) {
                 print "$key section: Wrote $count line(s)\n";
                 print ID_REF "$key section: Wrote $count line(s)\n";
             }
@@ -2985,7 +2951,6 @@ sub solaris_wlm_section_fn {
     my $x;
     my $j;
     my @cols;
-    my $comma;
     my $TS;
     my $n;
     my @devices;
@@ -3087,7 +3052,7 @@ sub solaris_wlm_section_fn {
     @devices = split( /,/, $rawdata[0] );
 
     print INSERT (
-qq|type,serialnum,hostname,OStype,logical_cpus,interval,snapshots,ZZZZ,device,value|
+qq|type,serialnum,hostname,OStype,logical_cpus,interval,snapshots,ZZZZ,device,value\n|
     );
 
     # Count the number fields in header
@@ -3095,8 +3060,6 @@ qq|type,serialnum,hostname,OStype,logical_cpus,interval,snapshots,ZZZZ,device,va
 "type,serialnum,hostname,OStype,logical_cpus,interval,snapshots,ZZZZ,device,value";
     my @c                 = $header =~ /,/g;
     my $fieldsheadercount = @c;
-
-    #print "\n COUNT IS $fieldsheadercount \n";
 
     $n = @rawdata;
     $n--;
@@ -3120,7 +3083,7 @@ qq|type,serialnum,hostname,OStype,logical_cpus,interval,snapshots,ZZZZ,device,va
             if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                 print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
+qq|$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]\n|
                 );
 
                 $count++;
@@ -3140,7 +3103,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
         elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
             print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]|
+qq|$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[2],$cols[2]\n|
             );
 
             $count++;
@@ -3163,8 +3126,6 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
             # Count the number fields in data
             my @c              = $finaldata =~ /,/g;
             my $fieldsrawcount = @c;
-
-            #print "\n COUNT IS $fieldsrawcount \n";
 
             if ( $fieldsrawcount != $fieldsheadercount ) {
 
@@ -3195,7 +3156,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
                     if ( $ZZZZ_epochtime > $last_epoch_filter ) {
 
                         print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|
+qq|$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]\n|
                         );
                         $count++;
                     }
@@ -3205,7 +3166,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
                 elsif ( $colddata eq "True" || $fifo eq "True" ) {
 
                     print INSERT (
-qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]|
+qq|$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$cols[1]},$devices[$j],$cols[$j]\n|
                     );
                     $count++;
                 }
@@ -3237,7 +3198,7 @@ qq|\n$key,$SN,$HOSTNAME,$OStype,$logical_cpus,$INTERVAL,$SNAPSHOTS,$DATETIME{$co
     else {
         if ( $count >= 1 ) {
 
-            if (not $SILENT) {
+            if ( not $SILENT ) {
                 print "$key section: Wrote $count line(s)\n";
                 print ID_REF "$key section: Wrote $count line(s)\n";
             }
@@ -3439,10 +3400,11 @@ sub get_nmon_data {
         $SN = &get_setting( "systemid", 4, "," );
         $SN = ( split( /\s+/, $SN ) )[0];                # "systemid IBM,SN ..."
     }
+
     # for Power Linux
     else {
         $SN = &get_setting( "serial_number", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];                # "serial_number=IBM,SN ..."
+        $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
     }
 
     # undeterminated

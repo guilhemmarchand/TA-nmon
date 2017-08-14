@@ -157,6 +157,8 @@
 # - 05/23/2017: V1.1.34: Guilhem Marchand: Adding the fifo mode with an adapted management to the fifo configuration
 # - 06/12/2017: V1.1.35: Guilhem Marchand: improve the "wrote xx line(s)" message
 # - 06/30/2017: V1.1.36: Guilhem Marchand: Optimize nmon_processing output and reduce volume of data to be generated #37
+# - 08/14/2017: V1.1.37: Guilhem Marchand:
+#                                           - silent mode message is shown unconditionally
 
 # Load libs
 
@@ -177,7 +179,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.36'
+nmon2csv_version = '1.1.37'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -3288,8 +3290,9 @@ if json_output:
 # End
 ###################
 
-# Print an informational message if running in silent mode
-print("Output mode is configured to run in minimal mode using the --silent option")
+if silent:
+    # Print an informational message if running in silent mode
+    print("Output mode is configured to run in minimal mode using the --silent option")
 
 # Time required to process
 end_time = time.time()
