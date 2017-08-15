@@ -55,6 +55,7 @@ Deployment and configuration:
 
    deployment
    upgrade
+   eventgen_testing
    external
    nmon_config
    json_indexing
