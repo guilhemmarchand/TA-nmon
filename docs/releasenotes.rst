@@ -20,6 +20,7 @@ V1.3.28:
 
 - fix: Perl parser write new line after each write (Case #508792 Splunk universal forwarders duplicating data due to File too small to check seekcrc #47)
 - fix: minor code cleaning
+- feature: complete review of eventgen configuration using TA-nmon-hec samples
 
 ========
 V1.3.27:
