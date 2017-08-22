@@ -159,6 +159,8 @@
 # - 06/30/2017: V1.1.36: Guilhem Marchand: Optimize nmon_processing output and reduce volume of data to be generated #37
 # - 08/14/2017: V1.1.37: Guilhem Marchand:
 #                                           - silent mode message is shown unconditionally
+# - 08/19/2017: V1.1.38: Guilhem Marchand:
+#                                           - fix: improve header check for static sections
 
 # Load libs
 
@@ -179,7 +181,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.37'
+nmon2csv_version = '1.1.38'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1413,6 +1415,8 @@ elif config_run == 1:
 
 def standard_section_fn(section):
 
+    header_found = False
+
     # if generating json data
     if json_output:
 
@@ -1555,6 +1559,9 @@ def standard_section_fn(section):
                         if header_match:
                             header = header_match.group(2)
 
+                            # header has been found
+                            header_found = True
+
                             # increment
                             count += 1
 
@@ -1575,7 +1582,7 @@ def standard_section_fn(section):
                     # Old Nmon version sometimes incorporates a Txxxx reference in the header, this is unclean
                     # but we want to try getting the header anyway
 
-                    elif not fullheader_match:
+                    if not header_found:
                         # Assume the header may start with Txxx, then 1 non alpha char
                         myregex = '(' + section + ')\,(T\d+),([a-zA-Z]+.+)'
                         fullheader_match = re.search(myregex, line)

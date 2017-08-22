@@ -15,6 +15,13 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.29:
+========
+
+- fix: Python parser - header detection correction for nmon external monitoring
+- feature: Add df information for improved file system monitoring and storage capacity planning
+
+========
 V1.3.28:
 ========
 
