@@ -20,6 +20,7 @@ V1.3.29:
 
 - fix: Python parser - header detection correction for nmon external monitoring
 - fix: unexpected operator issue during process identification #48
+- fix: prevent bundle validation warn messages with spec files in README directory
 - feature: Add df information for improved file system monitoring and storage capacity planning
 - feature: JFSFILE/JFSINODE are being replaced (and deactivated) by external collection with DF_STORAGE/DF_INODES
 
