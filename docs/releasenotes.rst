@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.30:
+========
+
+- fix: reactivating the JFSFILE / JFSINODE collections until new core release is available to prevent missing features
+
+========
 V1.3.29:
 ========
 
