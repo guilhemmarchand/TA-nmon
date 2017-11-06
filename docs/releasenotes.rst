@@ -15,6 +15,13 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.31:
+========
+
+- feature: Solaris - SARMON upgrade to v1.12 (Sparc FIFO mode) #51
+- fix: Rename eventgen.conf to avoid splunkd WARN messages #52
+
+========
 V1.3.30:
 ========
 
