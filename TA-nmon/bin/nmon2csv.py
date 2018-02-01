@@ -161,6 +161,9 @@
 #                                           - silent mode message is shown unconditionally
 # - 08/19/2017: V1.1.38: Guilhem Marchand:
 #                                           - fix: improve header check for static sections
+# - 02/01/2018: V1.1.39: Guilhem Marchand:
+#                                           - fix: batch mode and fishbuckets performance issues #53
+
 
 # Load libs
 
@@ -181,7 +184,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.38'
+nmon2csv_version = '1.1.39'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -1249,8 +1252,7 @@ if last_known_epochtime == 0:
 section = "CONFIG"
 
 # Set output file
-config_output = CONFIG_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second + '_' + str(
-    bytes_total) + '_' + csv_timestamp + '.nmon.config.csv'
+config_output = CONFIG_DIR + HOSTNAME + '_' + minute + '.nmon.config.csv'
 
 # Set default for config_run:
 # 0 --> Extract configuration
@@ -1419,19 +1421,13 @@ def standard_section_fn(section):
 
     # if generating json data
     if json_output:
-
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
-                             minute + second + '_' + section + '_' + str(bytes_total) + '_' +\
-                             csv_timestamp + '.nmon.json'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.json'
 
     # default is legacy csv
     else:
-
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
-                             minute + second + '_' + section + '_' + str(bytes_total) + '_' +\
-                             csv_timestamp + '.nmon.csv'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -1871,13 +1867,12 @@ def top_section_fn(section):
     # if generating json data
     if json_output:
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.json'
 
+        # default is legacy csv
     else:
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -2145,13 +2140,12 @@ def uarg_section_fn(section):
     # if generating json data
     if json_output:
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.json'
 
+        # default is legacy csv
     else:
         # Set output file
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second + \
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.csv'
 
     # Store last epochtime if in real time mode
     keyref = HOSTNAME_VAR + '/' + HOSTNAME + '.' + section + '_lastepoch.txt'
@@ -2450,14 +2444,13 @@ if OStype in ('AIX', 'Linux', 'Solaris', 'Unknown'):
 def dynamic_section_fn(section):
 
     if json_output:
-        # Set output file (will be opened for writing after data transposition)
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second + \
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.json'
 
+        # default is legacy csv
     else:
-        # Set output file (will be opened for writing after data transposition)
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour + minute + second +\
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.csv'
 
     # Sequence to search for
     seq = str(section) + ',' + 'T'
@@ -2889,17 +2882,13 @@ for section in nmon_external_transposed:
 def solaris_wlm_section_fn(section):
 
     if json_output:
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.json'
 
-        # Set output file (will be opened for writing after data transposition)
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
-                             minute + second + \
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.json'
-
+        # default is legacy csv
     else:
-        # Set output file (will be opened for writing after data transposition)
-        currsection_output = DATA_DIR + HOSTNAME + '_' + day + '_' + month + '_' + year + '_' + hour +\
-                             minute + second +\
-                             '_' + section + '_' + str(bytes_total) + '_' + csv_timestamp + '.nmon.csv'
+        # Set output file
+        currsection_output = DATA_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.csv'
 
     # Sequence to search for
     seq = str(section) + ',' + 'T'

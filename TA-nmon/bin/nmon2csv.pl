@@ -133,8 +133,10 @@
 #                                             too small to check seekcrc #47
 #                                           - silent mode message is shown unconditionally
 #                                           - remove old migration operation
+# - 02/01/2018: V1.2.43: Guilhem Marchand:
+#                                           - batch mode and fishbuckets performance issues #53
 
-$version = "1.2.42";
+$version = "1.2.43";
 
 use Time::Local;
 use Time::HiRes;
@@ -1064,7 +1066,7 @@ foreach $FILENAME (@nmon_files) {
 
     foreach $key (@config_vars) {
         $BASEFILENAME =
-"$OUTPUTCONF_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${bytes}_${csv_timestamp}.nmon.config.csv";
+"$OUTPUTCONF_DIR/${HOSTNAME}_${nmon_minute}.nmon.config.csv";
 
         # Set default for config_run:
         # 0 --> Extract configuration
@@ -1190,7 +1192,7 @@ foreach $FILENAME (@nmon_files) {
 
     foreach $key (@static_vars) {
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
         $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
         &static_sections_insert($key);
@@ -1201,7 +1203,7 @@ foreach $FILENAME (@nmon_files) {
 
     foreach $key (@nmon_external) {
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
         $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
         &static_sections_insert($key);
@@ -1215,7 +1217,7 @@ foreach $FILENAME (@nmon_files) {
 
         foreach $key (@LPAR_static_section) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &static_sections_insert($key);
@@ -1231,7 +1233,7 @@ foreach $FILENAME (@nmon_files) {
 
         foreach $key (@Solaris_static_section) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &static_sections_insert($key);
@@ -1252,7 +1254,7 @@ foreach $FILENAME (@nmon_files) {
 
     foreach $key (@top_vars) {
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
 
         # Open NMON file for reading
         if ( !open( FIC, $file ) ) {
@@ -1549,7 +1551,7 @@ foreach $FILENAME (@nmon_files) {
 
         foreach $key (@uarg_vars) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
 
             # Open NMON file for reading
             if ( !open( FIC, $file ) ) {
@@ -1961,7 +1963,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         # First pass with standard keys
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
         $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
         &variable_sections_insert($key);
@@ -1982,7 +1984,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
             $key = join '', $mainkey, $init;
 
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);
@@ -1999,7 +2001,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         # First pass with standard keys
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
         $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
         &variable_sections_insert($key);
@@ -2014,7 +2016,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         # First pass with standard keys
         $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
         $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
         &variable_sections_insert($key);
@@ -2029,7 +2031,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@AIX_dynamic_various) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);
@@ -2040,7 +2042,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@AIX_WLM) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);
@@ -2059,7 +2061,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@solaris_WLM) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &solaris_wlm_section_fn($key);
@@ -2072,7 +2074,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@solaris_VxVM) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);
@@ -2085,7 +2087,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@solaris_dynamic_various) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);
@@ -2098,7 +2100,7 @@ m/^UARG\,T\d+\,([0-9]*)\,([a-zA-Z\-\/\_\:\.0-9]*)\,(.+)/
 
         foreach $key (@nmon_external_transposed) {
             $BASEFILENAME =
-"$OUTPUT_DIR/${HOSTNAME}_${nmon_day}_${nmon_month}_${nmon_year}_${nmon_hour}${nmon_minute}${nmon_second}_${key}_${bytes}_${csv_timestamp}.nmon.csv";
+"$OUTPUT_DIR/${HOSTNAME}_${nmon_minute}_${key}.nmon.csv";
             $keyref = "$HOSTNAME_VAR/" . "${HOSTNAME}.${key}_lastepoch.txt";
 
             &variable_sections_insert($key);

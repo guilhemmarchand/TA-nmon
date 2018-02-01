@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.32:
+========
+
+- fix: batch mode and fishbuckets performance issues #53
+
+========
 V1.3.31:
 ========
 
