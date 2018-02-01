@@ -11,8 +11,9 @@
 # - March 2017, V1.0.0: Guilhem Marchand, Initial version
 # - 2017/04/01, V1.0.1: Guilhem Marchand, Update path discovery
 # - 2017/06/03, V1.0.2: Guilhem Marchand, Update regular expr for headers extraction
+# - 2018/01/02, V1.0.3: Guilhem Marchand, Update regular expr for headers extraction
 
-$version = "1.0.2";
+$version = "1.0.3";
 
 use Getopt::Long;
 use File::stat;
@@ -132,13 +133,14 @@ my $nmon_config_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_config.dat";
 my $nmon_header_dat = "$APP_VAR/nmon_repository/$fifo_name/nmon_header.dat";
 my $nmon_data_dat   = "$APP_VAR/nmon_repository/$fifo_name/nmon_data.dat";
 my $nmon_external_dat   = "$APP_VAR/nmon_repository/$fifo_name/nmon_external.dat";
+my $nmon_external_header_dat   = "$APP_VAR/nmon_repository/$fifo_name/nmon_external_header.dat";
 my $nmon_timestamp_dat =
   "$APP_VAR/nmon_repository/$fifo_name/nmon_timestamp.dat";
 
 @nmon_dat = (
     "$nmon_config_dat", "$nmon_header_dat",
     "$nmon_data_dat",   "$nmon_timestamp_dat",
-    "$nmon_external_dat"
+    "$nmon_external_dat", "$nmon_external_header_dat"
 );
 
 # Remove any existing rotated file

@@ -12,9 +12,10 @@ import subprocess
 # - March 2017, V1.0.0: Guilhem Marchand, Initial version
 # - 2017/04/01, V1.0.1: Guilhem Marchand, Update path discovery
 # - 2017/06/03, V1.0.2: Guilhem Marchand, Update regular expr for headers extraction
+# - 2018/01/02, V1.0.3: Guilhem Marchand, Update regular expr for headers extraction
 
 # script version
-version = '1.0.2'
+version = '1.0.3'
 
 #################################################
 #      Variables
@@ -108,7 +109,8 @@ nmon_header_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_header.dat'
 nmon_data_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_data.dat'
 nmon_timestamp_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_timestamp.dat'
 nmon_external_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_external.dat'
-nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_timestamp_dat, nmon_data_dat, nmon_external_dat}
+nmon_external_header_dat = APP_VAR + '/nmon_repository/' + fifo_name + '/nmon_external_header.dat'
+nmon_dat = {nmon_config_dat, nmon_header_dat, nmon_timestamp_dat, nmon_data_dat, nmon_external_dat, nmon_external_header_dat}
 
 # Manage existing files and do the rotation if required
 if os.path.exists(nmon_data_dat) and os.path.getsize(nmon_data_dat) > 0:

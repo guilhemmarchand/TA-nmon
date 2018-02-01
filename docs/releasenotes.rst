@@ -19,6 +19,7 @@ V1.3.32:
 ========
 
 - fix: batch mode and fishbuckets performance issues #53
+- fix: Missing rotation of external header in fifo_reader.py/pl #54
 
 ========
 V1.3.31:
