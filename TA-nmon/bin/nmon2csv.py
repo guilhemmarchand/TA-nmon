@@ -303,8 +303,8 @@ else:
     if now_epoch == "%s":
         now_epoch = int(time.time())
 
-# timestamp used to name csv files
-csv_timestamp = time.strftime("%Y%m%d%H%M%S")
+# Minute of the hour, to be used for file naming convention
+minute = time.strftime("%M")
 
 # Python version
 python_version = platform.python_version()
@@ -415,9 +415,6 @@ if not os.path.exists(CONFIG_DIR):
 day = "-1"
 month = "-1"
 year = "-1"
-hour = "-1"
-minute = "-1"
-second = "-1"
 ZZZZ_timestamp = "-1"
 INTERVAL = "-1"
 SNAPSHOTS = "-1"
@@ -554,8 +551,6 @@ if not os.path.exists(CONFIG_DIR):
 #################################################
 
 # Return current time stamp in Nmon fashion
-
-
 def currenttime():
     now = time.strftime("%d-%m-%Y %H:%M:%S")
 
@@ -811,13 +806,6 @@ for line in data:
     if time_match:
         TIME = time_match.group(3)
         print("TIME of Nmon Data:", TIME)
-
-    # Set TIME DETAILS
-    time_details = re.match(r'(AAA,time,)([0-9]+).([0-9]+).([0-9]+)', line)
-    if time_details:
-        hour = time_details.group(2)
-        minute = time_details.group(3)
-        second = time_details.group(4)
 
     # Set INTERVAL
     interval = re.match(r'^(AAA),(interval),(.+)\n', line)
@@ -1252,7 +1240,7 @@ if last_known_epochtime == 0:
 section = "CONFIG"
 
 # Set output file
-config_output = CONFIG_DIR + HOSTNAME + '_' + minute + '.nmon.config.csv'
+config_output = CONFIG_DIR + HOSTNAME + '_' + minute + '_' + section + '.nmon.config.csv'
 
 # Set default for config_run:
 # 0 --> Extract configuration
