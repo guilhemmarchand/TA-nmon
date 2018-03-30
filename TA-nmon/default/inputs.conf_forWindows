@@ -26,7 +26,6 @@ crcSalt = <SOURCE>
 
 disabled = false
 move_policy = sinkhole
-crcSalt = <SOURCE>
 index = nmon
 sourcetype = nmon_data
 
@@ -41,7 +40,6 @@ sourcetype = nmon_data
 
 disabled = false
 move_policy = sinkhole
-crcSalt = <SOURCE>
 index = nmon
 sourcetype = nmon_config
 
