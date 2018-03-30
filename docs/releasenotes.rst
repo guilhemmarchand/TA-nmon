@@ -15,6 +15,12 @@ What has been fixed by release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ========
+V1.3.33:
+========
+
+- fix: Typo in nmon_helper.sh during Perl / Python detection #56
+
+========
 V1.3.32:
 ========
 

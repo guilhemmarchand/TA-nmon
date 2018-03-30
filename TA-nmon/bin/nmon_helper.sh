@@ -1006,7 +1006,7 @@ INTERPRETER="python"
 
 # Get the version for both worlds
 PYTHON=`which python >/dev/null 2>&1`
-PERL=`which python >/dev/null 2>&1`
+PERL=`which perl >/dev/null 2>&1`
 
 case $PYTHON in
 *)
