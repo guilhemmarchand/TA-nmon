@@ -27,8 +27,10 @@
 #                               - Avoid maintenance tasks in Solaris
 # Guilhem Marchand 2017/07/30,
 #                               - Fully Qualified Domain Name improvements #46
+# Guilhem Marchand 2017/07/30,
+#                               - Fix issues #55 / #56
 
-# Version 1.0.15
+# Version 1.0.16
 
 # For AIX / Linux / Solaris
 
@@ -68,7 +70,7 @@ fi
 
 # source local nmon.conf, if any
 
-# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-nmon/local
+# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-metricator-for-nmon/local
 if [ -f $APP/local/nmon.conf ]; then
         . $APP/local/nmon.conf
 fi
@@ -81,10 +83,26 @@ fi
 # Manage FQDN option
 echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
 if [ $? -eq 0 ]; then
-    HOST=`hostname -f`
+    # Only relevant for Linux OS
+    case $UNAME in
+    Linux)
+        HOST=`hostname -f` ;;
+    AIX)
+        HOST=`hostname` ;;
+    SunOS)
+        HOST=`hostname` ;;
+    esac
 else
     HOST=`hostname`
 fi
+
+# Manage host override option based on Splunk hostname defined
+case $override_sys_hostname in
+"1")
+    # Retrieve the Splunk host value
+    HOST=`cat $SPLUNK_HOME/etc/system/local/inputs.conf | grep '^host =' | awk -F\= '{print $2}' | sed 's/ //g'`
+;;
+esac
 
 #
 # Interpreter choice

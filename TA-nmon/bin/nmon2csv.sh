@@ -37,8 +37,10 @@
 #                                         - Interpreter choice update
 # - 30/07/2017: V1.0.14: Guilhem Marchand:
 #                                         - HOST variable is unset
+# - 30/03/2018: V1.0.15: Guilhem Marchand:
+#                                         - Fix issues #55 / #56
 
-# Version 1.0.14
+# Version 1.0.15
 
 # For AIX / Linux / Solaris
 
@@ -85,6 +87,47 @@ else
         echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
         exit 1
 fi
+
+# source default nmon.conf
+if [ -f $APP/default/nmon.conf ]; then
+    . $APP/default/nmon.conf
+fi
+
+# source local nmon.conf, if any
+
+# Search for a local nmon.conf file located in $SPLUNK_HOME/etc/apps/TA-metricator-for-nmon/local
+if [ -f $APP/local/nmon.conf ]; then
+        . $APP/local/nmon.conf
+fi
+
+# On a per server basis, you can also set in /etc/nmon.conf
+if [ -f /etc/nmon.conf ]; then
+	. /etc/nmon.conf
+fi
+
+# Manage FQDN option
+echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
+if [ $? -eq 0 ]; then
+    # Only relevant for Linux OS
+    case $UNAME in
+    Linux)
+        HOST=`hostname -f` ;;
+    AIX)
+        HOST=`hostname` ;;
+    SunOS)
+        HOST=`hostname` ;;
+    esac
+else
+    HOST=`hostname`
+fi
+
+# Manage host override option based on Splunk hostname defined
+case $override_sys_hostname in
+"1")
+    # Retrieve the Splunk host value
+    HOST=`cat $SPLUNK_HOME/etc/system/local/inputs.conf | grep '^host =' | awk -F\= '{print $2}' | sed 's/ //g'`
+;;
+esac
 
 #
 # Interpreter choice

@@ -19,8 +19,9 @@
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
 # Guilhem Marchand 2017/06/04, specify explicit date format to prevent time zone issues
 # Guilhem Marchand 2017/06/26, interpreter choice update
+# Guilhem Marchand 2018/03/30, Fix issues #55 / #56
 
-# Version 1.0.11
+# Version 1.0.12
 
 # For AIX / Linux / Solaris
 
@@ -154,6 +155,30 @@ fi
 if [ -f /etc/nmon.conf ]; then
 	. /etc/nmon.conf
 fi
+
+# Manage FQDN option
+echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
+if [ $? -eq 0 ]; then
+    # Only relevant for Linux OS
+    case $UNAME in
+    Linux)
+        HOST=`hostname -f` ;;
+    AIX)
+        HOST=`hostname` ;;
+    SunOS)
+        HOST=`hostname` ;;
+    esac
+else
+    HOST=`hostname`
+fi
+
+# Manage host override option based on Splunk hostname defined
+case $override_sys_hostname in
+"1")
+    # Retrieve the Splunk host value
+    HOST=`cat $SPLUNK_HOME/etc/system/local/inputs.conf | grep '^host =' | awk -F\= '{print $2}' | sed 's/ //g'`
+;;
+esac
 
 ############################################
 # functions

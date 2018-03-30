@@ -115,8 +115,10 @@
 #                                       - Missing external scripts generation for Solaris #49
 # 2017/11/06, Guilhem Marchand:
 #                                       - Solaris SARMON now compatible with SPARC processors
+# 2018/03/30, Guilhem Marchand:
+#                                       - Fix issues #55 / #56
 
-# Version 1.3.62
+# Version 1.3.63
 
 # For AIX / Linux / Solaris
 
@@ -344,10 +346,26 @@ fi
 # Manage FQDN option
 echo $nmon2csv_options | grep '\-\-use_fqdn' >/dev/null
 if [ $? -eq 0 ]; then
-    HOST=`hostname -f`
+    # Only relevant for Linux OS
+    case $UNAME in
+    Linux)
+        HOST=`hostname -f` ;;
+    AIX)
+        HOST=`hostname` ;;
+    SunOS)
+        HOST=`hostname` ;;
+    esac
 else
     HOST=`hostname`
 fi
+
+# Manage host override option based on Splunk hostname defined
+case $override_sys_hostname in
+"1")
+    # Retrieve the Splunk host value
+    HOST=`cat $SPLUNK_HOME/etc/system/local/inputs.conf | grep '^host =' | awk -F\= '{print $2}' | sed 's/ //g'`
+;;
+esac
 
 # Nmon Binary
 case $UNAME in
