@@ -19,7 +19,7 @@
 # Guilhem Marchand 2017/06/04, manage nmon external metrics in dedicated file
 # Guilhem Marchand 2017/06/04, specify explicit date format to prevent time zone issues
 # Guilhem Marchand 2017/06/26, interpreter choice update
-# Guilhem Marchand 2018/03/30, Fix issues #55 / #56
+# Guilhem Marchand 2018/03/30, Fix issues #55 / #56, mutex implementation to avoid simultaneous run of shell scripts #59
 
 # Version 1.0.12
 
@@ -45,6 +45,28 @@ if [ -z "${SPLUNK_HOME}" ]; then
 	exit 1
 fi
 
+# check and wait to acquire mutex
+mutex="$SPLUNK_HOME/var/log/nmon/mutex"
+
+remove_mutex () {
+    rm -f $mutex
+}
+
+# Allow 10s mini to acquire mutex and break
+count=0
+while [ -f $mutex ]; do
+    sleep 2
+    count=$(expr $count + 1)
+    if [ $count -gt 5 ]; then
+        break
+    fi
+done
+
+# acquire mutex
+if [ -d $SPLUNK_HOME/var/log/nmon ]; then
+  touch $mutex
+fi
+
 # tmp dir and file
 temp_dir="${SPLUNK_HOME}/var/log/nmon/tmp/"
 
@@ -61,6 +83,7 @@ SPL_HOME=${SPLUNK_HOME}
 # Check SPL_HOME variable is defined, this should be the case when launched by Splunk scheduler
 if [ -z "${SPL_HOME}" ]; then
 	echo "`log_date`, ${HOST} ERROR, SPL_HOME (SPLUNK_HOME) variable is not defined"
+	remove_mutex
 	exit 1
 fi
 
@@ -73,6 +96,7 @@ elif [ -d "$SPLUNK_HOME/etc/slave-apps/TA-nmon" ];then
 
 else
         echo "`log_date`, ${HOST} ERROR, the APP directory could not be defined, is the TA-nmon installed ?"
+        remove_mutex
         exit 1
 fi
 
@@ -343,4 +367,5 @@ if [ -f $temp_file ]; then
     rm -f $temp_file
 fi
 
+remove_mutex
 exit 0

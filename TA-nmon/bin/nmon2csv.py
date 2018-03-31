@@ -163,7 +163,8 @@
 #                                           - fix: improve header check for static sections
 # - 02/01/2018: V1.1.39: Guilhem Marchand:
 #                                           - fix: batch mode and fishbuckets performance issues #53
-
+# - 03/30/2018: V1.1.40: Guilhem Marchand:
+#                                           - Feature: override serial number #58
 
 # Load libs
 
@@ -184,7 +185,7 @@ import socket
 import json
 
 # Converter version
-nmon2csv_version = '1.1.39'
+nmon2csv_version = '1.1.40'
 
 # LOGGING INFORMATION:
 # - The program uses the standard logging Python module to display important messages in Splunk logs
@@ -707,13 +708,22 @@ logical_cpus = "-1"
 virtual_cpus = "-1"
 OStype = "Unknown"
 
-# The hostname value returned by nmon and nmon2csv.py can be overridden by setting the option
-# override_sys_hostname="1" in local/nmon.conf
-# If so, we will search for a value in $SPLUNK_HOME/etc/system/local/inputs.conf to set the hostname
+# The hostname value returned by nmon and nmonparser.py can be overridden by setting the option
+# override_sys_hostname="1" in local/nmon.conf or /etc/nmon.conf
+# If so, we will search for a value to set the hostname
 # default is use system host name (see above)
 # If the option is activated, and we failed finding a value, fall back to system hostname (see above)
 
 SPLUNK_HOSTNAME_OVERRIDE = False
+
+# serial number override:
+# the serial number used to achieve the frameID enrichment within the application can be overridden using the option:
+# override_sys_serialnum="1" in local/nmon.conf or /etc/nmon.conf
+# If so, we will search for the appropriated value in nmon.conf with the configuration name:
+# override_sys_serialnum_value="<string>"
+
+SERIALNUM_OVERRIDE = False
+SERIALNUM_OVERRIDE_VALUE = "none"
 
 if is_windows:
     SPLUNK_SYSTEM_INPUTS = SPLUNK_HOME + "\\etc\\system\\local\\inputs.conf"
@@ -721,17 +731,37 @@ else:
     SPLUNK_SYSTEM_INPUTS = SPLUNK_HOME + "/etc/system/local/inputs.conf"
 
 if is_windows:
-    NMON_LOCAL_CONF = APP + "\\local\\nmon.conf"
+    NMON_SPLUNK_LOCAL_CONF = APP + "\\local\\nmon.conf"
 else:
-    NMON_LOCAL_CONF = APP + "/local/nmon.conf"
+    NMON_SPLUNK_LOCAL_CONF = APP + "/local/nmon.conf"
 
-if os.path.isfile(NMON_LOCAL_CONF):
+# Unix only
+NMON_SYS_LOCAL_CONF = "/etc/nmon.conf"
+
+# Define the local conf with the higher priority
+if os.path.isfile(NMON_SYS_LOCAL_CONF):
+    NMON_LOCAL_CONF = NMON_SYS_LOCAL_CONF
+elif os.path.isfile(NMON_SPLUNK_LOCAL_CONF):
+    NMON_LOCAL_CONF = NMON_SPLUNK_LOCAL_CONF
+else:
+    NMON_LOCAL_CONF = "none"
+
+if not NMON_LOCAL_CONF == "none" and os.path.isfile(NMON_LOCAL_CONF):
 
     with open(NMON_LOCAL_CONF, "r") as f:
         for config in f:
+
             override_sys_hostname_match = re.match(r'override_sys_hostname=\"1\"', config)
             if override_sys_hostname_match:
                 SPLUNK_HOSTNAME_OVERRIDE = True
+
+            override_sys_serialnum_match = re.match(r'override_sys_serialnum=\"1\"', config)
+            if override_sys_serialnum_match:
+                SERIALNUM_OVERRIDE = True
+
+            override_sys_serialnum_value_match = re.match(r'override_sys_serialnum_value=\"([a-zA-Z0-9\-\_]*)\"', config)
+            if override_sys_serialnum_value_match:
+                SERIALNUM_OVERRIDE_VALUE = override_sys_serialnum_value_match.group(1)
 
 # Enter only if the option has been activated
 if SPLUNK_HOSTNAME_OVERRIDE:
@@ -783,10 +813,12 @@ for line in data:
         print("NMON VERSION:", VERSION)
 
     # Set SN
-    sn = re.match(r'^BBB\w*,[^,]*,[^,]*,\"(?:systemid|serial_number)[^,]*IBM,(\w*)[\s|\"].*\n', line)
-    if sn:
-        SN = sn.group(1)
-        print("SerialNumber:", SN)
+    if SERIALNUM_OVERRIDE:
+        SN = SERIALNUM_OVERRIDE_VALUE
+    else:
+        sn = re.match(r'^BBB\w*,[^,]*,[^,]*,\"(?:systemid|serial_number)[^,]*IBM,(\w*)[\s|\"].*\n', line)
+        if sn:
+            SN = sn.group(1)
 
     # Set DATE
     date = re.match(r'^(AAA),(date),(.+)\n', line)
@@ -881,9 +913,12 @@ if virtual_cpus == '-1':
     virtual_cpus = logical_cpus
     print("virtual_cpus: " + virtual_cpus)
 
-# If SN could not be defined, not an AIX host, SN == HOSTNAME
-if SN == '-1':
+# If SN could not be defined, not an AIX host, SN == HOSTNAME unless using SERIALNUM_OVERRIDE
+if SERIALNUM_OVERRIDE:
+    SN = SERIALNUM_OVERRIDE_VALUE
+elif SN == '-1':
     SN = HOSTNAME
+print("SerialNumber:", SN)
 
 ###############################
 # NMON Structure Verification #
@@ -1319,6 +1354,11 @@ if config_run == 0:
                         if 'AAA,host,' in line:
                             if SPLUNK_HOSTNAME_OVERRIDE:
                                 line = 'AAA,host,' + str(HOSTNAME) + '\n'
+
+                        # Serial number override
+                        if 'AAA,SerialNumber,' in line:
+                            if SERIALNUM_OVERRIDE:
+                                line = 'AAA,SerialNumber,' + str(SERIALNUM_OVERRIDE_VALUE) + '\n'
 
                         # Increment the BBB counter
                         if "BBB" in line:

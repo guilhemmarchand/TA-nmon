@@ -117,6 +117,8 @@
 #                                       - Solaris SARMON now compatible with SPARC processors
 # 2018/03/30, Guilhem Marchand:
 #                                       - Fix issues #55 / #56
+#                                       - Feature: override serial number #58
+#                                       - mutex implementation to avoid simultaneous run of shell scripts #59
 
 # Version 1.3.63
 
@@ -161,11 +163,40 @@ else
         exit 1
 fi
 
+# pre-action scripts, run any script available in bin/pre_action_scripts
+pre_action_scripts=`find $APP/bin/pre_action_scripts -name "*.sh" -type f`
+for pre_action_script in $pre_action_scripts; do
+    if [ -x $pre_action_script ]; then
+        echo "`log_date`, ${HOST} INFO, executing pre-action script: $pre_action_script"
+        $pre_action_script
+    fi
+done
+
 # Var directory for data generation
 APP_VAR=$SPLUNK_HOME/var/log/nmon
 
 # Create directory if not existing already
 [ ! -d $APP_VAR ] && { mkdir -p $APP_VAR; }
+
+# Mutex: avoid running nmon_helper.sh and fifo_consumer.sh concurrently
+mutex="${APP_VAR}/mutex"
+
+# Allow 10s mini to acquire mutex and break
+count=0
+while [ -f $mutex ]; do
+    sleep 2
+    count=$(expr $count + 1)
+    if [ $count -gt 5 ]; then
+        break
+    fi
+done
+
+# acquire mutex
+touch $mutex
+
+remove_mutex () {
+    rm -f $mutex
+}
 
 # Which type of OS are we running
 UNAME=`uname`
@@ -387,6 +418,7 @@ else
 
 	if [ ! -x "$NMON" ]; then
 		echo "`log_date`, ${HOST} ERROR, Nmon could not be found, cannot continue."
+		remove_mutex
 		exit 1
 	fi
 	AIX_topas_nmon="false"	
@@ -923,6 +955,7 @@ if [ ! -x "$NMON" ];then
 		else
 			
 			echo "`log_date`, ${HOST} ERROR, could not find an nmon binary suitable for this system, please install nmon manually and set it available in the user PATH"
+			remove_mutex
 			exit 1
 			
 		fi	
@@ -962,6 +995,7 @@ fi
 * )
 
 	echo "`log_date`, ${HOST} ERROR, Unsupported system ! Nmon is available only for AIX / Linux / Solaris systems, please check and deactivate nmon data collect"
+	remove_mutex
 	exit 2
 
 ;;
@@ -1291,6 +1325,7 @@ Linux )
             Linux_nmon_args="$Linux_nmon_args -I ${Linux_unlimited_capture}"
         else
             echo "`log_date`, ${HOST} ERROR, invalid value for Linux_unlimited_capture (${Linux_unlimited_capture} is not an integer or a floating number)"
+            remove_mutex
             exit 2
         fi
         ;;
@@ -1844,6 +1879,7 @@ nmon_isstarted=0
 if [ ! -x ${NMON} ]; then
 	
 	echo "`log_date`, ${HOST} ERROR, could not find Nmon binary (${NMON}) or execution is unauthorized"
+	remove_mutex
 	exit 2
 fi	
 
@@ -1864,6 +1900,7 @@ if [ ! -f ${PIDFILE} ]; then
         start_nmon
 		sleep 5 # Let nmon time to start
 		write_pid
+		remove_mutex
 		exit 0
 	;;
 	
@@ -1872,6 +1909,7 @@ if [ ! -f ${PIDFILE} ]; then
 		echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
 		# Retry to write pid file
 		write_pid
+		remove_mutex
 		exit 0
 	;;
 	
@@ -1951,6 +1989,7 @@ else
             sleep 5 # Let nmon time to start
 			# Relevant for Solaris Only
 			write_pid
+			remove_mutex
 			exit 0
 		;;
 	
@@ -1959,6 +1998,7 @@ else
 			echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${PIDs}"
 			# Relevant for Solaris Only
 			write_pid
+			remove_mutex
 			exit 0
 		;;
 	
@@ -2044,6 +2084,7 @@ else
         check_duplicated_external_snap
 
 		echo "`log_date`, ${HOST} INFO: found Nmon running with PID ${SAVED_PID}"
+		remove_mutex
 		exit 0
 		;;
 		
@@ -2060,6 +2101,7 @@ else
 		sleep 5 # Let nmon time to start
 		# Relevant for Solaris Only		
 		write_pid
+		remove_mutex
 		exit 0
 		;;
 	
@@ -2070,6 +2112,9 @@ else
 	esac
 
 fi
+
+remove_mutex
+exit 0
 
 ####################################################################
 #############		End of Main Program 			############

@@ -1,0 +1,140 @@
+# pre-actions scripts
+
+The frameID definition is an enrichment mechanism used within the application to associate a given host with a given frame identifier.
+By default, the mapping is operated against the value of "serialnum" which is defined at the raw level by nmon binaries.
+
+- On AIX systems, the serialnum value is equal to the serial number of the frame hosting the partition
+- On Linux and Solaris systems, the serialnum is equal to the value of the hostname
+
+A pre-action script can be designed to define a serial number according to your needs.
+
+In "nmon.conf", the following settings are designed to manage the serial number:
+
+- override_sys_serialnum="1": will activate the serial number override
+- override_sys_serialnum_value="<value for serial number": defines it value
+
+Add any shell script in this directory to get a pre-action to be executed automatically by the nmon_helper.sh script at startup time.
+You can use this simple feature to perform a pre-action each time the nmon_helper.sh script is executed.
+
+stdout will be indexed in "sourcetype=nmon_collect".
+stderr will be indexes in splunkd logs.
+
+Any script you would add in this directory will be upgrade resilient and would not be lost or modified when your upgrade the TA.
+
+pre-action scripts execution will be visible in sourcetype=nmon_collect:
+
+message = <date>, ${HOST} INFO, executing pre-action script: <name of pre-action script>
+
+Requirements:
+
+- scripts names can whatever you want
+- must have ".sh" extension
+- must have execution permission by the Unix username owning processes
+
+## use case examples:
+
+### 1. run a local command on servers to define the serial number value
+
+----------------------------
+#!/bin/sh
+
+serialnumber=`<replace the command that retrieves a value to be used as the serialnumber`
+
+# nmon_conf="/etc/nmon.conf" to write in /etc/nmon.conf (requires processes to run under root)
+# nmon_conf="$SPLUNK_HOME/etc/apps/TA-nmon/local/nmon.conf" to write in app name space
+nmon_conf="$SPLUNK_HOME/etc/apps/TA-nmon/local/nmon.conf"
+
+# if nmon.conf could not be found, create, activate serial number override and fill its value
+
+if [ ! -f $nmon_conf ]; then
+    echo "# nmon.conf" >> $nmon_conf
+    echo "override_sys_serialnum=\"1\"" >> $nmon_conf
+    echo "override_sys_serialnum_value=\"$serialnumber\"" >> $nmon_conf
+
+else # verify the option activation, verify the serial number value
+
+    egrep "^override_sys_serialnum=" $nmon_conf >/dev/null
+    if [ $? -ne 0 ]; then
+        echo "override_sys_serialnum=\"1\"" >> $nmon_conf
+    fi
+
+    # verify serial number value
+    egrep "^override_sys_serialnum_value=" $nmon_conf >/dev/null
+
+    if [ $? -eq 0 ]; then # if option is set, check value
+      egrep "^override_sys_serialnum_value=\"$serialnumber\"" $nmon_conf >/dev/null
+      if [ $? -ne 0 ]; then # if mismatch, replace value
+        cat $nmon_conf | grep -v "override_sys_serialnum_value" > ${nmon_conf}.new
+        echo "override_sys_serialnum_value=\"$serialnumber\"" >> ${nmon_conf}.new
+        mv ${nmon_conf}.new $nmon_conf
+      fi
+    else # option is not set, simply add it
+        echo "override_sys_serialnum_value=\"$serialnumber\"" >> $nmon_conf
+    fi
+
+fi
+
+exit 0
+----------------------------
+
+### 2. Using servers naming convention and domain names to setup a frameID by extraction the region name
+
+----------------------------
+#!/bin/sh
+
+# convention naming: server001.mycompany.co.uk | retrieve the region being the 4th segment of FQDN
+HOST=`hostname`
+case `uname` in
+Linux)
+ FQDN=`hostname -f` ;;
+*)
+ FQDN=$HOST ;;
+esac
+
+REGION=`echo $FQDN | awk -F\. '{print $4}'`
+
+# revert to host value in case of failure
+# otherwise, affect to: DC-<region>
+case $REGION in
+  "")
+  serialnumber="$HOST" ;;
+  *)
+  serialnumber="datacenter-$REGION" ;;
+esac
+
+# nmon_conf="/etc/nmon.conf" to write in /etc/nmon.conf (requires processes to run under root)
+# nmon_conf="$SPLUNK_HOME/etc/apps/TA-nmon/local/nmon.conf" to write in app name space
+nmon_conf="$SPLUNK_HOME/etc/apps/TA-nmon/local/nmon.conf"
+
+# if nmon.conf could not be found, create, activate serial number override and fill its value
+
+if [ ! -f $nmon_conf ]; then
+    echo "# nmon.conf" >> $nmon_conf
+    echo "override_sys_serialnum=\"1\"" >> $nmon_conf
+    echo "override_sys_serialnum_value=\"$serialnumber\"" >> $nmon_conf
+
+else # verify the option activation
+
+    egrep "^override_sys_serialnum=" $nmon_conf >/dev/null
+    if [ $? -ne 0 ]; then
+        echo "override_sys_serialnum=\"1\"" >> $nmon_conf
+    fi
+
+    # verify serial number value
+    egrep "^override_sys_serialnum_value=" $nmon_conf >/dev/null
+
+    if [ $? -eq 0 ]; then # if option is set, check value
+      egrep "^override_sys_serialnum_value=\"$serialnumber\"" $nmon_conf >/dev/null
+      if [ $? -ne 0 ]; then # if mismatch, replace value
+        cat $nmon_conf | grep -v "override_sys_serialnum_value" > ${nmon_conf}.new
+        echo "override_sys_serialnum_value=\"$serialnumber\"" >> ${nmon_conf}.new
+        mv ${nmon_conf}.new $nmon_conf
+      fi
+    else # option is not set, simply add it
+        echo "override_sys_serialnum_value=\"$serialnumber\"" >> $nmon_conf
+    fi
+
+fi
+
+exit 0
+----------------------------

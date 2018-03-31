@@ -135,8 +135,10 @@
 #                                           - remove old migration operation
 # - 02/01/2018: V1.2.43: Guilhem Marchand:
 #                                           - batch mode and fishbuckets performance issues #53
+# - 03/30/2018: V1.2.44: Guilhem Marchand:
+#                                           - Feature: override serial number #58
 
-$version = "1.2.43";
+$version = "1.2.44";
 
 use Time::Local;
 use Time::HiRes;
@@ -2185,76 +2187,123 @@ sub config_extract {
         $HOSTNAME = &get_setting( "host", 2, "," );
     }
 
-    $SPLUNK_HOSTNAME_OVERRIDE = False;
-    $NMON_LOCAL_CONF          = "$APP/local/nmon.conf";
-    $SPLUNK_SYSTEM_INPUTS     = "$SPLUNK_HOME/etc/system/local/inputs.conf";
+    my $SPLUNK_HOSTNAME_OVERRIDE = False;
+    my $SERIALNUM_OVERRIDE       = False;
+    my $SERIALNUM_OVERRIDE_VALUE = "none";
+    my $NMON_SPLUNK_LOCAL_CONF   = "$APP/local/nmon.conf";
+    my $NMON_SYS_LOCAL_CONF      = "/etc/nmon.conf";
+    my $NMON_LOCAL_CONF;
+    my $SPLUNK_SYSTEM_INPUTS = "$SPLUNK_HOME/etc/system/local/inputs.conf";
 
-    if ( -e $NMON_LOCAL_CONF ) {
+    # Define the local conf with the higher priority
+    if ( -e $NMON_SYS_LOCAL_CONF ) {
+        $NMON_LOCAL_CONF = $NMON_SYS_LOCAL_CONF;
+    }
+    elsif ( -e $NMON_SPLUNK_LOCAL_CONF ) {
+        $NMON_LOCAL_CONF = $NMON_SPLUNK_LOCAL_CONF;
+    }
+    else {
+        $NMON_LOCAL_CONF = "none";
+    }
+
+    # Load config configuration
+    if ( $NMON_LOCAL_CONF ne "none" && -e $NMON_LOCAL_CONF ) {
 
         open( NMON_LOCAL_CONF, "< $NMON_LOCAL_CONF" )
           or die "ERROR: Can't open $NMON_LOCAL_CONF : $!";
         chomp $NMON_LOCAL_CONF;
 
-        if ( grep { /override_sys_hostname=\"1\"/ } <NMON_LOCAL_CONF> ) {
+        while ( defined( my $l = <NMON_LOCAL_CONF> ) ) {
+            chomp $l;
 
-            $SPLUNK_HOSTNAME_OVERRIDE = True;
+            if ( $l =~ m/^override_sys_serialnum=\"1\"/ ) {
+                $SERIALNUM_OVERRIDE = True;
+            }
 
-            if ( -e $SPLUNK_SYSTEM_INPUTS ) {
+            if ( $l =~ m/^override_sys_serialnum_value=\"([a-zA-Z0-9\-\_]*)\"/ )
+            {
+                $SERIALNUM_OVERRIDE_VALUE = $1;
+            }
 
-                # Open
-                open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS"
-                  or die "$time ERROR:$!\n";
+            # if hostname override, open splunk local configuration
+            if ( $l =~ m/^override_sys_hostname=\"1\"/ ) {
+                $SPLUNK_HOSTNAME_OVERRIDE = True;
+            }
 
-                while ( defined( my $l = <FILE> ) ) {
-                    chomp $l;
+            if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
 
-                    if ( $l =~ m/host\s*=\s*(.+)/ ) {
+                if ( -e $SPLUNK_SYSTEM_INPUTS ) {
 
-                        # break at first occurence
-                        $splunk_hostname = $1;
-                        last;
+                    # Open
+                    open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS"
+                      or die "$time ERROR:$!\n";
+
+                    while ( defined( my $l = <FILE> ) ) {
+                        chomp $l;
+
+                        if ( $l =~ m/host\s*=\s*(.+)/ ) {
+
+                            # break at first occurrence
+                            $splunk_hostname = $1;
+                            last;
+                        }
 
                     }
 
+                    # if not hostname could be found
+                    if ( $splunk_hostname eq "" ) {
+                        $SPLUNK_HOSTNAME_OVERRIDE = False;
+                    }
+
+                    close SPLUNK_SYSTEM_INPUTS;
                 }
 
-                if ( $splunk_hostname eq "" ) {
-                    $SPLUNK_HOSTNAME_OVERRIDE = False;
-                }
-
-                close SPLUNK_SYSTEM_INPUTS;
             }
 
-            close NMON_LOCAL_CONF;
         }
+
+        close NMON_LOCAL_CONF;
 
     }
 
+    # hostname override
     if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
         $HOSTNAME = $splunk_hostname;
+    }
+
+    # serialnum override
+    if ( $SERIALNUM_OVERRIDE eq "True" ) {
+        $SN = $SERIALNUM_OVERRIDE_VALUE;
     }
 
     $DATE = &get_setting( "AAA,date", 2, "," );
     $TIME = &get_setting( "AAA,time", 2, "," );
 
     # for AIX
-    if ( $AIXVER ne "-1" ) {
-        $SN = &get_setting( "systemid", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];    # "systemid IBM,SN ..."
+    if ( $SERIALNUM_OVERRIDE eq "False" ) {
+        if ( $AIXVER ne "-1" ) {
+            $SN = &get_setting( "systemid", 4, "," );
+            $SN = ( split( /\s+/, $SN ) )[0];    # "systemid IBM,SN ..."
+        }
+
+        # for Power Linux
+        else {
+            $SN = &get_setting( "serial_number", 4, "," );
+            $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
+        }
+
+        # undeterminated
+        if ( $SN eq "-1" ) {
+            $SN = $HOSTNAME;
+        }
+        elsif ( $SN eq "" ) {
+            $SN = $HOSTNAME;
+        }
+
     }
 
-    # for Power Linux
-    else {
-        $SN = &get_setting( "serial_number", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
-    }
-
-    # undeterminated
-    if ( $SN eq "-1" ) {
-        $SN = $HOSTNAME;
-    }
-    elsif ( $SN eq "" ) {
-        $SN = $HOSTNAME;
+    elsif ( $SERIALNUM_OVERRIDE eq "True" ) {
+        $SN = $SERIALNUM_OVERRIDE_VALUE;
     }
 
     # write event header
@@ -2288,6 +2337,12 @@ sub config_extract {
             if ( $write =~ /^AAA,host,/ ) {
                 $write = "AAA,host,$HOSTNAME";
             }
+
+            # Manage the serialnum rewrite
+            if ( $write =~ /^AAA,SerialNumber,/ ) {
+                $write = "AAA,SerialNumber,$SERIALNUM_OVERRIDE_VALUE";
+            }
+
             print( INSERT "$write\n" );
             $count++;
 
@@ -3330,50 +3385,93 @@ sub get_nmon_data {
         $HOSTNAME = &get_setting( "host", 2, "," );
     }
 
-    $SPLUNK_HOSTNAME_OVERRIDE = False;
-    $NMON_LOCAL_CONF          = "$APP/local/nmon.conf";
-    $SPLUNK_SYSTEM_INPUTS     = "$SPLUNK_HOME/etc/system/local/inputs.conf";
+    my $SPLUNK_HOSTNAME_OVERRIDE = False;
+    my $SERIALNUM_OVERRIDE       = False;
+    my $SERIALNUM_OVERRIDE_VALUE = "none";
+    my $NMON_SPLUNK_LOCAL_CONF   = "$APP/local/nmon.conf";
+    my $NMON_SYS_LOCAL_CONF      = "/etc/nmon.conf";
+    my $NMON_LOCAL_CONF;
+    my $SPLUNK_SYSTEM_INPUTS = "$SPLUNK_HOME/etc/system/local/inputs.conf";
 
-    if ( -e $NMON_LOCAL_CONF ) {
+    # Define the local conf with the higher priority
+    if ( -e $NMON_SYS_LOCAL_CONF ) {
+        $NMON_LOCAL_CONF = $NMON_SYS_LOCAL_CONF;
+    }
+    elsif ( -e $NMON_SPLUNK_LOCAL_CONF ) {
+        $NMON_LOCAL_CONF = $NMON_SPLUNK_LOCAL_CONF;
+    }
+    else {
+        $NMON_LOCAL_CONF = "none";
+    }
+
+    # Load config configuration
+    if ( $NMON_LOCAL_CONF ne "none" && -e $NMON_LOCAL_CONF ) {
 
         open( NMON_LOCAL_CONF, "< $NMON_LOCAL_CONF" )
           or die "ERROR: Can't open $NMON_LOCAL_CONF : $!";
         chomp $NMON_LOCAL_CONF;
 
-        if ( grep { /override_sys_hostname=\"1\"/ } <NMON_LOCAL_CONF> ) {
+        while ( defined( my $l = <NMON_LOCAL_CONF> ) ) {
+            chomp $l;
 
-            $SPLUNK_HOSTNAME_OVERRIDE = True;
-
-            if ( -e $SPLUNK_SYSTEM_INPUTS ) {
-
-                # Open
-                open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS"
-                  or die "$time ERROR:$!\n";
-
-                while ( defined( my $l = <FILE> ) ) {
-                    chomp $l;
-
-                    if ( $l =~ m/host\s*=\s*(.+)/ ) {
-                        $splunk_hostname = $1;
-                    }
-                }
-
-# Protect against misconfiguration (eg. option is activated but no value can be found, however there is no reason it could happen)
-                if ( $splunk_hostname eq "" ) {
-                    $SPLUNK_HOSTNAME_OVERRIDE = False;
-                }
-
-                close SPLUNK_SYSTEM_INPUTS;
+            if ( $l =~ m/^override_sys_serialnum=\"1\"/ ) {
+                $SERIALNUM_OVERRIDE = True;
             }
 
-            close NMON_LOCAL_CONF;
+            if ( $l =~ m/^override_sys_serialnum_value=\"([a-zA-Z0-9\-\_]*)\"/ )
+            {
+                $SERIALNUM_OVERRIDE_VALUE = $1;
+            }
+
+            # if hostname override, open splunk local configuration
+            if ( $l =~ m/^override_sys_hostname=\"1\"/ ) {
+                $SPLUNK_HOSTNAME_OVERRIDE = True;
+            }
+
+            if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
+
+                if ( -e $SPLUNK_SYSTEM_INPUTS ) {
+
+                    # Open
+                    open FILE, '+<', "$SPLUNK_SYSTEM_INPUTS"
+                      or die "$time ERROR:$!\n";
+
+                    while ( defined( my $l = <FILE> ) ) {
+                        chomp $l;
+
+                        if ( $l =~ m/host\s*=\s*(.+)/ ) {
+
+                            # break at first occurrence
+                            $splunk_hostname = $1;
+                            last;
+                        }
+
+                    }
+
+                    # if not hostname could be found
+                    if ( $splunk_hostname eq "" ) {
+                        $SPLUNK_HOSTNAME_OVERRIDE = False;
+                    }
+
+                    close SPLUNK_SYSTEM_INPUTS;
+                }
+
+            }
+
         }
+
+        close NMON_LOCAL_CONF;
 
     }
 
-    # Finally override
+    # hostname override
     if ( $SPLUNK_HOSTNAME_OVERRIDE eq "True" ) {
         $HOSTNAME = $splunk_hostname;
+    }
+
+    # serialnum override
+    if ( $SERIALNUM_OVERRIDE eq "True" ) {
+        $SN = $SERIALNUM_OVERRIDE_VALUE;
     }
 
     $INTERVAL = &get_setting( "interval", 2, "," );    # nmon sampling interval
@@ -3388,23 +3486,30 @@ sub get_nmon_data {
     ( $HR, $MIN ) = split( /\:/, $STARTTIME );
 
     # for AIX
-    if ( $AIXVER ne "-1" ) {
-        $SN = &get_setting( "systemid", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];                # "systemid IBM,SN ..."
+    if ( $SERIALNUM_OVERRIDE eq "False" ) {
+        if ( $AIXVER ne "-1" ) {
+            $SN = &get_setting( "systemid", 4, "," );
+            $SN = ( split( /\s+/, $SN ) )[0];            # "systemid IBM,SN ..."
+        }
+
+        # for Power Linux
+        else {
+            $SN = &get_setting( "serial_number", 4, "," );
+            $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
+        }
+
+        # undeterminated
+        if ( $SN eq "-1" ) {
+            $SN = $HOSTNAME;
+        }
+        elsif ( $SN eq "" ) {
+            $SN = $HOSTNAME;
+        }
+
     }
 
-    # for Power Linux
-    else {
-        $SN = &get_setting( "serial_number", 4, "," );
-        $SN = ( split( /\s+/, $SN ) )[0];    # "serial_number=IBM,SN ..."
-    }
-
-    # undeterminated
-    if ( $SN eq "-1" ) {
-        $SN = $HOSTNAME;
-    }
-    elsif ( $SN eq "" ) {
-        $SN = $HOSTNAME;
+    elsif ( $SERIALNUM_OVERRIDE eq "True" ) {
+        $SN = $SERIALNUM_OVERRIDE_VALUE;
     }
 
     $TYPE = &get_setting( "^BBBP.*Type", 3, "," );
