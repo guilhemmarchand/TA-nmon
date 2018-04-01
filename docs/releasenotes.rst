@@ -18,6 +18,7 @@ What has been fixed by release
 V1.3.33:
 ========
 
+- fix: review sourcetypes definition #60
 - Feature: mutex implementation to avoid simultaneous run of shell scripts #59
 - Feature: override serial number #58
 - fix: Removing crcSalt from inputs since it is not required anymore #57
