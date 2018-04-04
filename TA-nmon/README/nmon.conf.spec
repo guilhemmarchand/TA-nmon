@@ -1,19 +1,24 @@
-# nmon.conf.spec
+# nmon.conf
 
-# This file contains possibles attributes and values you can use to configure nmon processes generation.
+################################
+# Nmon processes related options
+################################
 
-# There is an nmon.conf in $SPLUNK_HOME/etc/[nmon|TA-nmon|PA-nmon]/default/.  To set custom configurations,
-# place an nmon.conf in $SPLUNK_HOME/etc/[nmon|TA-nmon|PA-nmon]/default/.
+#
+# These options will be used to manage Nmon processes starting options
+#
+
+# This configuration file will set the interval and snapshot values when starting up the nmon binary
+# It is being sourced by the nmon_helper.sh script during script startup
+
+# *** BE UPGRADE RESILIENT: *** Copy this file to your local/nmon.conf to prevent future upgrades from overwriting your settings
+# *** DON'T MODIFY THIS FILE ***
 
 # *** FILE ENCODING: UTF-8 ! ***
 # When creating a local/nmon.conf, pay attention to file encoding specially when working under Windows.
 # The file must be UTF-8 encoded or you may run in trouble.
 
-# *** DON'T MODIFY THIS FILE ***
-
-########################################################################################################################
 ### NMON COLLECT OPTIONS ###
-########################################################################################################################
 
 # The nmon_helper.sh input script is set by default to run every 60 seconds
 # If Nmon is not running, the script will start Nmon using the configuration above
@@ -21,9 +26,6 @@
 ###
 ### Legacy options for nmon writing to regular files (these values are used by the TA-nmon not using fifo files)
 ###
-
-# The default mode for Nmon data generation is set to "longperiod_low" which is the most preservative mode to limit the CPU usage due the Nmon/Splunk processing steps
-# Feel free to test available modes or custom mode to set better options that answer your needs and requirements
 
 # The "longperiod_high" mode is a good compromise between accuracy, CPU / licensing cost and operational intelligence, and can be used in most case
 # Reducing CPU foot print can be achieved using one of the following modes, increasing the interval value and limiting the snapshot value are the factors that will impact the TA footprint
@@ -58,11 +60,6 @@
 # custom --> Set a custom interval and snapshot value, if unset short default values will be used (see custom_interval and custom_snapshot)
 
 # Default is longperiod_high
-mode="longperiod_high"
-
-# custom --> Set a custom interval and snapshot value, if unset short default values will be used (see custom_interval and custom_snapshot)
-
-# Default is longperiod_high
 mode=<string>
 
 # Refresh interval in seconds, Nmon will use this value to refresh data each X seconds
@@ -72,7 +69,6 @@ custom_interval=<value>
 # Number of Data refresh occurrences, Nmon will refresh data X times
 # UNUSED IF NOT SET TO custom MODE
 custom_snapshot=<value>
-
 
 ###
 ### FIFO options: used since release 1.3.0
@@ -90,9 +86,7 @@ fifo_interval=<value>
 # value for snapshot: number of measure to perform
 fifo_snapshot=<value>
 
-########################################################################################################################
 ### VARIOUS COMMON OPTIONS ###
-########################################################################################################################
 
 # Time in seconds of margin before running a new iteration of Nmon process to prevent data gaps between 2 iterations of Nmon
 # the nmon_helper.sh script will spawn a new Nmon process when the age in seconds of the current process gets higher than this value
@@ -105,45 +99,27 @@ fifo_snapshot=<value>
 
 # Setting this value to "0" will totally disable this feature
 
-# Default value:
-# endtime_margin="240"
-
 endtime_margin=<value>
 
 ### NFS OPTIONS ###
 
 # Change to "1" to activate NFS V2 / V3 (option -N) for AIX hosts
-# Default value:
-# AIX_NFS23="0"
-
-AIX_NFS23=<string>
+AIX_NFS23=<value>
 
 # Change to "1" to activate NFS V4 (option -NN) for AIX hosts
-# Default value:
-# AIX_NFS4="0"
-
-AIX_NFS4=<string>
+AIX_NFS4=<value>
 
 # Change to "1" to activate NFS V2 / V3 / V4 (option -N) for Linux hosts
 # Note: Some versions of Nmon introduced a bug that makes Nmon to core when activating NFS, ensure your version is not outdated
-# Default value:
-# Linux_NFS="0"
+Linux_NFS=<value>
 
-Linux_NFS=<string>
-
-########################################################################################################################
 ### LINUX OPTIONS ###
-########################################################################################################################
 
 # Change the priority applied while looking at nmon binary
 # by default, the nmon_helper.sh script will use any nmon binary found in PATH
 # Set to "1" to give the priority to embedded nmon binaries
 # Note: Since release 1.6.07, priority is given by default to embedded binaries
-
-# Default value:
-# Linux_embedded_nmon_priority="1"
-
-Linux_embedded_nmon_priority=<string>
+Linux_embedded_nmon_priority=<value>
 
 # Change the limit for processes and disks capture of nmon for Linux
 # In default configuration, nmon will capture most of the process table by capturing main consuming processes
@@ -157,52 +133,36 @@ Linux_embedded_nmon_priority=<string>
 Linux_unlimited_capture=<value>
 
 # Set the maximum number of devices collected by Nmon, default is set to 1500 devices
+# This option will be ignored if you set the Linux_unlimited_capturation below.
 # Increase this value if you have systems with more devices
 # Up to 3000 devices will be taken in charge by the Application (hard limit in nmon2csv.py / nmon2csv.pl)
-
-# Default value:
-# Linux_devices="1500"
-
 Linux_devices=<value>
 
 # Enable disks extended statistics (DG*)
 # Default is true, which activates and generates DG statistics
-Linux_disk_dg_enable=<string>
+Linux_disk_dg_enable=<value>
 
 # Name of the User Defined Disk Groups file, "auto" generates this for you
-Linux_disk_dg_group=<value>
+Linux_disk_dg_group=<string>
 
-########################################################################################################################
 ### SOLARIS OPTIONS ###
-########################################################################################################################
 
 # Change to "1" to activate VxVM volumes IO statistics
-# Default value:
-
-# Solaris_VxVM="0"
-
-Solaris_VxVM=<string>
+Solaris_VxVM=<value>
 
 # UARG collection (new in Version 1.11), Change to "0" to deactivate, "1" to activate (default is activate)
-# Default value:
+Solaris_UARG=<value>
 
-# Solaris_UARG="1"
-
-Solaris_UARG=<string>
-
-########################################################################################################################
-### AIX OPTIONS ###
-########################################################################################################################
+### AIX COMMON OPTIONS ###
 
 # CAUTION: Since release 1.3.0, we use fifo files, which requires the option "-yoverwrite=1"
 
 # Change this line if you add or remove common options for AIX, do not change NFS options here (see NFS options)
 # the -p option is mandatory as it is used at launch time to save instance pid
-
-# Default value:
-# AIX_options="-f -T -A -d -K -L -M -P -^ -p -yoverwrite=1"
-
 AIX_options=<string>
+
+# enable this line if you want to get only active disks
+# AIX_options=""-T -A -d -K -L -M -P -^ -p -k `lspv|grep active|awk '{print $1","}'|tr -d '\040\011\012\015'` -yoverwrite=1"
 
 #############################
 # Application related options
@@ -212,6 +172,10 @@ AIX_options=<string>
 # These options are not directly related to nmon processes but to general features of the technical add-on
 #
 
+######################
+# hostname definition:
+######################
+
 # This option can be used to force the technical add-on to use the Splunk configured value of the server hostname
 # If for some reason, you need to use the Splunk host value instead of the system real hostname value, set this value to "1"
 
@@ -220,26 +184,67 @@ AIX_options=<string>
 
 # Default is use system hostname
 
-# FQDN management in nmon2csv.pl/nmon2csv.py: The --fqdn option is not compatible with the host name override, if the override_sys_hostname
+# FQDN management in nmonparser: The --fqdn option is not compatible with the host name override, if the override_sys_hostname
 # is activated, the --fqdn argument will have no effect
 
-override_sys_hostname=<string>
+override_sys_hostname=<value>
+
+#####################
+# frameID definition:
+#####################
+
+# The frameID definition is an enrichment mechanism used within the application to associate a given host with a given frame identifier
+# By default, the mapping is operated against the value of "serialnum" which is defined at the raw level by nmon binaries
+
+# On AIX systems, the serialnum value is equal to the serial number of the frame hosting the partition
+# On Linux and Solaris systems, the serialnum is equal to the value of the hostname
+
+# Using this option allows you to override the serialnum value by a static value defined in the nmon.conf configuration file
+# nmon.conf precedence allows defining the serialnum value on per deployment basis (local/nmon.conf) or on a per server basis (/etc/nmon.conf)
+
+# default is:
+# override_sys_serialnum="0"
+# which lets nmon set the serialnum value
+
+# Set this value to:
+# override_sys_serialnum="1"
+# to activate the serialnum override based on the value defined in:
+
+# override_sys_serialnum_value="<sting>"
+# Acceptable values for <string> are letters (lower and upper case), numbers and "-" / "_"
+
+override_sys_serialnum=<value>
+override_sys_serialnum_value=<string>
+
+########################
+# nmon external metrics:
+########################
 
 # nmon external generation management
 
 # This option will manage the activation or deactivation of the nmon external data generation at the lower level, before it comes to parsers
 # default is activated (value=1), set to "0" to deactivate
 
-nmon_external_generation=<string>
+nmon_external_generation=<value>
+
+###############
+# fifo options:
+###############
 
 # Fifo options
 
-# This option will deactivate the auto switch to fifo mode, in other words the TA-nmon will use the file mode and the old mechanism
-# unless you encounter unexpected issues, you should not switch to the old mechanism as the foot print is much higher
+# The realtime mode which corresponds to the old mechanism is now deprecated
+# fifo mode is mandatory
 
 # Default is "1" which means write to fifo
 
-mode_fifo=<string>
+mode_fifo=<value>
+
+#######################
+# nmon parsers options:
+#######################
+
+# consult the documentation to get the full list of available options
 
 # Since the release 1.3.0, AIX and Linux OS use the fifo_consumer.sh script to consume data produced by the fifo readers
 # the following option allows specifying the options sent to the nmon2csv parsers
@@ -249,6 +254,7 @@ mode_fifo=<string>
 # --mode realtime|colddata|fifo --> explicitly manage realtime data
 # --use_fqdn --> use the host fully qualified domain name
 # --json_output --> generate the performance data in json format instead of regular csv data
+# --silent --> minimize the processing output to save data volume (deactivated by default)
 
 # In fifo mode, options are sent by the fifo_consumer.sh
 # In file mode, options are sent by Splunk via the nmon_processing stanza in props.conf
