@@ -2,16 +2,71 @@
 Pre-requisites
 ##############
 
-**The pre-requisites to run the TA-nmon are quite simple:**
+-------------------
+Splunk requirements
+-------------------
 
-* Python 2.7.x interpreter
+**Compatibility matrix:**
 
-By default, the TA-nmon tries to use the locally available Python 2.7.x interpreter.
++--------------------------------------------+----------------------+
+| Metricator for Nmon stack                  | Major version branch |
+|                                            |                      |
++============================================+======================+
+| Splunk Universal Forwarder 6.x, 7.x        |      Version 1.x     |
++--------------------------------------------+----------------------+
 
-Note that Splunk Enterprise embeds its own Python 2.7.x interpreter.
+-----------------------------
+Technical Add-on requirements
+-----------------------------
 
-* Perl 5.x or higher with perl-Time-HiRes
+Operating system
+^^^^^^^^^^^^^^^^
 
-If Python 2.7.x is not available in your systems (very likely on AIX, likely on old Linux and Solaris flavours), the TA-nmon will fall back to Perl.
+**The Technical Add-on is compatible with:**
 
-In such a case, the Perl module "perl-Time-HiRes" must be installed, this can be the case on many systems (AIX does) but some may not have it installed by default.
+- Linux OS X86 in 32/64 bits, PowerPC (PowerLinux), s390x (ZLinux), ARM
+- IBM AIX 7.1 and 7.2
+- Oracle Solaris 11
+
+Third party software and libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To operate as expected, the Technical Add-ons requires a Python **OR** a Perl environment available on the server:
+
+**Python environment: used in priority**
+
++--------------------------------------------+----------------------+
+| Requirement                                | Version              |
+|                                            |                      |
++============================================+======================+
+| Python interpreter                         | 2.7.x                |
++--------------------------------------------+----------------------+
+
+
+**Perl environment: used only in fallback**
+
++--------------------------------------------+----------------------+
+| Requirement                                | Version              |
+|                                            |                      |
++============================================+======================+
+| Perl interpreter                           | 5.x                  |
++--------------------------------------------+----------------------+
+| Time::HiRes module                         | any                  |
++--------------------------------------------+----------------------+
+
+**In addition, the Technical Addon requires:**
+
++--------------------------------------------+----------------------+
+| Requirement                                | Version              |
+|                                            |                      |
++============================================+======================+
+| curl                                       | Any                  |
++--------------------------------------------+----------------------+
+
+
+**Notes:**
+
+- IBM AIX does not generally contain Python. Nevertheless, Perl is available as a standard. More, Time::HiRes is part of Perl core modules.
+- Modern Linux distribution generally have Python version 2.7.x available and do not require any further action.
+- Linux distributions lacking Python will fallback to Perl and must satisfy the Perl modules requirements.
+- If running on a full Splunk instance (any Splunk dedicated machine running Splunk Enterprise), the Technical Add-on uses Splunk built-in Python interpreter.
