@@ -185,7 +185,7 @@ mutex="${APP_VAR}/mutex"
 count=0
 while [ -f $mutex ]; do
     sleep 2
-    count=$(expr $count + 1)
+    count=`expr $count + 1`
     if [ $count -gt 5 ]; then
         break
     fi
